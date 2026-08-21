@@ -1,0 +1,35 @@
+<svg width="256" height="256" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="pinkSnap" x1="26" y1="18" x2="232" y2="244" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FF74B2"/>
+      <stop offset="0.52" stop-color="#F53D89"/>
+      <stop offset="1" stop-color="#D92B79"/>
+    </linearGradient>
+    <linearGradient id="lens" x1="92" y1="92" x2="164" y2="170" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#35263E"/>
+      <stop offset="1" stop-color="#1F1D2B"/>
+    </linearGradient>
+    <filter id="shadow" x="22" y="23" width="212" height="218" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="8" stdDeviation="8" flood-color="#A91D61" flood-opacity="0.22"/>
+    </filter>
+  </defs>
+
+  <rect x="24" y="20" width="208" height="216" rx="58" fill="url(#pinkSnap)" filter="url(#shadow)"/>
+  <path d="M42 74C42 48.595 62.595 28 88 28H168C193.405 28 214 48.595 214 74V88H42V74Z" fill="#FFB1D0" fill-opacity=".18"/>
+
+  <g fill="white">
+    <path d="M82 73.5C84.1 68.4 89.1 65 94.6 65H112L119.2 56H136.8L144 65H161.4C166.9 65 171.9 68.4 174 73.5L185 100.2C186.3 103.3 187 106.6 187 110V163C187 172.4 179.4 180 170 180H86C76.6 180 69 172.4 69 163V110C69 106.6 69.7 103.3 71 100.2L82 73.5Z"/>
+    <rect x="69" y="91" width="118" height="89" rx="17"/>
+  </g>
+
+  <circle cx="128" cy="135" r="35" fill="url(#lens)"/>
+  <circle cx="128" cy="135" r="24" fill="#F767A2"/>
+  <circle cx="128" cy="135" r="15" fill="#FFF4FA"/>
+  <circle cx="122" cy="129" r="5" fill="white" fill-opacity=".9"/>
+  <circle cx="164" cy="111" r="7" fill="#F53D89"/>
+
+  <g fill="white">
+    <path d="M190 50L194.2 61.8L206 66L194.2 70.2L190 82L185.8 70.2L174 66L185.8 61.8L190 50Z"/>
+    <path d="M52 111L54.5 118.5L62 121L54.5 123.5L52 131L49.5 123.5L42 121L49.5 118.5L52 111Z" fill-opacity=".72"/>
+  </g>
+</svg>
