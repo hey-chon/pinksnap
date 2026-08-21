@@ -1,5 +1,6 @@
 import { Link, useLocation } from 'wouter';
 import { Camera, ChevronLeft, HelpCircle, Images, MessageCircle, UserRound } from 'lucide-react';
+import { UserMenu } from '@/components/auth/user-menu';
 
 function Bulbs({ count = 10 }: { count?: number }) {
   return (
@@ -32,7 +33,7 @@ export function TopNav({ backTo, title }: { backTo?: string, title?: string }) {
             <span className="font-display text-[22px] sm:text-[26px] text-primary">SNAP</span>
           </div>
         </Link>
-        <span className="hidden sm:block"><Bulbs count={7} /></span>
+        <span className="hidden sm:block"><Bulbs count={5} /></span>
       </div>
 
       {title && (
@@ -41,12 +42,12 @@ export function TopNav({ backTo, title }: { backTo?: string, title?: string }) {
         </div>
       )}
 
-      <div className="flex items-center gap-3">
-        <span className="hidden sm:block"><Bulbs count={7} /></span>
+      <div className="flex items-center gap-2 sm:gap-3">
         <Link href="/chat" data-testid="link-chat-header" className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-black uppercase tracking-wider text-white/70 hover:text-primary transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded px-2 py-2">
           <MessageCircle className="w-4 h-4" />
-          Chat
+          <span className="hidden sm:inline">Chat</span>
         </Link>
+        <UserMenu />
       </div>
     </header>
   );
@@ -72,14 +73,18 @@ export function BottomNav() {
           <UserRound className="w-4 h-4" />
           CREATOR
         </button>
-        <div className="flex items-center gap-6">
-          <Link href="/how-it-works" data-testid="nav-how-it-works" className={`flex items-center gap-2 text-sm font-bold transition-colors group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded ${location === '/how-it-works' ? 'text-primary' : 'text-white/70 hover:text-primary'}`}>
+        <div className="flex items-center gap-4 sm:gap-6">
+          <Link href="/how-it-works" data-testid="nav-how-it-works" className={`flex items-center gap-1.5 text-sm font-bold transition-colors group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded ${location === '/how-it-works' ? 'text-primary' : 'text-white/70 hover:text-primary'}`}>
             <HelpCircle className="w-4 h-4 group-hover:scale-110 transition-transform" />
             <span className="hidden sm:inline">HOW TO</span>
           </Link>
-          <Link href="/gallery" data-testid="nav-gallery" className={`flex items-center gap-2 text-sm font-bold transition-colors group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded ${location === '/gallery' ? 'text-primary' : 'text-white/70 hover:text-primary'}`}>
+          <Link href="/gallery" data-testid="nav-gallery" className={`flex items-center gap-1.5 text-sm font-bold transition-colors group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded ${location === '/gallery' ? 'text-primary' : 'text-white/70 hover:text-primary'}`}>
             <Images className="w-4 h-4 group-hover:scale-110 transition-transform" />
             <span className="hidden sm:inline">GALLERY</span>
+          </Link>
+          <Link href="/profile" data-testid="nav-profile" className={`flex items-center gap-1.5 text-sm font-bold transition-colors group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded ${location === '/profile' || location === '/auth' ? 'text-primary' : 'text-white/70 hover:text-primary'}`}>
+            <UserRound className="w-4 h-4 group-hover:scale-110 transition-transform" />
+            <span className="hidden sm:inline">ACCOUNT</span>
           </Link>
         </div>
       </div>

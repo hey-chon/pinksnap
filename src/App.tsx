@@ -1,6 +1,7 @@
 import { Redirect, Route, Switch, Router as WouterRouter } from 'wouter';
 
 import { AppProvider } from '@/lib/store';
+import { AuthProvider } from '@/lib/auth-context';
 import { ToastProvider } from '@/hooks/use-toast.tsx';
 import NotFound from '@/pages/not-found';
 import Home from '@/pages/home';
@@ -12,6 +13,10 @@ import Gallery from '@/pages/gallery';
 import HowItWorks from '@/pages/how-it-works';
 import Chat from '@/pages/chat';
 import StudioLoading from '@/components/studio-loading';
+import AuthPage from '@/pages/auth';
+import ProfilePage from '@/pages/profile';
+import AdminPage from '@/pages/admin';
+import { ProtectedRoute } from '@/components/auth/protected-route';
 
 function Router() {
   return (
@@ -28,6 +33,15 @@ function Router() {
       <Route path="/gallery" component={Gallery} />
       <Route path="/how-it-works" component={HowItWorks} />
       <Route path="/chat" component={Chat} />
+      <Route path="/auth" component={AuthPage} />
+      <Route path="/login" component={AuthPage} />
+      <Route path="/signup" component={AuthPage} />
+      <Route path="/profile">
+        {() => <ProtectedRoute component={ProfilePage} />}
+      </Route>
+      <Route path="/admin">
+        {() => <ProtectedRoute component={AdminPage} requiredRole="admin" />}
+      </Route>
       <Route component={NotFound} />
     </Switch>
   );
@@ -35,13 +49,15 @@ function Router() {
 
 function App() {
   return (
-    <AppProvider>
-      <ToastProvider>
-        <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}>
-          <Router />
-        </WouterRouter>
-      </ToastProvider>
-    </AppProvider>
+    <AuthProvider>
+      <AppProvider>
+        <ToastProvider>
+          <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}>
+            <Router />
+          </WouterRouter>
+        </ToastProvider>
+      </AppProvider>
+    </AuthProvider>
   );
 }
 
