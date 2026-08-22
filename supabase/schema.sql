@@ -76,13 +76,13 @@ CREATE POLICY "Allow delete for admin"
   ON public.profiles FOR DELETE 
   USING (public.is_admin());
 
--- [H2] Public view for chat: exposes only non-sensitive fields, readable by authenticated users
-CREATE OR REPLACE VIEW public.profiles_public AS
+-- Public view for chat: exposes only non-sensitive fields, readable by all users (anon & authenticated)
+CREATE OR REPLACE VIEW public.profiles_public WITH (security_invoker = false) AS
 SELECT id, display_name, avatar_url, role
 FROM public.profiles;
 
--- Grant authenticated users read access to the view
-GRANT SELECT ON public.profiles_public TO authenticated;
+-- Grant read access to the view
+GRANT SELECT ON public.profiles_public TO anon, authenticated;
 
 -- 4. Create memories (photo strips) table linked to auth.users
 CREATE TABLE IF NOT EXISTS public.memories (
@@ -188,13 +188,10 @@ ALTER TABLE public.community_messages ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS "Allow read community messages for all" ON public.community_messages;
 DROP POLICY IF EXISTS "Allow read community messages for authenticated" ON public.community_messages;
-DROP POLICY IF EXISTS "Allow authenticated users to send community messages" ON public.community_messages;
-DROP POLICY IF EXISTS "Allow author or admin to delete community messages" ON public.community_messages;
 
--- [H3] Restrict chat SELECT to authenticated users (was: USING (true) for everyone)
-CREATE POLICY "Allow read community messages for authenticated" 
+CREATE POLICY "Allow read community messages for all" 
   ON public.community_messages FOR SELECT 
-  TO authenticated
+  TO anon, authenticated
   USING (true);
 
 CREATE POLICY "Allow authenticated users to send community messages" 

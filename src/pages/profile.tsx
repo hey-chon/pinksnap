@@ -145,7 +145,7 @@ export default function ProfilePage() {
                   </span>
                 ) : (
                   <span className="px-2.5 py-0.5 rounded-full bg-primary/15 text-primary text-[10px] font-black uppercase tracking-wider">
-                    MEMBER PASS
+                    MEMBER
                   </span>
                 )}
               </div>

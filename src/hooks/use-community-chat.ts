@@ -29,17 +29,43 @@ export function useCommunityChat(room: ChatRoomId = 'general') {
         .eq('id', userId)
         .maybeSingle();
 
-      const profile = {
-        displayName: data?.display_name || 'Snap Star',
-        avatarUrl: data?.avatar_url || undefined,
-        role: (data?.role as 'user' | 'admin') || 'user',
-      };
+      if (data && data.display_name) {
+        const profile = {
+          displayName: data.display_name,
+          avatarUrl: data.avatar_url || undefined,
+          role: (data.role as 'user' | 'admin') || 'user',
+        };
+        profilesCache.current.set(userId, profile);
+        return profile;
+      }
 
-      profilesCache.current.set(userId, profile);
-      return profile;
+      // Fallback: try profiles table
+      const { data: pData } = await supabase
+        .from('profiles')
+        .select('id, display_name, avatar_url, role')
+        .eq('id', userId)
+        .maybeSingle();
+
+      if (pData && pData.display_name) {
+        const profile = {
+          displayName: pData.display_name,
+          avatarUrl: pData.avatar_url || undefined,
+          role: (pData.role as 'user' | 'admin') || 'user',
+        };
+        profilesCache.current.set(userId, profile);
+        return profile;
+      }
+
+      const fallback: { displayName: string; avatarUrl?: string; role: 'user' | 'admin' } = {
+        displayName: 'Member',
+        avatarUrl: undefined,
+        role: 'user',
+      };
+      profilesCache.current.set(userId, fallback);
+      return fallback;
     } catch {
       const fallback: { displayName: string; avatarUrl?: string; role: 'user' | 'admin' } = {
-        displayName: 'Snap Star',
+        displayName: 'Member',
         avatarUrl: undefined,
         role: 'user',
       };
@@ -59,12 +85,13 @@ export function useCommunityChat(room: ChatRoomId = 'general') {
     setErrorNotice(null);
 
     try {
+      // Query the latest 50 messages in descending order
       const { data: rows, error } = await supabase
         .from('community_messages')
         .select('id, user_id, room, content, created_at')
         .eq('room', room)
-        .order('created_at', { ascending: true })
-        .limit(80);
+        .order('created_at', { ascending: false })
+        .limit(50);
 
       if (error) {
         console.warn('[Community Chat] Messages fetch notice:', error.message);
@@ -80,7 +107,10 @@ export function useCommunityChat(room: ChatRoomId = 'general') {
         return;
       }
 
-      const userIds = Array.from(new Set(rows.map(r => r.user_id)));
+      // Reverse so they appear chronologically in the chat feed
+      const chronologicalRows = [...rows].reverse();
+
+      const userIds = Array.from(new Set(chronologicalRows.map(r => r.user_id)));
       const missingUserIds = userIds.filter(id => !profilesCache.current.has(id));
 
       if (missingUserIds.length > 0) {
@@ -90,20 +120,43 @@ export function useCommunityChat(room: ChatRoomId = 'general') {
             .select('id, display_name, avatar_url, role')
             .in('id', missingUserIds);
 
-          if (profiles) {
+          if (profiles && profiles.length > 0) {
             profiles.forEach(p => {
-              profilesCache.current.set(p.id, {
-                displayName: p.display_name || 'Snap Star',
-                avatarUrl: p.avatar_url || undefined,
-                role: (p.role as 'user' | 'admin') || 'user',
-              });
+              if (p.id) {
+                profilesCache.current.set(p.id, {
+                  displayName: p.display_name || 'Member',
+                  avatarUrl: p.avatar_url || undefined,
+                  role: (p.role as 'user' | 'admin') || 'user',
+                });
+              }
             });
+          }
+
+          // Check for any still-missing profiles in profiles table
+          const stillMissing = missingUserIds.filter(id => !profilesCache.current.has(id));
+          if (stillMissing.length > 0) {
+            const { data: fallbackProfiles } = await supabase
+              .from('profiles')
+              .select('id, display_name, avatar_url, role')
+              .in('id', stillMissing);
+
+            if (fallbackProfiles && fallbackProfiles.length > 0) {
+              fallbackProfiles.forEach(p => {
+                if (p.id) {
+                  profilesCache.current.set(p.id, {
+                    displayName: p.display_name || 'Member',
+                    avatarUrl: p.avatar_url || undefined,
+                    role: (p.role as 'user' | 'admin') || 'user',
+                  });
+                }
+              });
+            }
           }
         } catch {
         }
       }
 
-      const formatted: CommunityMessage[] = rows.map(r => {
+      const formatted: CommunityMessage[] = chronologicalRows.map(r => {
         const cached = profilesCache.current.get(r.user_id);
         const isMine = user?.id === r.user_id;
         return {
@@ -115,7 +168,7 @@ export function useCommunityChat(room: ChatRoomId = 'general') {
           mine: isMine,
           author: {
             id: r.user_id,
-            displayName: isMine && user ? user.displayName : (cached?.displayName || 'Snap Star'),
+            displayName: isMine && user ? user.displayName : (cached?.displayName || 'Member'),
             avatarUrl: isMine && user ? user.avatarUrl : cached?.avatarUrl,
             role: isMine && user ? user.role : (cached?.role || 'user'),
           },
@@ -186,10 +239,13 @@ export function useCommunityChat(room: ChatRoomId = 'general') {
         };
 
         setMessages((prev) => {
+          let next: CommunityMessage[];
           if (prev.some(m => m.id === newMsg.id || (m.mine && m.content === newMsg.content && Math.abs(new Date(m.createdAt).getTime() - new Date(newMsg.createdAt).getTime()) < 3000))) {
-            return prev.map(m => m.content === newMsg.content && m.id.startsWith('opt-') ? newMsg : m);
+            next = prev.map(m => m.content === newMsg.content && m.id.startsWith('opt-') ? newMsg : m);
+          } else {
+            next = [...prev, newMsg];
           }
-          return [...prev, newMsg];
+          return next.length > 100 ? next.slice(-100) : next;
         });
       }
     );

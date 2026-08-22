@@ -283,7 +283,7 @@ export default function CommunityChat() {
               const isOwner = user && user.id === m.userId;
               const canDelete = isOwner || isAdmin;
               const isMsgAdmin = m.author.role === 'admin';
-              const nameDisplay = m.author.displayName || 'SNAP STAR';
+              const nameDisplay = m.author.displayName || 'MEMBER';
 
               return (
                 <div

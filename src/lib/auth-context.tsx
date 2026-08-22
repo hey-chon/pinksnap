@@ -8,7 +8,7 @@ const AuthContext = createContext<AuthState | null>(null);
 function profileFromSupabaseUser(user: User): UserProfile {
   const metadata = user.user_metadata || {};
   const email = user.email || '';
-  const displayName = metadata.display_name || metadata.name || metadata.full_name || email.split('@')[0] || 'Snap Star';
+  const displayName = metadata.display_name || metadata.name || metadata.full_name || email.split('@')[0] || 'User';
   const role: UserRole = 'user';
 
   return {
@@ -80,7 +80,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             setUser({
               id: newSession.user.id,
               email: newSession.user.email || profileData.email || '',
-              displayName: profileData.display_name || newSession.user.user_metadata?.display_name || 'Snap Star',
+              displayName: profileData.display_name || newSession.user.user_metadata?.display_name || 'User',
               avatarUrl: profileData.avatar_url || newSession.user.user_metadata?.avatar_url,
               role: profileData.role || newSession.user.user_metadata?.role || 'user',
               createdAt: profileData.created_at || newSession.user.created_at,
