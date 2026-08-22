@@ -68,11 +68,37 @@ export function BottomNav() {
 
   return (
     <footer className="w-full shrink-0 z-50 booth-marquee booth-footer border-b-0 border-t-[3px] border-primary/50">
-      <div className="flex items-center justify-between gap-2 py-2 px-4 sm:py-3 sm:px-6">
-        <button type="button" onClick={openCreator} data-testid="button-creator" className="creator-nav-button inline-flex items-center gap-2 rounded-full px-3 py-2 text-xs font-black tracking-[.12em] text-white/65 transition-all hover:bg-white/10 hover:text-primary hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
-          <UserRound className="w-4 h-4" />
-          CREATOR
-        </button>
+      <div className="flex items-center justify-between gap-2 py-2 px-3 sm:py-3 sm:px-6">
+        <div className="flex items-center gap-1.5 sm:gap-2.5">
+          <button
+            type="button"
+            onClick={openCreator}
+            data-testid="button-creator"
+            className="creator-nav-button inline-flex items-center gap-1.5 sm:gap-2 rounded-full px-2.5 sm:px-3 py-1.5 sm:py-2 text-xs font-black tracking-[.12em] text-white/65 transition-all hover:bg-white/10 hover:text-primary hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          >
+            <UserRound className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+            CREATOR
+          </button>
+          <span className="w-px h-3 bg-white/15 mx-0.5" aria-hidden="true" />
+          <div className="flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-[11px] font-bold text-white/45 tracking-wider uppercase">
+            <Link
+              href="/privacy"
+              data-testid="footer-privacy-link"
+              className={`hover:text-primary transition-colors ${location === '/privacy' ? 'text-primary font-black' : ''}`}
+            >
+              Privacy
+            </Link>
+            <span className="text-white/25">•</span>
+            <Link
+              href="/terms"
+              data-testid="footer-terms-link"
+              className={`hover:text-primary transition-colors ${location === '/terms' ? 'text-primary' : ''}`}
+            >
+              Terms
+            </Link>
+          </div>
+        </div>
+
         <div className="flex items-center gap-4 sm:gap-6">
           <Link href="/how-it-works" data-testid="nav-how-it-works" className={`flex items-center gap-1.5 text-sm font-bold transition-colors group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded ${location === '/how-it-works' ? 'text-primary' : 'text-white/70 hover:text-primary'}`}>
             <HelpCircle className="w-4 h-4 group-hover:scale-110 transition-transform" />

@@ -16,6 +16,9 @@ import StudioLoading from '@/components/studio-loading';
 import AuthPage from '@/pages/auth';
 import ProfilePage from '@/pages/profile';
 import AdminPage from '@/pages/admin';
+import PrivacyPolicy from '@/pages/privacy-policy';
+import TermsOfService from '@/pages/terms-of-service';
+import { CookieNotice } from '@/components/cookie-notice';
 import { ProtectedRoute } from '@/components/auth/protected-route';
 
 function Router() {
@@ -36,6 +39,10 @@ function Router() {
       <Route path="/auth" component={AuthPage} />
       <Route path="/login" component={AuthPage} />
       <Route path="/signup" component={AuthPage} />
+      <Route path="/privacy" component={PrivacyPolicy} />
+      <Route path="/privacy-policy" component={PrivacyPolicy} />
+      <Route path="/terms" component={TermsOfService} />
+      <Route path="/terms-of-service" component={TermsOfService} />
       <Route path="/profile">
         {() => <ProtectedRoute component={ProfilePage} />}
       </Route>
@@ -54,6 +61,7 @@ function App() {
         <ToastProvider>
           <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}>
             <Router />
+            <CookieNotice />
           </WouterRouter>
         </ToastProvider>
       </AppProvider>

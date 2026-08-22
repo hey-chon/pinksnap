@@ -1,6 +1,8 @@
 import { useRef } from 'react';
-import { ExternalLink, Facebook, Github, Instagram, Sparkles } from 'lucide-react';
+import { Link } from 'wouter';
+import { ExternalLink, Facebook, Github, Instagram, Sparkles, Shield, FileText, Cookie } from 'lucide-react';
 import { SiGooglegemini, SiLucide, SiReact, SiReplit, SiTailwindcss, SiTypescript, SiVite } from 'react-icons/si';
+import { openCookieSettings } from '@/components/cookie-notice';
 
 const loopTools = [
   { name: 'Gemini', tone: 'tool-gemini' },
@@ -73,6 +75,19 @@ export default function Credits() {
             <a href="https://chon.is-a.dev" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-full bg-primary px-3 py-2 text-xs font-bold text-white hover:bg-primary/90 transition-colors">
               Portfolio <ExternalLink className="w-3.5 h-3.5" />
             </a>
+            <Link href="/privacy" className="inline-flex items-center gap-1.5 rounded-full bg-white/5 border border-white/10 px-3 py-2 text-xs font-bold text-white/70 hover:bg-white/15 hover:text-white transition-colors">
+              <Shield className="w-3.5 h-3.5 text-pink-300" /> Privacy Policy
+            </Link>
+            <Link href="/terms" className="inline-flex items-center gap-1.5 rounded-full bg-white/5 border border-white/10 px-3 py-2 text-xs font-bold text-white/70 hover:bg-white/15 hover:text-white transition-colors">
+              <FileText className="w-3.5 h-3.5 text-pink-300" /> Terms
+            </Link>
+            <button
+              type="button"
+              onClick={openCookieSettings}
+              className="inline-flex items-center gap-1.5 rounded-full bg-white/5 border border-white/10 px-3 py-2 text-xs font-bold text-white/70 hover:bg-white/15 hover:text-white transition-colors cursor-pointer"
+            >
+              <Cookie className="w-3.5 h-3.5 text-pink-300" /> Cookies
+            </button>
           </div>
         </div>
         <div className="hidden md:flex w-24 h-24 rounded-[28px] bg-primary/20 border border-white/10 items-center justify-center text-4xl font-black text-pink-200">

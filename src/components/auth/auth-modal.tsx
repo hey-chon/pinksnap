@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'wouter';
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast.tsx';
 import {
@@ -126,10 +127,6 @@ export function AuthModal({
     <div className={`w-full max-w-md mx-auto ${isInline ? '' : 'ticket p-6 sm:p-8'}`}>
       {/* Header */}
       <div className="text-center mb-6">
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary text-[10px] font-black uppercase tracking-widest mb-2">
-          <Sparkles className="w-3 h-3" />
-          {mode === 'signin' ? 'MEMBER PASS' : mode === 'signup' ? 'NEW STAR PASS' : 'PASS RECOVERY'}
-        </div>
         <h2 className="font-display text-3xl sm:text-4xl text-foreground tracking-wide">
           {mode === 'signin' && (
             <>ENTER THE <span className="text-primary">BOOTH</span></>
@@ -289,6 +286,20 @@ export function AuthModal({
             </>
           )}
         </button>
+
+        {mode === 'signup' && (
+          <p className="mt-3 text-[11px] text-center text-foreground/50 leading-tight">
+            By creating an account, you agree to our{' '}
+            <Link href="/terms" className="underline hover:text-primary transition-colors">
+              Terms of Service
+            </Link>{' '}
+            and{' '}
+            <Link href="/privacy" className="underline hover:text-primary transition-colors">
+              Privacy Policy
+            </Link>
+            .
+          </p>
+        )}
       </form>
 
       {/* Footer link to switch mode */}
