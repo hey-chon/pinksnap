@@ -232,7 +232,7 @@ export default function Edit() {
 
   if (shots.length === 0) {
     return (
-      <div className="flex flex-col h-[100dvh]">
+      <div className="flex flex-col h-dvh">
         <TopNav backTo="/setup" />
         <main className="flex-1 flex flex-col items-center justify-center p-6">
           <p className="text-xl font-bold mb-6 text-foreground/60 tracking-wide uppercase">No shots captured yet.</p>
@@ -264,11 +264,11 @@ export default function Edit() {
   const inkClass = activeFrame.dark ? 'strip-ink-light' : 'strip-ink-dark';
 
   return (
-    <div className="flex flex-col h-[100dvh]">
+    <div className="flex flex-col h-dvh">
       <TopNav backTo="/studio" />
 
       <main className="flex-1 overflow-y-auto flex flex-col items-center px-4 py-7 sm:px-6 sm:py-9">
-        <div className="edit-heading text-center mb-7 sm:mb-9 w-full max-w-[36rem]">
+        <div className="edit-heading text-center mb-7 sm:mb-9 w-full max-w-xl">
           <span className="booth-heading-kicker mb-3">Step 3 of 3 · Print lab</span>
           <h1 className="font-display text-[2.35rem] leading-[.95] sm:text-5xl md:text-6xl text-foreground mt-4 mb-3">
             DEVELOP YOUR STRIP.
