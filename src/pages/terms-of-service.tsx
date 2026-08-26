@@ -55,7 +55,7 @@ export default function TermsOfService() {
                 <p className="text-xs text-foreground/70 font-medium leading-relaxed">
                   You own all the photos you snap. We claim no intellectual property rights or ownership over your memories.
                 </p>
-              </div>
+             </div>
               <span className="text-[10px] font-black uppercase text-primary mt-3 inline-block">100% User Owned</span>
             </div>
 
