@@ -1,4 +1,4 @@
-import { Redirect, Route, Switch, Router as WouterRouter } from 'wouter';
+import { Route, Switch, Router as WouterRouter } from 'wouter';
 
 import { AppProvider } from '@/lib/store';
 import { AuthProvider } from '@/lib/auth-context';
@@ -25,14 +25,24 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
-      <Route path="/loading" component={StudioLoading} />
-      <Route path="/get-started">
-        {() => <Redirect to="/loading" />}
+      <Route path="/loading">
+        {() => <ProtectedRoute component={StudioLoading} />}
       </Route>
-      <Route path="/setup" component={Setup} />
-      <Route path="/styles" component={Styles} />
-      <Route path="/studio" component={Studio} />
-      <Route path="/edit" component={Edit} />
+      <Route path="/get-started">
+        {() => <ProtectedRoute component={StudioLoading} />}
+      </Route>
+      <Route path="/setup">
+        {() => <ProtectedRoute component={Setup} />}
+      </Route>
+      <Route path="/styles">
+        {() => <ProtectedRoute component={Styles} />}
+      </Route>
+      <Route path="/studio">
+        {() => <ProtectedRoute component={Studio} />}
+      </Route>
+      <Route path="/edit">
+        {() => <ProtectedRoute component={Edit} />}
+      </Route>
       <Route path="/gallery" component={Gallery} />
       <Route path="/how-it-works" component={HowItWorks} />
       <Route path="/chat" component={Chat} />

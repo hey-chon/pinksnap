@@ -1,13 +1,27 @@
-import { Link } from 'wouter';
+import { useState } from 'react';
+import { Link, useLocation } from 'wouter';
 import { TopNav, BottomNav } from '@/components/layout';
 import { useAppContext } from '@/lib/store';
 import { Trash2, Download, Image as ImageIcon, ArrowRight } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast.tsx';
 import { downloadImage } from '@/lib/image-utils';
+import { useAuth } from '@/hooks/use-auth';
+import { AuthGateModal } from '@/components/auth/auth-gate-modal';
 
 export default function Gallery() {
+  const [, navigate] = useLocation();
+  const { isAuthenticated } = useAuth();
+  const [showAuthGate, setShowAuthGate] = useState(false);
   const { savedMemories, deleteMemory } = useAppContext();
   const { toast } = useToast();
+
+  const handleStartSession = () => {
+    if (isAuthenticated) {
+      navigate('/setup');
+    } else {
+      setShowAuthGate(true);
+    }
+  };
 
   const handleDownload = async (url: string, date: number) => {
     try {
@@ -33,6 +47,12 @@ export default function Gallery() {
 
   return (
     <div className="flex flex-col h-[100dvh]">
+      {showAuthGate && (
+        <AuthGateModal
+          onClose={() => setShowAuthGate(false)}
+          onSuccess={() => { setShowAuthGate(false); navigate('/setup'); }}
+        />
+      )}
       <TopNav backTo="/" title="GALLERY" />
       
       <main className="flex-1 overflow-y-auto flex flex-col items-center px-4 py-7 sm:px-6 sm:py-9">
@@ -51,13 +71,14 @@ export default function Gallery() {
               <p className="text-foreground/60 mb-10 max-w-md font-medium text-sm sm:text-base">
                 Your gallery is empty. Head over to the studio to capture your first photo strip!
               </p>
-              <Link 
-                href="/setup"
+              <button
+                type="button"
+                onClick={handleStartSession}
                 data-testid="link-start-session"
                 className="px-8 py-4 bg-primary text-white font-black rounded-full shadow-lg shadow-primary/30 hover:scale-105 active:scale-95 transition-transform flex items-center gap-2"
               >
                 START A SESSION <ArrowRight className="w-5 h-5" />
-              </Link>
+              </button>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">

@@ -1,11 +1,32 @@
-import { Link } from 'wouter';
+import { useState } from 'react';
+import { Link, useLocation } from 'wouter';
 import { TopNav, BottomNav } from '@/components/layout';
 import { ArrowRight, Camera, Download, LayoutGrid, MessageCircle, Sparkles } from 'lucide-react';
 import Credits from '@/components/credits';
+import { useAuth } from '@/hooks/use-auth';
+import { AuthGateModal } from '@/components/auth/auth-gate-modal';
 
 export default function Home() {
+  const [, navigate] = useLocation();
+  const { isAuthenticated } = useAuth();
+  const [showAuthGate, setShowAuthGate] = useState(false);
+
+  const handleGetStarted = () => {
+    if (isAuthenticated) {
+      navigate('/loading');
+    } else {
+      setShowAuthGate(true);
+    }
+  };
+
   return (
     <div className="flex flex-col h-[100dvh]">
+      {showAuthGate && (
+        <AuthGateModal
+          onClose={() => setShowAuthGate(false)}
+          onSuccess={() => { setShowAuthGate(false); navigate('/loading'); }}
+        />
+      )}
       <TopNav />
       
       <main className="flex-1 overflow-y-auto overflow-x-hidden p-5 sm:p-8 relative">
@@ -25,12 +46,17 @@ export default function Home() {
            YOUR VIRTUAL PHOTOBOOTH.
           </p>
           
-          <Link href="/loading" data-testid="link-setup" className="home-hero-item group relative inline-flex items-center justify-center px-8 py-4.5 font-black text-white bg-primary rounded-full overflow-hidden shadow-xl shadow-primary/30 hover:shadow-2xl hover:shadow-primary/40 transition-all hover:scale-105 active:scale-95 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/50 focus-visible:ring-offset-2">
+          <button
+            type="button"
+            onClick={handleGetStarted}
+            data-testid="link-setup"
+            className="home-hero-item group relative inline-flex items-center justify-center px-8 py-4.5 font-black text-white bg-primary rounded-full overflow-hidden shadow-xl shadow-primary/30 hover:shadow-2xl hover:shadow-primary/40 transition-all hover:scale-105 active:scale-95 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/50 focus-visible:ring-offset-2"
+          >
             <span className="absolute w-0 h-0 transition-all duration-500 ease-out bg-white rounded-full group-hover:w-56 group-hover:h-56 opacity-10"></span>
             <span className="relative flex items-center gap-2 text-lg">
               GET STARTED <ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
             </span>
-          </Link>
+          </button>
           
           <button type="button" onClick={() => document.getElementById('home-guide-title')?.scrollIntoView({ behavior: 'smooth', block: 'start' })} className="home-hero-item scroll-cue mt-8 inline-flex flex-col items-center gap-1 text-center text-foreground/45 hover:text-primary transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-full px-3 py-2" aria-label="Scroll to learn more">
             <span className="h-8 border-l-2 border-current" />

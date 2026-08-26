@@ -1,8 +1,23 @@
-import { Link } from 'wouter';
+import { useState } from 'react';
+import { Link, useLocation } from 'wouter';
 import { TopNav, BottomNav } from '@/components/layout';
 import { Camera, LayoutGrid, Wand2, Download, ArrowRight } from 'lucide-react';
+import { useAuth } from '@/hooks/use-auth';
+import { AuthGateModal } from '@/components/auth/auth-gate-modal';
 
 export default function HowItWorks() {
+  const [, navigate] = useLocation();
+  const { isAuthenticated } = useAuth();
+  const [showAuthGate, setShowAuthGate] = useState(false);
+
+  const handleStartSnapping = () => {
+    if (isAuthenticated) {
+      navigate('/setup');
+    } else {
+      setShowAuthGate(true);
+    }
+  };
+
   const steps = [
     {
       icon: <Camera className="w-8 h-8 text-primary" />,
@@ -28,6 +43,12 @@ export default function HowItWorks() {
 
   return (
     <div className="flex flex-col h-[100dvh]">
+      {showAuthGate && (
+        <AuthGateModal
+          onClose={() => setShowAuthGate(false)}
+          onSuccess={() => { setShowAuthGate(false); navigate('/setup'); }}
+        />
+      )}
       <TopNav backTo="/" title="HOW TO USE" />
       <main className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-10 flex flex-col items-center">
         <div className="max-w-2xl w-full py-6 sm:py-8">
@@ -53,9 +74,14 @@ export default function HowItWorks() {
           </div>
 
           <div className="mt-10 sm:mt-12 flex justify-center">
-             <Link href="/setup" data-testid="link-setup-bottom" className="inline-flex items-center justify-center gap-2 bg-primary text-white px-6 py-4 sm:px-8 sm:py-5 rounded-full font-black text-base sm:text-lg shadow-xl shadow-primary/30 hover:scale-105 active:scale-95 transition-all focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/50 focus-visible:ring-offset-2">
+             <button
+               type="button"
+               onClick={handleStartSnapping}
+               data-testid="link-setup-bottom"
+               className="inline-flex items-center justify-center gap-2 bg-primary text-white px-6 py-4 sm:px-8 sm:py-5 rounded-full font-black text-base sm:text-lg shadow-xl shadow-primary/30 hover:scale-105 active:scale-95 transition-all focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/50 focus-visible:ring-offset-2"
+             >
                START SNAPPING <ArrowRight className="w-6 h-6" />
-             </Link>
+             </button>
           </div>
 
            <div className="mt-14 sm:mt-20 pt-10 sm:pt-12 border-t-2 border-dashed border-primary/20 pb-16 text-center">

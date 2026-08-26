@@ -1,4 +1,5 @@
-import { Link } from 'wouter';
+import { useState } from 'react';
+import { Link, useLocation } from 'wouter';
 import { TopNav, BottomNav } from '@/components/layout';
 import {
   FileText,
@@ -11,12 +12,31 @@ import {
   ArrowRight,
   ExternalLink,
 } from 'lucide-react';
+import { useAuth } from '@/hooks/use-auth';
+import { AuthGateModal } from '@/components/auth/auth-gate-modal';
 
 export default function TermsOfService() {
+  const [, navigate] = useLocation();
+  const { isAuthenticated } = useAuth();
+  const [showAuthGate, setShowAuthGate] = useState(false);
   const lastUpdated = 'August 2026';
+
+  const handleStartSnapping = () => {
+    if (isAuthenticated) {
+      navigate('/setup');
+    } else {
+      setShowAuthGate(true);
+    }
+  };
 
   return (
     <div className="flex flex-col h-[100dvh]">
+      {showAuthGate && (
+        <AuthGateModal
+          onClose={() => setShowAuthGate(false)}
+          onSuccess={() => { setShowAuthGate(false); navigate('/setup'); }}
+        />
+      )}
       <TopNav backTo="/" title="TERMS OF SERVICE" />
 
       <main className="flex-1 overflow-y-auto overflow-x-hidden p-4 sm:p-6 md:p-10 flex flex-col items-center">
@@ -269,12 +289,13 @@ export default function TermsOfService() {
                 View Privacy Policy
               </Link>
             </div>
-            <Link
-              href="/setup"
+            <button
+              type="button"
+              onClick={handleStartSnapping}
               className="inline-flex items-center gap-2 bg-primary text-white px-6 py-3 rounded-full font-black text-sm uppercase tracking-wider shadow-lg shadow-primary/25 hover:scale-105 active:scale-95 transition-all"
             >
               <Camera className="w-4 h-4" /> Start Snapping <ArrowRight className="w-4 h-4" />
-            </Link>
+            </button>
           </div>
         </div>
       </main>
