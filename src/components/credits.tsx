@@ -65,7 +65,11 @@ export default function Credits() {
           <p className="text-[11px] font-black tracking-[.18em] text-pink-300 uppercase mb-2">IT’S PINK-SNAP.DEV</p>
           <h3 className="text-2xl sm:text-3xl font-black tracking-tight mb-2">HEY, I’M JIMSON.</h3>
           <p className="text-sm sm:text-base text-white/70 leading-relaxed max-w-xl">
-            I am a student web developer from Cavite, Philippines, who enjoys making websites, learning as I go, and keeping things organized. I am the creator behind PinkSnap, a virtual photobooth website that I created, planned and structured with an ai-assisted workflow. I built this website for me and my girlfriend "Jera" but this is open for everyone publicly ofcourse. The purpose of this project? I want to enhance my skills, learn new things, and make more projects as a student web developer. This website is a work in progress, so please bear with me as I continue to improve PinkSnap. Thank you for visiting my website!</p>
+           Hi! I'm a student web developer from Cavite, Philippines, who loves building websites, learning by doing, and keeping things organized.
+
+I'm the developer behind PinkSnap — a virtual photobooth website that I planned, structured, and built with an AI-assisted workflow. While I originally created it for me and my girlfriend Jera, but it's open for everyone to enjoy!
+
+I created PinkSnap to learn new things, explore new techniques, and grow as a student developer. Since this website is a work in progress, I appreciate your patience as I continue to improve it. Thank you for stopping by! :D</p>
           <div className="flex flex-wrap gap-2 mt-5">
             {socialLinks.map(({ label, href, icon: Icon }) => (
               <a key={label} href={href} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-2 text-xs font-bold text-white/85 hover:bg-white/20 transition-colors">

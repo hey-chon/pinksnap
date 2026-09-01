@@ -206,7 +206,7 @@ export default function CommunityChat() {
           COMMUNITY <span className="text-primary">CHAT</span>
         </h1>
         <p className="mt-2.5 text-xs sm:text-sm text-foreground/65 font-medium max-w-lg mx-auto">
-          Share your prints, request new photobooth frames, and give feedback in real time. Please keep the chat friendly and respectful!
+          Thanks to my friend Vien for helping me integrate this community chat! This space was built to collect user feedback, share experiences, and feel free to give your ideas for future improvements.
         </p>
       </div>
 

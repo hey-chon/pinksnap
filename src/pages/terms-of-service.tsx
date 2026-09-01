@@ -73,7 +73,7 @@ export default function TermsOfService() {
                 </div>
                 <h2 className="font-display text-lg tracking-wide text-foreground mb-1">YOUR PHOTOS</h2>
                 <p className="text-xs text-foreground/70 font-medium leading-relaxed">
-                  You own all the photos you snap. We claim no intellectual property rights or ownership over your memories.
+                  You own all the photos you snap. PinkSnap claim no intellectual property rights or ownership over your strips.
                 </p>
              </div>
               <span className="text-[10px] font-black uppercase text-primary mt-3 inline-block">100% User Owned</span>
@@ -143,7 +143,7 @@ export default function TermsOfService() {
                   PinkSnap provides an interactive digital photobooth experience allowing users to take photos via webcam, apply filters, customize frame borders and stickers, and download photo strips to their personal devices.
                 </p>
                 <p>
-                  PinkSnap is maintained by Jimson as a passionate student web developer project. The Service is made available free of charge for personal, recreational use. Features and availability may evolve over time.
+                  PinkSnap is developed and maintained by Jimson. The Service is made available free of charge for personal, recreational use. Features and availability will stay free.
                 </p>
               </div>
             </article>
@@ -167,7 +167,7 @@ export default function TermsOfService() {
                   <li>Attempt to bypass profanity filters, spam chat rooms, or flood the application with automated scripts.</li>
                   <li>Use the photobooth to capture, generate, or distribute non-consensual imagery or illegal content.</li>
                   <li>Attempt to disrupt, compromise, reverse engineer, or maliciously probe the underlying server infrastructure, APIs, or database connections.</li>
-                  <li>Impersonate another user, administrator, or creator of PinkSnap.</li>
+                  <li>Impersonate another user, administrator, or developer of PinkSnap.</li>
                 </ul>
               </div>
             </article>
@@ -184,10 +184,10 @@ export default function TermsOfService() {
               </div>
               <div className="space-y-3 text-sm text-foreground/80 leading-relaxed font-medium">
                 <p>
-                  <strong>Your Photos:</strong> You retain complete and exclusive ownership of all photographs, poses, and custom photo strips generated while using PinkSnap. We do not claim any ownership rights over your captured media.
+                  <strong>Your Photos:</strong> You retain complete and exclusive ownership of all photographs, poses, and custom photo strips generated while using this web app. PinkSnap do not claim any ownership rights over your captured media.
                 </p>
                 <p>
-                  <strong>PinkSnap IP:</strong> The PinkSnap logo, brand names, visual styling, photobooth frame templates, interface layouts, and source code are the intellectual property of Jimson / PinkSnap.
+                  <strong>PinkSnap IP:</strong> The PinkSnap logo, brand names, visual styling, photobooth frame templates, interface layouts, and source code are the intellectual property of Jimson / chon.dev.
                 </p>
               </div>
             </article>
@@ -262,20 +262,12 @@ export default function TermsOfService() {
                 </p>
                 <div className="flex flex-wrap items-center gap-3 pt-2">
                   <a
-                    href="https://chon.is-a.dev"
+                    href="https://www.facebook.com/share/1NrJVrJBDJ/?mibextid=wwXIfr"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-2 rounded-xl bg-primary text-white px-4 py-2.5 text-xs font-black tracking-wider uppercase shadow-md shadow-primary/25 hover:bg-primary/90 transition-colors"
                   >
                     Contact Jimson <ExternalLink className="w-3.5 h-3.5" />
-                  </a>
-                  <a
-                    href="https://github.com/hey-chon/pinksnap"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 rounded-xl bg-foreground text-background px-4 py-2.5 text-xs font-black tracking-wider uppercase hover:bg-foreground/90 transition-colors"
-                  >
-                    GitHub Issue / Feedback <ExternalLink className="w-3.5 h-3.5" />
                   </a>
                 </div>
               </div>

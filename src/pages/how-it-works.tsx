@@ -37,7 +37,7 @@ export default function HowItWorks() {
     {
       icon: <Download className="w-8 h-8 text-primary" />,
       title: "4. EDIT & SAVE",
-      desc: "Apply filters, adjust frame opacity, and download or share your photo strip  instantly! (NOTE: sharing is under development)"
+      desc: "Apply filters, adjust frame opacity, and download or share your photo strip  instantly!"
     }
   ];
 

@@ -133,7 +133,7 @@ export default function PrivacyPolicy() {
                   Welcome to <strong>PinkSnap</strong> (available at pink-snap.dev and associated domains). PinkSnap is an interactive, browser-based virtual photo booth created and maintained by Jimson.
                 </p>
                 <p>
-                  We are deeply committed to protecting your personal privacy. Because PinkSnap was built with user respect at its foundation, the application operates primarily on client-side technology. We do not sell your personal data, run intrusive tracking networks, or monetize your private moments.
+                  We are deeply committed to protecting your personal privacy. Because PinkSnap was built with user respect at its foundation, the application operates primarily on client-side technology only. PinkSnap do not sell your personal data, run intrusive tracking networks, or monetize your private moments.
                 </p>
               </div>
             </article>
@@ -307,12 +307,12 @@ export default function PrivacyPolicy() {
                     Jimson's Portfolio <ExternalLink className="w-3.5 h-3.5" />
                   </a>
                   <a
-                    href="https://github.com/hey-chon/pinksnap"
+                    href="https://www.facebook.com/share/1NrJVrJBDJ/?mibextid=wwXIfr"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-2 rounded-xl bg-foreground text-background px-4 py-2.5 text-xs font-black tracking-wider uppercase hover:bg-foreground/90 transition-colors"
                   >
-                    GitHub Repository <ExternalLink className="w-3.5 h-3.5" />
+                    Facebook <ExternalLink className="w-3.5 h-3.5" />
                   </a>
                 </div>
               </div>
