@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState, useCallback, useMemo } from 'react';
 import type { Session, User } from '@supabase/supabase-js';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
+import { normalizeAvatarFields } from '@/lib/avatar';
 import type { AuthState, UserProfile, UserRole } from '@/types/auth';
 
 const AuthContext = createContext<AuthState | null>(null);
@@ -10,12 +11,17 @@ function profileFromSupabaseUser(user: User): UserProfile {
   const email = user.email || '';
   const displayName = metadata.display_name || metadata.name || metadata.full_name || email.split('@')[0] || 'User';
   const role: UserRole = 'user';
+  const avatar = normalizeAvatarFields({
+    avatarUrl: metadata.avatar_url,
+    avatarStoragePath: metadata.avatar_storage_path,
+  });
 
   return {
     id: user.id,
     email,
     displayName,
-    avatarUrl: metadata.avatar_url,
+    avatarUrl: avatar.avatarUrl,
+    avatarStoragePath: avatar.avatarStoragePath,
     role,
     createdAt: user.created_at,
     updatedAt: user.updated_at,
@@ -48,7 +54,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               id: initialSession.user.id,
               email: prof.email,
               display_name: prof.displayName,
-              avatar_url: prof.avatarUrl,
+              avatar_url: prof.avatarUrl ?? null,
+              avatar_storage_path: prof.avatarStoragePath ?? null,
               updated_at: new Date().toISOString(),
             }, { onConflict: 'id' });
           } catch {
@@ -77,11 +84,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             .maybeSingle();
 
           if (profileData && isMounted) {
+            const avatar = normalizeAvatarFields({
+              avatarUrl: profileData.avatar_url || newSession.user.user_metadata?.avatar_url,
+              avatarStoragePath: profileData.avatar_storage_path || newSession.user.user_metadata?.avatar_storage_path,
+            });
+
             setUser({
               id: newSession.user.id,
               email: newSession.user.email || profileData.email || '',
               displayName: profileData.display_name || newSession.user.user_metadata?.display_name || 'User',
-              avatarUrl: profileData.avatar_url || newSession.user.user_metadata?.avatar_url,
+              avatarUrl: avatar.avatarUrl,
+              avatarStoragePath: avatar.avatarStoragePath,
               role: profileData.role || newSession.user.user_metadata?.role || 'user',
               createdAt: profileData.created_at || newSession.user.created_at,
               updatedAt: profileData.updated_at,
@@ -94,7 +107,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               id: newSession.user.id,
               email: prof.email,
               display_name: prof.displayName,
-              avatar_url: prof.avatarUrl,
+              avatar_url: prof.avatarUrl ?? null,
+              avatar_storage_path: prof.avatarStoragePath ?? null,
               updated_at: new Date().toISOString(),
             }, { onConflict: 'id' });
           }
@@ -127,7 +141,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             id: data.user.id,
             email: prof.email,
             display_name: prof.displayName,
-            avatar_url: prof.avatarUrl,
+            avatar_url: prof.avatarUrl ?? null,
+            avatar_storage_path: prof.avatarStoragePath ?? null,
             updated_at: new Date().toISOString(),
           }, { onConflict: 'id' });
         } catch {
@@ -172,7 +187,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             id: data.user.id,
             email: prof.email,
             display_name: prof.displayName,
-            avatar_url: prof.avatarUrl,
+            avatar_url: prof.avatarUrl ?? null,
+            avatar_storage_path: prof.avatarStoragePath ?? null,
             updated_at: new Date().toISOString(),
           }, { onConflict: 'id' });
         } catch {
@@ -235,17 +251,53 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  const updateProfile = useCallback(async (updates: { displayName?: string; avatarUrl?: string }): Promise<{ error?: string }> => {
+  const updateProfile = useCallback(async (updates: {
+    displayName?: string;
+    avatarUrl?: string | null;
+    avatarStoragePath?: string | null;
+  }): Promise<{ error?: string }> => {
     try {
       if (!user) return { error: 'No authenticated user' };
 
-      const newDisplayName = updates.displayName !== undefined ? updates.displayName : user.displayName;
-      const newAvatarUrl = updates.avatarUrl !== undefined ? updates.avatarUrl : user.avatarUrl;
+      const hasDisplayNameUpdate = Object.prototype.hasOwnProperty.call(updates, 'displayName');
+      const hasAvatarUrlUpdate = Object.prototype.hasOwnProperty.call(updates, 'avatarUrl');
+      const hasAvatarStoragePathUpdate = Object.prototype.hasOwnProperty.call(updates, 'avatarStoragePath');
+
+      const candidateDisplayName = hasDisplayNameUpdate
+        ? (updates.displayName || '')
+        : user.displayName;
+      const newDisplayName = candidateDisplayName.trim();
+
+      if (!newDisplayName) {
+        return { error: 'Display name cannot be empty.' };
+      }
+
+      let nextAvatar = normalizeAvatarFields({
+        avatarUrl: user.avatarUrl,
+        avatarStoragePath: user.avatarStoragePath,
+      });
+
+      if (hasAvatarUrlUpdate || hasAvatarStoragePathUpdate) {
+        const shouldClearAvatar = updates.avatarUrl === null || updates.avatarStoragePath === null;
+        if (shouldClearAvatar) {
+          nextAvatar = {};
+        } else {
+          nextAvatar = normalizeAvatarFields({
+            avatarUrl: hasAvatarUrlUpdate ? updates.avatarUrl : user.avatarUrl,
+            avatarStoragePath: hasAvatarStoragePathUpdate ? updates.avatarStoragePath : user.avatarStoragePath,
+          });
+
+          if (!nextAvatar.avatarUrl || !nextAvatar.avatarStoragePath) {
+            return { error: 'Avatar payload is invalid or untrusted.' };
+          }
+        }
+      }
 
       const { error: authError } = await supabase.auth.updateUser({
         data: {
           display_name: newDisplayName,
-          avatar_url: newAvatarUrl,
+          avatar_url: nextAvatar.avatarUrl ?? null,
+          avatar_storage_path: nextAvatar.avatarStoragePath ?? null,
         },
       });
 
@@ -256,7 +308,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           .from('profiles')
           .update({
             display_name: newDisplayName,
-            avatar_url: newAvatarUrl,
+            avatar_url: nextAvatar.avatarUrl ?? null,
+            avatar_storage_path: nextAvatar.avatarStoragePath ?? null,
             updated_at: new Date().toISOString(),
           })
           .eq('id', user.id);
@@ -266,7 +319,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(prev => prev ? {
         ...prev,
         displayName: newDisplayName,
-        avatarUrl: newAvatarUrl,
+        avatarUrl: nextAvatar.avatarUrl,
+        avatarStoragePath: nextAvatar.avatarStoragePath,
         updatedAt: new Date().toISOString(),
       } : null);
 

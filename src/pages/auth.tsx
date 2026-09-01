@@ -3,12 +3,14 @@ import { useLocation } from 'wouter';
 import { TopNav, BottomNav } from '@/components/layout';
 import { AuthModal } from '@/components/auth/auth-modal';
 import { useAuth } from '@/hooks/use-auth';
+import { normalizeAvatarUrl } from '@/lib/avatar';
 import { Sparkles, Camera, ArrowRight, LogOut, Shield } from 'lucide-react';
 import { Link } from 'wouter';
 
 export default function AuthPage() {
   const [location, setLocation] = useLocation();
   const { isAuthenticated, user, signOut, role, isAdmin } = useAuth();
+  const safeAvatarUrl = normalizeAvatarUrl(user?.avatarUrl);
 
   const search = typeof window !== 'undefined' ? window.location.search : '';
   const params = new URLSearchParams(search);
@@ -30,8 +32,13 @@ export default function AuthPage() {
         {isAuthenticated && user ? (
           <div className="ticket max-w-md w-full p-6 sm:p-8 text-center flex flex-col items-center">
             <div className="w-16 h-16 rounded-full bg-primary/10 border-2 border-primary/30 flex items-center justify-center text-primary font-display text-2xl mb-4 shadow-[0_0_20px_rgba(245,61,137,0.3)]">
-              {user.avatarUrl ? (
-                <img src={user.avatarUrl} alt={user.displayName} className="w-full h-full rounded-full object-cover" />
+              {safeAvatarUrl ? (
+                <img
+                  src={safeAvatarUrl}
+                  alt={user.displayName}
+                  className="w-full h-full rounded-full object-cover"
+                  referrerPolicy="no-referrer"
+                />
               ) : (
                 (user.displayName || user.email).charAt(0).toUpperCase()
               )}

@@ -11,10 +11,14 @@ CREATE TABLE IF NOT EXISTS public.profiles (
   email TEXT NOT NULL,
   display_name TEXT,
   avatar_url TEXT,
+  avatar_storage_path TEXT,
   role user_role DEFAULT 'user'::user_role NOT NULL,
   created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL,
   updated_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
 );
+
+ALTER TABLE public.profiles
+  ADD COLUMN IF NOT EXISTS avatar_storage_path TEXT;
 
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 
@@ -75,6 +79,107 @@ CREATE POLICY "Allow admin full update"
 CREATE POLICY "Allow delete for admin" 
   ON public.profiles FOR DELETE 
   USING (public.is_admin());
+
+-- [A1] Avatars bucket and object policies (public read, owner write)
+INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+VALUES (
+  'avatars',
+  'avatars',
+  true,
+  3145728,
+  ARRAY['image/jpeg', 'image/png', 'image/webp']
+)
+ON CONFLICT (id) DO UPDATE
+SET
+  public = EXCLUDED.public,
+  file_size_limit = EXCLUDED.file_size_limit,
+  allowed_mime_types = EXCLUDED.allowed_mime_types;
+
+DROP POLICY IF EXISTS "Public can view avatar objects" ON storage.objects;
+DROP POLICY IF EXISTS "Authenticated users can upload own avatar objects" ON storage.objects;
+DROP POLICY IF EXISTS "Authenticated users can update own avatar objects" ON storage.objects;
+DROP POLICY IF EXISTS "Authenticated users can delete own avatar objects" ON storage.objects;
+
+CREATE POLICY "Public can view avatar objects"
+  ON storage.objects FOR SELECT
+  TO public
+  USING (bucket_id = 'avatars');
+
+CREATE POLICY "Authenticated users can upload own avatar objects"
+  ON storage.objects FOR INSERT
+  TO authenticated
+  WITH CHECK (
+    bucket_id = 'avatars'
+    AND split_part(name, '/', 1) = auth.uid()::text
+  );
+
+CREATE POLICY "Authenticated users can update own avatar objects"
+  ON storage.objects FOR UPDATE
+  TO authenticated
+  USING (
+    bucket_id = 'avatars'
+    AND split_part(name, '/', 1) = auth.uid()::text
+  )
+  WITH CHECK (
+    bucket_id = 'avatars'
+    AND split_part(name, '/', 1) = auth.uid()::text
+  );
+
+CREATE POLICY "Authenticated users can delete own avatar objects"
+  ON storage.objects FOR DELETE
+  TO authenticated
+  USING (
+    bucket_id = 'avatars'
+    AND split_part(name, '/', 1) = auth.uid()::text
+  );
+
+-- [A2] Avatar migration and constraints
+UPDATE public.profiles
+SET
+  avatar_storage_path = substring(avatar_url FROM '/storage/v1/object/public/avatars/([^?]+)'),
+  updated_at = now()
+WHERE avatar_url IS NOT NULL
+  AND avatar_storage_path IS NULL
+  AND avatar_url ~ '^https://[A-Za-z0-9-]+\.supabase\.co/storage/v1/object/public/avatars/[^?]+';
+
+UPDATE public.profiles
+SET
+  avatar_url = NULL,
+  avatar_storage_path = NULL,
+  updated_at = now()
+WHERE (
+    avatar_url IS NOT NULL
+    AND avatar_url !~ '^https://[A-Za-z0-9-]+\.supabase\.co/storage/v1/object/public/avatars/[0-9a-fA-F-]{36}/avatar-[A-Za-z0-9-]{12,80}\.webp(\?.*)?$'
+  )
+  OR (
+    avatar_storage_path IS NOT NULL
+    AND avatar_storage_path !~ '^[0-9a-fA-F-]{36}/avatar-[A-Za-z0-9-]{12,80}\.webp$'
+  )
+  OR ((avatar_url IS NULL) <> (avatar_storage_path IS NULL));
+
+ALTER TABLE public.profiles
+  DROP CONSTRAINT IF EXISTS profiles_avatar_url_trusted;
+
+ALTER TABLE public.profiles
+  ADD CONSTRAINT profiles_avatar_url_trusted CHECK (
+    avatar_url IS NULL
+    OR avatar_url ~ '^https://[A-Za-z0-9-]+\.supabase\.co/storage/v1/object/public/avatars/[0-9a-fA-F-]{36}/avatar-[A-Za-z0-9-]{12,80}\.webp(\?.*)?$'
+  );
+
+ALTER TABLE public.profiles
+  DROP CONSTRAINT IF EXISTS profiles_avatar_storage_path_format;
+
+ALTER TABLE public.profiles
+  ADD CONSTRAINT profiles_avatar_storage_path_format CHECK (
+    avatar_storage_path IS NULL
+    OR avatar_storage_path ~ '^[0-9a-fA-F-]{36}/avatar-[A-Za-z0-9-]{12,80}\.webp$'
+  );
+
+ALTER TABLE public.profiles
+  DROP CONSTRAINT IF EXISTS profiles_avatar_fields_consistent;
+
+ALTER TABLE public.profiles
+  ADD CONSTRAINT profiles_avatar_fields_consistent CHECK ((avatar_url IS NULL) = (avatar_storage_path IS NULL));
 
 -- Public view for chat: exposes only non-sensitive fields, readable by all users (anon & authenticated)
 CREATE OR REPLACE VIEW public.profiles_public WITH (security_invoker = false) AS

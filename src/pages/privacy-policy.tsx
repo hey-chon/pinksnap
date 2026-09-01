@@ -64,10 +64,10 @@ export default function PrivacyPolicy() {
                 </div>
                 <h2 className="font-display text-lg tracking-wide text-foreground mb-1">LOCAL SNAPS</h2>
                 <p className="text-xs text-foreground/70 font-medium leading-relaxed">
-                  Your photo captures and video streams are processed 100% inside your browser. No photos are secretly uploaded.
+                  Your photo booth captures and video streams are processed 100% inside your browser. Uploads only happen when you explicitly choose to upload an optional profile avatar.
                 </p>
               </div>
-              <span className="text-[10px] font-black uppercase text-primary mt-3 inline-block">Zero Cloud Photo Storage</span>
+              <span className="text-[10px] font-black uppercase text-primary mt-3 inline-block">Avatar Upload Is Optional</span>
             </div>
 
             <div className="ticket p-4 flex flex-col justify-between">
@@ -155,6 +155,7 @@ export default function PrivacyPolicy() {
                 <ul className="list-disc list-inside space-y-1.5 pl-2 text-foreground/75">
                   <li><strong>Local Processing Only:</strong> Camera streams, image capture previews, filters, and photo strip compositing run entirely in your local browser memory (HTML5 Canvas & WebRTC APIs).</li>
                   <li><strong>No Secret Server Uploads:</strong> Photos captured during your booth session are <em>never</em> sent to remote servers or cloud databases without your explicit request.</li>
+                  <li><strong>Optional Avatar Upload:</strong> If you upload a profile picture, that specific image is stored in Supabase Storage and displayed publicly as your avatar.</li>
                   <li><strong>Saving & Exporting:</strong> When you download or save your photo strip, the image file is generated directly on your device.</li>
                   <li><strong>Permission Revocation:</strong> You can revoke camera permissions at any moment via your browser's site settings.</li>
                 </ul>
@@ -181,7 +182,7 @@ export default function PrivacyPolicy() {
                       <UserCheck className="w-4 h-4 text-primary" /> Optional Member Account
                     </h3>
                     <p className="text-xs text-foreground/70 mt-1">
-                      If you sign up for an account, we store your email address, chosen display name, avatar choice, and user ID via Supabase Authentication to manage your session and role permissions.
+                      If you sign up for an account, we store your email address, chosen display name, user ID, and optional avatar metadata via Supabase Authentication to manage your session and role permissions.
                     </p>
                   </div>
 
@@ -253,7 +254,7 @@ export default function PrivacyPolicy() {
                   To deliver a reliable and secure experience, PinkSnap utilizes trusted infrastructure providers:
                 </p>
                 <ul className="list-disc list-inside space-y-2 pl-2 text-foreground/75">
-                  <li><strong>Supabase:</strong> Provides managed authentication, relational database storage for chat messages, and realtime synchronization.</li>
+                  <li><strong>Supabase:</strong> Provides managed authentication, relational database storage for chat messages/profile metadata, realtime synchronization, and public profile avatar storage.</li>
                   <li><strong>Netlify / Hosting Infrastructure:</strong> Delivers frontend application assets, SSL/TLS encryption, and static content distribution.</li>
                   <li><strong>Font Providers:</strong> Self-hosted and bundled typography (Inter, Bebas Neue, Press Start 2P) without external tracking.</li>
                 </ul>

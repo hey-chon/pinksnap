@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Link, useLocation } from 'wouter';
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast.tsx';
+import { normalizeAvatarUrl } from '@/lib/avatar';
 import {
   User,
   LogOut,
@@ -54,6 +55,7 @@ export function UserMenu() {
   }
 
   const initial = (user.displayName || user.email || 'U').charAt(0).toUpperCase();
+  const safeAvatarUrl = normalizeAvatarUrl(user.avatarUrl);
 
   return (
     <div className="relative" ref={menuRef}>
@@ -67,8 +69,13 @@ export function UserMenu() {
       >
         {/* Avatar */}
         <div className="w-7 h-7 rounded-full bg-primary text-white font-black text-xs flex items-center justify-center shadow-[0_0_10px_rgba(245,61,137,0.6)]">
-          {user.avatarUrl ? (
-            <img src={user.avatarUrl} alt={user.displayName} className="w-full h-full rounded-full object-cover" />
+          {safeAvatarUrl ? (
+            <img
+              src={safeAvatarUrl}
+              alt={user.displayName}
+              className="w-full h-full rounded-full object-cover"
+              referrerPolicy="no-referrer"
+            />
           ) : (
             initial
           )}

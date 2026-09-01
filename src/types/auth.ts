@@ -7,6 +7,7 @@ export interface UserProfile {
   email: string;
   displayName: string;
   avatarUrl?: string;
+  avatarStoragePath?: string;
   role: UserRole;
   createdAt?: string;
   updatedAt?: string;
@@ -29,6 +30,10 @@ export interface AuthState {
   ) => Promise<{ error?: string; message?: string }>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<{ error?: string; message?: string }>;
-  updateProfile: (updates: { displayName?: string; avatarUrl?: string }) => Promise<{ error?: string }>;
+  updateProfile: (updates: {
+    displayName?: string;
+    avatarUrl?: string | null;
+    avatarStoragePath?: string | null;
+  }) => Promise<{ error?: string }>;
   hasRole: (roles: UserRole | UserRole[]) => boolean;
 }

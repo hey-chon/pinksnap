@@ -18,6 +18,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast.tsx';
 import { useCommunityChat } from '@/hooks/use-community-chat';
 import { globalChatRateLimiter } from '@/lib/rate-limiter';
+import { normalizeAvatarUrl } from '@/lib/avatar';
 import { findProhibitedSlur } from '@/lib/word-filter';
 import type { ChatRoom, ChatRoomId, CommunityMessage } from '@/types/chat';
 import { AuthModal } from '@/components/auth/auth-modal';
@@ -284,6 +285,7 @@ export default function CommunityChat() {
               const canDelete = isOwner || isAdmin;
               const isMsgAdmin = m.author.role === 'admin';
               const nameDisplay = m.author.displayName || 'MEMBER';
+              const avatarSrc = normalizeAvatarUrl(m.author.avatarUrl);
 
               return (
                 <div
@@ -291,7 +293,17 @@ export default function CommunityChat() {
                   className={`pixel-msg group relative ${m.mine ? 'is-mine' : ''}`}
                 >
                   <span className={`pixel-avatar ${toneFor(nameDisplay)}`} aria-hidden="true">
-                    {nameDisplay.slice(0, 1).toUpperCase()}
+                    {avatarSrc ? (
+                      <img
+                        src={avatarSrc}
+                        alt=""
+                        className="w-full h-full object-cover"
+                        loading="lazy"
+                        referrerPolicy="no-referrer"
+                      />
+                    ) : (
+                      nameDisplay.slice(0, 1).toUpperCase()
+                    )}
                   </span>
 
                   <div className="pixel-bubble relative">

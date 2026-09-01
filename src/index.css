@@ -957,6 +957,7 @@ html, body { overflow-x: hidden; }
   height: 28px;
   display: grid;
   place-items: center;
+  overflow: hidden;
   font-family: 'Press Start 2P', monospace;
   font-size: .55rem;
   color: #fff;

@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
+import { normalizeAvatarUrl } from '@/lib/avatar';
 import { useAuth } from '@/hooks/use-auth';
 import type { CommunityMessage, ChatRoomId } from '@/types/chat';
 import { validateMessageContent } from '@/lib/word-filter';
@@ -32,7 +33,7 @@ export function useCommunityChat(room: ChatRoomId = 'general') {
       if (data && data.display_name) {
         const profile = {
           displayName: data.display_name,
-          avatarUrl: data.avatar_url || undefined,
+          avatarUrl: normalizeAvatarUrl(data.avatar_url),
           role: (data.role as 'user' | 'admin') || 'user',
         };
         profilesCache.current.set(userId, profile);
@@ -49,7 +50,7 @@ export function useCommunityChat(room: ChatRoomId = 'general') {
       if (pData && pData.display_name) {
         const profile = {
           displayName: pData.display_name,
-          avatarUrl: pData.avatar_url || undefined,
+          avatarUrl: normalizeAvatarUrl(pData.avatar_url),
           role: (pData.role as 'user' | 'admin') || 'user',
         };
         profilesCache.current.set(userId, profile);
@@ -125,7 +126,7 @@ export function useCommunityChat(room: ChatRoomId = 'general') {
               if (p.id) {
                 profilesCache.current.set(p.id, {
                   displayName: p.display_name || 'Member',
-                  avatarUrl: p.avatar_url || undefined,
+                  avatarUrl: normalizeAvatarUrl(p.avatar_url),
                   role: (p.role as 'user' | 'admin') || 'user',
                 });
               }
@@ -145,7 +146,7 @@ export function useCommunityChat(room: ChatRoomId = 'general') {
                 if (p.id) {
                   profilesCache.current.set(p.id, {
                     displayName: p.display_name || 'Member',
-                    avatarUrl: p.avatar_url || undefined,
+                    avatarUrl: normalizeAvatarUrl(p.avatar_url),
                     role: (p.role as 'user' | 'admin') || 'user',
                   });
                 }
@@ -169,7 +170,7 @@ export function useCommunityChat(room: ChatRoomId = 'general') {
           author: {
             id: r.user_id,
             displayName: isMine && user ? user.displayName : (cached?.displayName || 'Member'),
-            avatarUrl: isMine && user ? user.avatarUrl : cached?.avatarUrl,
+            avatarUrl: isMine && user ? normalizeAvatarUrl(user.avatarUrl) : normalizeAvatarUrl(cached?.avatarUrl),
             role: isMine && user ? user.role : (cached?.role || 'user'),
           },
         };
@@ -233,7 +234,7 @@ export function useCommunityChat(room: ChatRoomId = 'general') {
           author: {
             id: newRow.user_id,
             displayName: isMine && user ? user.displayName : profile.displayName,
-            avatarUrl: isMine && user ? user.avatarUrl : profile.avatarUrl,
+            avatarUrl: isMine && user ? normalizeAvatarUrl(user.avatarUrl) : normalizeAvatarUrl(profile.avatarUrl),
             role: isMine && user ? user.role : profile.role,
           },
         };
@@ -332,7 +333,7 @@ export function useCommunityChat(room: ChatRoomId = 'general') {
         author: {
           id: user.id,
           displayName: user.displayName,
-          avatarUrl: user.avatarUrl,
+          avatarUrl: normalizeAvatarUrl(user.avatarUrl),
           role: user.role,
         },
       };

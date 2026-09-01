@@ -1,9 +1,18 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'wouter';
 import { TopNav, BottomNav } from '@/components/layout';
 import { useAuth } from '@/hooks/use-auth';
 import { useAppContext } from '@/lib/store';
 import { useToast } from '@/hooks/use-toast.tsx';
+import { supabase } from '@/lib/supabase';
+import {
+  AVATAR_ACCEPT_ATTRIBUTE,
+  AVATAR_BUCKET,
+  AVATAR_MAX_FILE_BYTES,
+  buildAvatarStoragePath,
+  normalizeAvatarUrl,
+} from '@/lib/avatar';
+import { sanitizeAvatarForUpload, validateAvatarFile } from '@/lib/avatar-upload';
 import {
   User,
   Mail,
@@ -12,17 +21,11 @@ import {
   KeyRound,
   LogOut,
   Save,
+  Upload,
+  Trash2,
 } from 'lucide-react';
 
-function isValidAvatarUrl(url: string): boolean {
-  if (!url) return true;
-  try {
-    const parsed = new URL(url);
-    return parsed.protocol === 'https:' && url.length <= 2048;
-  } catch {
-    return false;
-  }
-}
+const MAX_AVATAR_MB = Math.round(AVATAR_MAX_FILE_BYTES / (1024 * 1024));
 
 export default function ProfilePage() {
   const { user, updateProfile, signOut, resetPassword, isAdmin } = useAuth();
@@ -30,9 +33,20 @@ export default function ProfilePage() {
   const { toast } = useToast();
 
   const [displayName, setDisplayName] = useState(user?.displayName || '');
-  const [avatarUrl, setAvatarUrl] = useState(user?.avatarUrl || '');
+  const [selectedAvatarFile, setSelectedAvatarFile] = useState<File | null>(null);
+  const [avatarPreviewUrl, setAvatarPreviewUrl] = useState<string | null>(null);
+  const [isRemovingAvatar, setIsRemovingAvatar] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isSendingReset, setIsSendingReset] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (avatarPreviewUrl) {
+        URL.revokeObjectURL(avatarPreviewUrl);
+      }
+    };
+  }, [avatarPreviewUrl]);
 
   if (!user) {
     return (
@@ -54,37 +68,170 @@ export default function ProfilePage() {
     );
   }
 
+  const storedAvatarUrl = normalizeAvatarUrl(user.avatarUrl);
+  const shownAvatarUrl = isRemovingAvatar
+    ? undefined
+    : avatarPreviewUrl || storedAvatarUrl;
+  const hasAvatarToRemove = Boolean(
+    avatarPreviewUrl || storedAvatarUrl || user.avatarStoragePath
+  );
+
+  const resetAvatarSelection = () => {
+    setSelectedAvatarFile(null);
+    setAvatarPreviewUrl((current) => {
+      if (current) {
+        URL.revokeObjectURL(current);
+      }
+      return null;
+    });
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const handleAvatarFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const validation = validateAvatarFile(file);
+    if (!validation.isValid) {
+      toast({
+        title: 'Invalid Image File',
+        description: validation.error || 'Please choose a valid image file.',
+        variant: 'destructive',
+      });
+      event.target.value = '';
+      return;
+    }
+
+    setAvatarPreviewUrl((current) => {
+      if (current) {
+        URL.revokeObjectURL(current);
+      }
+      return URL.createObjectURL(file);
+    });
+    setSelectedAvatarFile(file);
+    setIsRemovingAvatar(false);
+  };
+
+  const handleRemoveAvatar = () => {
+    resetAvatarSelection();
+    setIsRemovingAvatar(true);
+  };
+
   const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
-    const cleanAvatar = avatarUrl.trim();
-    if (cleanAvatar && !isValidAvatarUrl(cleanAvatar)) {
+
+    const trimmedDisplayName = displayName.trim();
+    if (!trimmedDisplayName) {
       toast({
-        title: 'Invalid Avatar URL',
-        description: 'Please provide a valid secure https:// image URL.',
+        title: 'Display Name Required',
+        description: 'Please enter a display name before saving.',
         variant: 'destructive',
       });
       return;
     }
 
     setIsSaving(true);
+    let uploadedAvatarPath: string | null = null;
+
+    const cleanupUploadedAvatar = async () => {
+      if (!uploadedAvatarPath) return;
+      try {
+        await supabase.storage.from(AVATAR_BUCKET).remove([uploadedAvatarPath]);
+      } catch {
+      } finally {
+        uploadedAvatarPath = null;
+      }
+    };
+
     try {
-      const res = await updateProfile({
-        displayName: displayName.trim(),
-        avatarUrl: cleanAvatar || undefined,
-      });
+      const updates: {
+        displayName?: string;
+        avatarUrl?: string | null;
+        avatarStoragePath?: string | null;
+      } = {
+        displayName: trimmedDisplayName,
+      };
+
+      const previousAvatarPath = user.avatarStoragePath;
+
+      if (isRemovingAvatar) {
+        updates.avatarUrl = null;
+        updates.avatarStoragePath = null;
+      } else if (selectedAvatarFile) {
+        const sanitizedAvatar = await sanitizeAvatarForUpload(selectedAvatarFile);
+        const nextAvatarPath = buildAvatarStoragePath(user.id);
+        uploadedAvatarPath = nextAvatarPath;
+
+        const { error: uploadError } = await supabase.storage
+          .from(AVATAR_BUCKET)
+          .upload(nextAvatarPath, sanitizedAvatar, {
+            upsert: false,
+            cacheControl: '31536000',
+            contentType: sanitizedAvatar.type,
+          });
+
+        if (uploadError) {
+          throw new Error(uploadError.message || 'Failed to upload avatar image.');
+        }
+
+        const { data: publicUrlData } = supabase.storage
+          .from(AVATAR_BUCKET)
+          .getPublicUrl(nextAvatarPath);
+
+        const trustedAvatarUrl = normalizeAvatarUrl(publicUrlData.publicUrl);
+        if (!trustedAvatarUrl) {
+          await cleanupUploadedAvatar();
+          throw new Error('Uploaded avatar URL could not be verified.');
+        }
+
+        updates.avatarUrl = trustedAvatarUrl;
+        updates.avatarStoragePath = nextAvatarPath;
+      }
+
+      const res = await updateProfile(updates);
 
       if (res.error) {
+        await cleanupUploadedAvatar();
         toast({
           title: 'Update Failed',
           description: res.error,
           variant: 'destructive',
         });
       } else {
+        if (isRemovingAvatar && previousAvatarPath) {
+          try {
+            await supabase.storage.from(AVATAR_BUCKET).remove([previousAvatarPath]);
+          } catch {
+          }
+        }
+
+        if (selectedAvatarFile && previousAvatarPath && updates.avatarStoragePath && previousAvatarPath !== updates.avatarStoragePath) {
+          try {
+            await supabase.storage.from(AVATAR_BUCKET).remove([previousAvatarPath]);
+          } catch {
+          }
+        }
+
+        resetAvatarSelection();
+        setIsRemovingAvatar(false);
+
         toast({
           title: 'Profile Saved',
-          description: 'Your changes have been updated.',
+          description: selectedAvatarFile || isRemovingAvatar
+            ? 'Your profile and avatar changes were saved securely.'
+            : 'Your changes have been updated.',
         });
       }
+    } catch (err: unknown) {
+      await cleanupUploadedAvatar();
+      const message = err instanceof Error ? err.message : 'Could not save profile changes.';
+      toast({
+        title: 'Update Failed',
+        description: message,
+        variant: 'destructive',
+      });
     } finally {
       setIsSaving(false);
     }
@@ -121,13 +268,18 @@ export default function ProfilePage() {
         <div className="max-w-3xl mx-auto space-y-6 pb-12">
           {/* Header Banner Ticket */}
           <div className="ticket p-6 sm:p-8 flex flex-col sm:flex-row items-center gap-6">
-            <div className="relative">
-              <div className="w-24 h-24 rounded-full bg-primary/10 border-4 border-white shadow-xl flex items-center justify-center text-primary font-display text-4xl overflow-hidden">
-                {user.avatarUrl ? (
-                  <img src={user.avatarUrl} alt={user.displayName} className="w-full h-full object-cover" />
-                ) : (
-                  initial
-                )}
+              <div className="relative">
+                <div className="w-24 h-24 rounded-full bg-primary/10 border-4 border-white shadow-xl flex items-center justify-center text-primary font-display text-4xl overflow-hidden">
+                  {shownAvatarUrl ? (
+                    <img
+                      src={shownAvatarUrl}
+                      alt={user.displayName}
+                      className="w-full h-full object-cover"
+                      referrerPolicy="no-referrer"
+                    />
+                  ) : (
+                    initial
+                  )}
               </div>
               <div className="absolute -bottom-1 -right-1 p-1.5 rounded-full bg-primary text-white shadow-md">
                 <Sparkles className="w-4 h-4" />
@@ -192,15 +344,40 @@ export default function ProfilePage() {
 
                 <div>
                   <label className="block text-[11px] font-black uppercase tracking-wider text-foreground/70 mb-1.5">
-                    Avatar Image URL
+                    Profile Picture
                   </label>
-                  <input
-                    type="url"
-                    value={avatarUrl}
-                    onChange={e => setAvatarUrl(e.target.value)}
-                    placeholder="https://example.com/avatar.jpg"
-                    className="w-full px-4 py-2.5 bg-white/80 border border-black/10 focus:border-primary focus:ring-2 focus:ring-primary/20 rounded-xl text-xs sm:text-sm outline-none transition-all"
-                  />
+                  <div className="space-y-2">
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept={AVATAR_ACCEPT_ATTRIBUTE}
+                      onChange={handleAvatarFileChange}
+                      className="w-full px-3 py-2 bg-white/80 border border-black/10 focus:border-primary focus:ring-2 focus:ring-primary/20 rounded-xl text-xs sm:text-sm outline-none transition-all file:mr-3 file:rounded-lg file:border file:border-black/10 file:bg-white file:px-2.5 file:py-1 file:text-[11px] file:font-black file:uppercase file:tracking-wide"
+                    />
+
+                    <p className="text-[11px] text-foreground/60 font-medium">
+                      JPG, PNG, or WEBP up to {MAX_AVATAR_MB}MB. The image is cropped to a square and re-encoded before upload.
+                    </p>
+
+                    <div className="flex flex-wrap items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={handleRemoveAvatar}
+                        disabled={!hasAvatarToRemove || isRemovingAvatar}
+                        className="px-3 py-1.5 bg-white hover:bg-black/[0.02] border border-black/10 text-foreground text-[11px] font-black uppercase tracking-wide rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
+                      >
+                        <Trash2 className="w-3.5 h-3.5 text-destructive" />
+                        <span>{isRemovingAvatar ? 'Avatar Removed On Save' : 'Remove Avatar'}</span>
+                      </button>
+
+                      {selectedAvatarFile && (
+                        <span className="inline-flex items-center gap-1 text-[11px] text-emerald-700 font-semibold">
+                          <Upload className="w-3.5 h-3.5" />
+                          New image selected
+                        </span>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </div>
 
