@@ -34,20 +34,21 @@ export default function Credits() {
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
+          const cards = cardsRef.current?.children;
+          if (!cards || cards.length === 0) return;
+
           if (entry.isIntersecting) {
-            const cards = cardsRef.current?.children;
-            if (cards && cards.length > 0) {
-              gsap.fromTo(
-                Array.from(cards),
-                { opacity: 0, y: 40, scale: 0.97 },
-                { opacity: 1, y: 0, scale: 1, duration: 0.85, stagger: 0.18, ease: 'power3.out' }
-              );
-            }
-            observer.disconnect();
+            gsap.fromTo(
+              Array.from(cards),
+              { opacity: 0, y: 45, scale: 0.96 },
+              { opacity: 1, y: 0, scale: 1, duration: 0.85, stagger: 0.18, ease: 'power3.out' }
+            );
+          } else {
+            gsap.set(Array.from(cards), { opacity: 0, y: 45, scale: 0.96 });
           }
         });
       },
-      { threshold: 0.12 }
+      { threshold: 0.1 }
     );
 
     observer.observe(cardsRef.current);

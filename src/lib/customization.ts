@@ -44,9 +44,9 @@ export type FrameOption = {
 };
 
 export const FRAME_CATEGORIES: { id: FrameCategory; label: string }[] = [
-  { id: 'booth', label: 'Booth' },
+  { id: 'booth', label: 'Elegant' },
   { id: 'glow', label: 'Glow' },
-  { id: 'cute', label: 'Cute' },
+  { id: 'cute', label: 'Cutesy' },
 ];
 
 function fill(ctx: CanvasRenderingContext2D, color: string, w: number, h: number) {

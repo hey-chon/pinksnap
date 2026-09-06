@@ -269,9 +269,9 @@ export default function Edit() {
 
       <main className="flex-1 overflow-y-auto flex flex-col items-center px-4 py-7 sm:px-6 sm:py-9">
         <div className="edit-heading text-center mb-7 sm:mb-9 w-full max-w-xl">
-          <span className="booth-heading-kicker mb-3">Step 3 of 3 · Print lab</span>
+          <span className="booth-heading-kicker mb-3">Step 3 of 3 · Print</span>
           <h1 className="font-display text-[2.35rem] leading-[.95] sm:text-5xl md:text-6xl text-foreground mt-4 mb-3">
-            DEVELOP YOUR STRIP.
+            CHOOSE YOUR STRIP.
           </h1>
           <p className="text-[11px] sm:text-xs font-bold text-primary uppercase tracking-[.18em] sm:tracking-[.24em] leading-relaxed">
             Pick a booth theme, set the mood, keep the print.
@@ -305,10 +305,10 @@ export default function Edit() {
 
             <div className="flex items-center justify-between gap-3 mb-5">
               <h2 className="font-display text-2xl text-foreground/85 tracking-[.08em] flex items-center gap-2">
-                <Sparkles className="w-5 h-5 text-primary" /> Booth themes
+                <Sparkles className="w-5 h-5 text-primary" /> themes
               </h2>
               <span className="text-[10px] font-black uppercase tracking-widest text-foreground/40">
-                {FRAME_OPTIONS.length} looks
+                {FRAME_OPTIONS.length} STRIPS
               </span>
             </div>
 
