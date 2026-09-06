@@ -1059,3 +1059,92 @@ html, body { overflow-x: hidden; }
   .pixel-composer { padding: .55rem .6rem .4rem; }
   .pixel-send { min-width: 3.4rem; height: 2.35rem; }
 }
+
+/* ==========================================================================
+   Creator & Credits Section Styles
+   ========================================================================== */
+
+@keyframes creator-marquee-scroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.creator-marquee-wrapper {
+  mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+}
+
+.creator-marquee-track {
+  display: flex;
+  width: max-content;
+  animation: creator-marquee-scroll 32s linear infinite;
+}
+
+.creator-marquee-track:hover {
+  animation-play-state: paused;
+}
+
+.creator-polaroid-frame {
+  box-shadow: 
+    0 10px 30px -5px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(255, 255, 255, 0.1),
+    inset 0 0 20px rgba(0, 0, 0, 0.2);
+}
+
+.creator-polaroid-tape {
+  background: rgba(255, 255, 255, 0.45);
+  backdrop-filter: blur(2px);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+.creator-glow-card {
+  position: relative;
+  background: linear-gradient(145deg, rgba(32, 27, 44, 0.95), rgba(20, 16, 30, 0.98));
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.creator-glow-card::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg, rgba(245, 61, 137, 0.3), transparent 60%, rgba(124, 92, 255, 0.25));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+.creator-glow-card:hover {
+  border-color: rgba(245, 61, 137, 0.35);
+  box-shadow: 0 20px 40px -15px rgba(245, 61, 137, 0.18), 0 0 25px rgba(124, 92, 255, 0.12);
+  transform: translateY(-2px);
+}
+
+.creator-tool-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.55rem 0.9rem;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.85);
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+.creator-tool-chip:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+}
+
