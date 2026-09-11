@@ -23,7 +23,7 @@ export default function TermsOfService() {
 
   const handleStartSnapping = () => {
     if (isAuthenticated) {
-      navigate('/setup');
+      navigate('/loading');
     } else {
       setShowAuthGate(true);
     }
@@ -34,7 +34,7 @@ export default function TermsOfService() {
       {showAuthGate && (
         <AuthGateModal
           onClose={() => setShowAuthGate(false)}
-          onSuccess={() => { setShowAuthGate(false); navigate('/setup'); }}
+          onSuccess={() => { setShowAuthGate(false); navigate('/loading'); }}
         />
       )}
       <TopNav backTo="/" title="TERMS OF SERVICE" />
@@ -286,7 +286,7 @@ export default function TermsOfService() {
               onClick={handleStartSnapping}
               className="inline-flex items-center gap-2 bg-primary text-white px-6 py-3 rounded-full font-black text-sm uppercase tracking-wider shadow-lg shadow-primary/25 hover:scale-105 active:scale-95 transition-all"
             >
-              <Camera className="w-4 h-4" /> Start Snapping <ArrowRight className="w-4 h-4" />
+              <Camera className="w-4 h-4" /> Let's Go <ArrowRight className="w-4 h-4" />
             </button>
           </div>
         </div>

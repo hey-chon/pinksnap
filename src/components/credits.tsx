@@ -119,10 +119,10 @@ export default function Credits() {
                 Hi! I'm a student web developer from Cavite, Philippines, who loves building websites, learning by doing, and keeping things organized.
               </p>
               <p>
-                I'm the developer behind PinkSnap — a virtual photobooth website that I planned, structured, and built with an AI-assisted workflow. While I originally created it for me and my girlfriend Jera, it's open for everyone to enjoy!
+                I'm the developer behind PinkSnap — a virtual photobooth website that I planned, structured, and built with an AI-assisted workflow. While I originally built PinkSnap for me and my girlfriend Jera but it's open for everyone to enjoy!
               </p>
               <p>
-                I created PinkSnap to learn new things, explore new techniques, and grow as a student developer. Since this website is a work in progress, I appreciate your patience as I continue to improve it. Thank you for stopping by! :D
+                I built PinkSnap to learn new things, explore new techniques, and grow as a student developer. Since this website is a work in progress, I appreciate your patience as I continue to improve it. Thank you for stopping by! :D
               </p>
             </div>
           </div>
@@ -171,7 +171,7 @@ export default function Credits() {
 
             <div className="text-xs sm:text-sm text-white/80 leading-relaxed space-y-3 font-medium">
               <p>
-                Hey! I'm rezn1r. I helped my friend Jimson integrate the community chat and simple auth into PinkSnap to make it more connected and fun for everyone.
+                Hey! I'm rezn1r. I helped my friend Jimson integrate the community chat and simple auth into PinkSnap to make it more connected and fun for everyone. Enjoy and happy snapping!
               </p>
             </div>
           </div>

@@ -99,16 +99,16 @@ export function BottomNav() {
           </div>
         </div>
 
-        <div className="flex items-center gap-4 sm:gap-6">
-          <Link href="/how-it-works" data-testid="nav-how-it-works" className={`flex items-center gap-1.5 text-sm font-bold transition-colors group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded ${location === '/how-it-works' ? 'text-primary' : 'text-white/70 hover:text-primary'}`}>
+        <div className="flex items-center gap-4 sm:gap-6 text-xs sm:text-sm font-bold">
+          <Link href="/how-it-works" data-testid="nav-how-it-works" className={`flex items-center gap-1.5 transition-colors group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded ${location === '/how-it-works' ? 'text-primary' : 'text-white/70 hover:text-primary'}`}>
             <HelpCircle className="w-4 h-4 group-hover:scale-110 transition-transform" />
             <span className="hidden sm:inline">HOW TO</span>
           </Link>
-          <Link href="/gallery" data-testid="nav-gallery" className={`flex items-center gap-1.5 text-sm font-bold transition-colors group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded ${location === '/gallery' ? 'text-primary' : 'text-white/70 hover:text-primary'}`}>
+          <Link href="/gallery" data-testid="nav-gallery" className={`flex items-center gap-1.5 transition-colors group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded ${location === '/gallery' ? 'text-primary' : 'text-white/70 hover:text-primary'}`}>
             <Images className="w-4 h-4 group-hover:scale-110 transition-transform" />
             <span className="hidden sm:inline">GALLERY</span>
           </Link>
-          <Link href="/profile" data-testid="nav-profile" className={`flex items-center gap-1.5 text-sm font-bold transition-colors group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded ${location === '/profile' || location === '/auth' ? 'text-primary' : 'text-white/70 hover:text-primary'}`}>
+          <Link href="/profile" data-testid="nav-profile" className={`flex items-center gap-1.5 transition-colors group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded ${location === '/profile' || location === '/auth' ? 'text-primary' : 'text-white/70 hover:text-primary'}`}>
             <UserRound className="w-4 h-4 group-hover:scale-110 transition-transform" />
             <span className="hidden sm:inline">ACCOUNT</span>
           </Link>

@@ -12,7 +12,7 @@ export default function HowItWorks() {
 
   const handleStartSnapping = () => {
     if (isAuthenticated) {
-      navigate('/setup');
+      navigate('/loading');
     } else {
       setShowAuthGate(true);
     }
@@ -46,7 +46,7 @@ export default function HowItWorks() {
       {showAuthGate && (
         <AuthGateModal
           onClose={() => setShowAuthGate(false)}
-          onSuccess={() => { setShowAuthGate(false); navigate('/setup'); }}
+          onSuccess={() => { setShowAuthGate(false); navigate('/loading'); }}
         />
       )}
       <TopNav backTo="/" title="HOW TO USE" />

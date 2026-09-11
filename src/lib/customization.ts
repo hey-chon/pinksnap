@@ -1,10 +1,18 @@
 export type FrameType =
   | 'classic'
-  | 'filmstrip'
-  | 'polaroid'
-  | 'arcade'
   | 'vip'
+  | 'rubynoir'
+  | 'crimson'
+  | 'vampire'
+  | 'velvet'
+  | 'rosegold'
+  | 'emerald'
+  | 'onyx'
+  | 'filmstrip'
+  | 'sepia'
   | 'kraft'
+  | 'linen'
+  | 'arcade'
   | 'midnight'
   | 'sunset'
   | 'y2k'
@@ -45,7 +53,7 @@ export type FrameOption = {
 
 export const FRAME_CATEGORIES: { id: FrameCategory; label: string }[] = [
   { id: 'booth', label: 'Elegant' },
-  { id: 'glow', label: 'Glow' },
+  { id: 'glow', label: 'Glowy' },
   { id: 'cute', label: 'Cutesy' },
 ];
 
@@ -106,21 +114,198 @@ export function roundedRect(
 export const FRAME_OPTIONS: FrameOption[] = [
   {
     id: 'classic',
-    label: 'Classic Booth',
-    note: 'Mall curtain black',
+    label: 'Classic',
+    note: 'Pure black strip',
     category: 'booth',
     className: 'frame-classic',
     dark: true,
     matte: 'rgba(255,255,255,.22)',
     paint: (ctx, w, h) => {
-      fill(ctx, '#141017', w, h);
-      const glow = ctx.createRadialGradient(w / 2, h * 0.12, 10, w / 2, h * 0.12, h * 0.55);
-      glow.addColorStop(0, 'rgba(255,214,235,.20)');
-      glow.addColorStop(1, 'rgba(20,16,23,0)');
+      fill(ctx, '#000000', w, h);
+    },
+  },
+  {
+    id: 'vip',
+    label: 'VIP Lounge',
+    note: 'Black and gold',
+    category: 'booth',
+    className: 'frame-vip',
+    dark: true,
+    matte: 'rgba(226,183,106,.55)',
+    paint: (ctx, w, h) => {
+      fill(ctx, '#12100e', w, h);
+      speckle(ctx, w, h, 'rgba(226,183,106,.32)', 54, 2.6);
+      ctx.strokeStyle = 'rgba(226,183,106,.3)';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(18, 18, w - 36, h - 36);
+    },
+  },
+  {
+    id: 'rubynoir',
+    label: 'Ruby Red',
+    note: 'Velvet ruby jewel',
+    category: 'booth',
+    className: 'frame-rubynoir',
+    dark: true,
+    matte: 'rgba(255,255,255,.22)',
+    paint: (ctx, w, h) => {
+      // Deep ruby red base
+      verticalGradient(ctx, w, h, [
+        [0, '#6b0a18'],
+        [0.45, '#8b0d1e'],
+        [1, '#5a0812'],
+      ]);
+      // Soft radial shimmer
+      const glow = ctx.createRadialGradient(w * 0.5, h * 0.15, 0, w * 0.5, h * 0.15, w * 0.7);
+      glow.addColorStop(0, 'rgba(255,80,80,.18)');
+      glow.addColorStop(1, 'rgba(0,0,0,0)');
       ctx.fillStyle = glow;
       ctx.fillRect(0, 0, w, h);
-      ctx.strokeStyle = 'rgba(255,255,255,.16)';
-      ctx.lineWidth = 2;
+      // Fine fabric grain
+      speckle(ctx, w, h, 'rgba(255,120,120,.12)', 32, 1.5);
+      // Gold inlay border
+      ctx.strokeStyle = 'rgba(226,183,106,.45)';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(14, 14, w - 28, h - 28);
+    },
+  },
+  {
+    id: 'crimson',
+    label: 'Crimson Luxe',
+    note: 'Scarlet to crimson',
+    category: 'booth',
+    className: 'frame-crimson',
+    dark: true,
+    matte: 'rgba(255,255,255,.22)',
+    paint: (ctx, w, h) => {
+      // Bright scarlet at top, deeper crimson at bottom
+      verticalGradient(ctx, w, h, [
+        [0, '#9b1020'],
+        [0.4, '#7a0d18'],
+        [1, '#5c0810'],
+      ]);
+      // Satin sheen overlay
+      const sheen = ctx.createLinearGradient(0, 0, w, 0);
+      sheen.addColorStop(0, 'rgba(255,255,255,.06)');
+      sheen.addColorStop(0.45, 'rgba(255,255,255,.14)');
+      sheen.addColorStop(1, 'rgba(0,0,0,.1)');
+      ctx.fillStyle = sheen;
+      ctx.fillRect(0, 0, w, h);
+      speckle(ctx, w, h, 'rgba(255,160,160,.10)', 38, 1.6);
+      ctx.strokeStyle = 'rgba(255,180,180,.28)';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(18, 18, w - 36, h - 36);
+    },
+  },
+  {
+    id: 'vampire',
+    label: 'Blood Velvet',
+    note: 'Gothic blood red',
+    category: 'booth',
+    className: 'frame-vampire',
+    dark: true,
+    matte: 'rgba(255,255,255,.22)',
+    paint: (ctx, w, h) => {
+      // Dark blood red base
+      fill(ctx, '#7a0000', w, h);
+      // Deep center vignette
+      const vignette = ctx.createRadialGradient(w/2, h/2, h*0.1, w/2, h/2, h*0.75);
+      vignette.addColorStop(0, 'rgba(0,0,0,0)');
+      vignette.addColorStop(1, 'rgba(0,0,0,.45)');
+      ctx.fillStyle = vignette;
+      ctx.fillRect(0, 0, w, h);
+      // Blood drip texture dots
+      speckle(ctx, w, h, 'rgba(200,0,0,.22)', 52, 2);
+      ctx.strokeStyle = 'rgba(255,60,60,.3)';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(14, 14, w - 28, h - 28);
+    },
+  },
+  {
+    id: 'velvet',
+    label: 'Wine Velvet',
+    note: 'Rich burgundy wine',
+    category: 'booth',
+    className: 'frame-velvet',
+    dark: true,
+    matte: 'rgba(255,255,255,.22)',
+    paint: (ctx, w, h) => {
+      // Warm burgundy wine
+      verticalGradient(ctx, w, h, [
+        [0, '#72183a'],
+        [0.5, '#5c1230'],
+        [1, '#440d24'],
+      ]);
+      // Velvet nap shimmer
+      const velvetSheen = ctx.createLinearGradient(0, 0, w * 0.6, h);
+      velvetSheen.addColorStop(0, 'rgba(255,180,200,.08)');
+      velvetSheen.addColorStop(0.5, 'rgba(255,255,255,.05)');
+      velvetSheen.addColorStop(1, 'rgba(0,0,0,.06)');
+      ctx.fillStyle = velvetSheen;
+      ctx.fillRect(0, 0, w, h);
+      speckle(ctx, w, h, 'rgba(255,120,160,.12)', 44, 1.8);
+      ctx.strokeStyle = 'rgba(255,160,190,.28)';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(18, 18, w - 36, h - 36);
+    },
+  },
+  {
+    id: 'rosegold',
+    label: 'Rose Gold Luxe',
+    note: 'Satin rose gold',
+    category: 'booth',
+    className: 'frame-rosegold',
+    dark: true,
+    matte: 'rgba(240,175,190,.5)',
+    paint: (ctx, w, h) => {
+      verticalGradient(ctx, w, h, [
+        [0, '#3d212b'],
+        [0.5, '#4a2835'],
+        [1, '#29141d'],
+      ]);
+      speckle(ctx, w, h, 'rgba(255,200,215,.25)', 52, 2.2);
+      ctx.strokeStyle = 'rgba(240,175,190,.3)';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(18, 18, w - 36, h - 36);
+    },
+  },
+  {
+    id: 'emerald',
+    label: 'Imperial Emerald',
+    note: 'Emerald & gold',
+    category: 'booth',
+    className: 'frame-emerald',
+    dark: true,
+    matte: 'rgba(212,175,55,.5)',
+    paint: (ctx, w, h) => {
+      verticalGradient(ctx, w, h, [
+        [0, '#0b2e1f'],
+        [0.45, '#11422d'],
+        [1, '#071f14'],
+      ]);
+      speckle(ctx, w, h, 'rgba(212,175,55,.28)', 48, 2.2);
+      ctx.strokeStyle = 'rgba(212,175,55,.45)';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(16, 16, w - 32, h - 32);
+    },
+  },
+  {
+    id: 'onyx',
+    label: 'Midnight Onyx',
+    note: 'Jet black & silver',
+    category: 'booth',
+    className: 'frame-onyx',
+    dark: true,
+    matte: 'rgba(220,225,235,.45)',
+    paint: (ctx, w, h) => {
+      verticalGradient(ctx, w, h, [
+        [0, '#0a0a0c'],
+        [0.5, '#141419'],
+        [1, '#050507'],
+      ]);
+      speckle(ctx, w, h, 'rgba(220,225,235,.30)', 50, 2.2);
+      ctx.strokeStyle = 'rgba(220,225,235,.35)';
+      ctx.lineWidth = 1;
       ctx.strokeRect(16, 16, w - 32, h - 32);
     },
   },
@@ -140,73 +325,23 @@ export const FRAME_OPTIONS: FrameOption[] = [
     },
   },
   {
-    id: 'polaroid',
-    label: 'Instant Print',
-    note: 'Fresh out the slot',
+    id: 'sepia',
+    label: 'Warm Sepia',
+    note: 'Espresso sepia',
     category: 'booth',
-    className: 'frame-polaroid',
-    dark: false,
-    matte: 'rgba(31,29,43,.14)',
-    paint: (ctx, w, h) => {
-      fill(ctx, '#fbf9f4', w, h);
-      const shade = ctx.createLinearGradient(0, 0, 0, h);
-      shade.addColorStop(0, 'rgba(0,0,0,.05)');
-      shade.addColorStop(0.35, 'rgba(0,0,0,0)');
-      shade.addColorStop(1, 'rgba(0,0,0,.06)');
-      ctx.fillStyle = shade;
-      ctx.fillRect(0, 0, w, h);
-      speckle(ctx, w, h, 'rgba(31,29,43,.035)', 26, 1.4);
-    },
-  },
-  {
-    id: 'arcade',
-    label: 'Mall Arcade',
-    note: 'Neon grid haze',
-    category: 'booth',
-    className: 'frame-arcade',
+    className: 'frame-sepia',
     dark: true,
-    matte: 'rgba(120,242,255,.4)',
+    matte: 'rgba(217,140,70,.35)',
     paint: (ctx, w, h) => {
       verticalGradient(ctx, w, h, [
-        [0, '#150c2c'],
-        [0.55, '#221046'],
-        [1, '#3a0f3d'],
+        [0, '#2b1b13'],
+        [0.5, '#20140e'],
+        [1, '#150d09'],
       ]);
-      ctx.strokeStyle = 'rgba(120,242,255,.16)';
-      ctx.lineWidth = 1.5;
-      for (let x = 0; x < w; x += 46) {
-        ctx.beginPath();
-        ctx.moveTo(x, 0);
-        ctx.lineTo(x, h);
-        ctx.stroke();
-      }
-      for (let y = 0; y < h; y += 46) {
-        ctx.beginPath();
-        ctx.moveTo(0, y);
-        ctx.lineTo(w, y);
-        ctx.stroke();
-      }
-      const glow = ctx.createRadialGradient(w / 2, h, 20, w / 2, h, h * 0.7);
-      glow.addColorStop(0, 'rgba(255,64,160,.35)');
-      glow.addColorStop(1, 'rgba(255,64,160,0)');
-      ctx.fillStyle = glow;
-      ctx.fillRect(0, 0, w, h);
-    },
-  },
-  {
-    id: 'vip',
-    label: 'VIP Lounge',
-    note: 'Black and gold',
-    category: 'booth',
-    className: 'frame-vip',
-    dark: true,
-    matte: 'rgba(226,183,106,.55)',
-    paint: (ctx, w, h) => {
-      fill(ctx, '#12100e', w, h);
-      speckle(ctx, w, h, 'rgba(226,183,106,.32)', 54, 2.6);
-      ctx.strokeStyle = 'rgba(226,183,106,.55)';
-      ctx.lineWidth = 3;
-      ctx.strokeRect(18, 18, w - 36, h - 36);
+      speckle(ctx, w, h, 'rgba(217,140,70,.18)', 40, 1.8);
+      ctx.strokeStyle = 'rgba(217,140,70,.35)';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(16, 16, w - 32, h - 32);
     },
   },
   {
@@ -225,6 +360,22 @@ export const FRAME_OPTIONS: FrameOption[] = [
       shade.addColorStop(1, 'rgba(120,88,55,.12)');
       ctx.fillStyle = shade;
       ctx.fillRect(0, 0, w, h);
+    },
+  },
+  {
+    id: 'linen',
+    label: 'Vintage Linen',
+    note: 'Oat parchment',
+    category: 'booth',
+    className: 'frame-linen',
+    dark: false,
+    matte: 'rgba(110,85,60,.28)',
+    paint: (ctx, w, h) => {
+      fill(ctx, '#ded3c2', w, h);
+      speckle(ctx, w, h, 'rgba(110,85,60,.14)', 20, 1.3);
+      ctx.strokeStyle = 'rgba(110,85,60,.28)';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(14, 14, w - 28, h - 28);
     },
   },
   {
@@ -644,14 +795,20 @@ export function applyFilterPixels(data: ImageData, filter: FilterType): ImageDat
 
 export function filterImageForCanvas(img: HTMLImageElement, filter: FilterType): HTMLCanvasElement {
   const canvas = document.createElement('canvas');
-  canvas.width = Math.max(1, img.naturalWidth || img.width);
-  canvas.height = Math.max(1, img.naturalHeight || img.height);
+  const w = Math.max(1, img.naturalWidth || img.width || 300);
+  const h = Math.max(1, img.naturalHeight || img.height || 300);
+  canvas.width = w;
+  canvas.height = h;
   const ctx = canvas.getContext('2d');
   if (!ctx) return canvas;
-  ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-  if (filter !== 'color') {
-    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    ctx.putImageData(applyFilterPixels(imageData, filter), 0, 0);
+  try {
+    ctx.drawImage(img, 0, 0, w, h);
+    if (filter !== 'color') {
+      const imageData = ctx.getImageData(0, 0, w, h);
+      ctx.putImageData(applyFilterPixels(imageData, filter), 0, 0);
+    }
+  } catch {
+    // If pixel manipulation fails (e.g. cross-origin/SVG security), image is still drawn
   }
   return canvas;
 }
@@ -671,3 +828,424 @@ export function drawFrameBackground(
   option.paint(ctx, width, height);
   ctx.restore();
 }
+
+// ─── Artisan Template System (Programmatic Canvas) ────────────────────────
+
+export type ArtisanTemplateId =
+  | 'theater-show'
+  | 'every-moment-up';
+
+export interface ArtisanSlot {
+  /** Absolute pixel position at 1× scale */
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  /** Border radius at 1× scale */
+  r: number;
+}
+
+export interface ArtisanTemplate {
+  id: ArtisanTemplateId;
+  label: string;
+  note: string;
+  /** Canvas natural size at 1× */
+  nw: number;
+  nh: number;
+  /** Photo slot positions at 1× */
+  slots: ArtisanSlot[];
+  /**
+   * Paint everything BEFORE photos (background, decorations, slot placeholders).
+   * s = scale factor (so 0.35 for preview, 2 for export).
+   */
+  paintBg(ctx: CanvasRenderingContext2D, w: number, h: number, s: number, date: number): void;
+  /**
+   * Paint everything AFTER photos (borders, text overlays on top of photos).
+   */
+  paintFg(ctx: CanvasRenderingContext2D, w: number, h: number, s: number, date: number): void;
+}
+
+// ── Drawing utilities ──────────────────────────────────────────────────────
+
+function aBox(
+  ctx: CanvasRenderingContext2D,
+  x: number, y: number, w: number, h: number, r: number,
+  fill?: string, stroke?: string, lw = 1,
+) {
+  if (fill) { ctx.fillStyle = fill; roundedRect(ctx, x, y, w, h, r); ctx.fill(); }
+  if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = lw; roundedRect(ctx, x, y, w, h, r); ctx.stroke(); }
+}
+
+function aTxt(
+  ctx: CanvasRenderingContext2D,
+  text: string, x: number, y: number,
+  font: string, color: string,
+  align: CanvasTextAlign = 'center',
+) {
+  ctx.save();
+  ctx.textAlign = align;
+  ctx.font = font;
+  ctx.fillStyle = color;
+  ctx.fillText(text, x, y);
+  ctx.restore();
+}
+
+function aLine(
+  ctx: CanvasRenderingContext2D,
+  x1: number, y1: number, x2: number, y2: number,
+  color: string, lw: number,
+) {
+  ctx.save();
+  ctx.strokeStyle = color; ctx.lineWidth = lw;
+  ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+  ctx.restore();
+}
+
+function aBarcode(
+  ctx: CanvasRenderingContext2D,
+  cx: number, y: number, bw: number, bh: number, color: string,
+) {
+  ctx.fillStyle = color;
+  const bars = [3, 1, 2, 1, 3, 2, 1, 3, 1, 2, 1, 2, 3, 1, 2, 1, 3, 1];
+  const total = bars.reduce((a, b) => a + b, 0);
+  const uw = bw / total;
+  let x = cx - bw / 2;
+  bars.forEach((u, i) => {
+    if (i % 2 === 0) ctx.fillRect(x, y, u * uw - 0.5, bh);
+    x += u * uw;
+  });
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// THEATER SHOW — Vintage ticket strip · cream & maroon · 4 landscape shots
+// ══════════════════════════════════════════════════════════════════════════
+
+const THEATER_SLOTS: ArtisanSlot[] = [
+  { x: 40, y: 214, w: 520, h: 262, r: 2 },
+  { x: 40, y: 490, w: 520, h: 262, r: 2 },
+  { x: 40, y: 766, w: 520, h: 262, r: 2 },
+  { x: 40, y: 1042, w: 520, h: 262, r: 2 },
+];
+
+function theaterBg(ctx: CanvasRenderingContext2D, w: number, h: number, s: number, date: number) {
+  const cream = '#f5eed8', maroon = '#78141e';
+
+  ctx.fillStyle = cream; ctx.fillRect(0, 0, w, h);
+
+  // Thick outer maroon border
+  const bW = Math.round(20 * s);
+  ctx.fillStyle = maroon;
+  ctx.fillRect(0, 0, w, bW); ctx.fillRect(0, h - bW, w, bW);
+  ctx.fillRect(0, 0, bW, h); ctx.fillRect(w - bW, 0, bW, h);
+
+  // Scalloped bites — cream semicircles eating into the border
+  ctx.fillStyle = cream;
+  const sr = Math.max(1, Math.round(11 * s));
+  const ss = Math.max(6, Math.round(22 * s));
+  for (let x = ss; x < w; x += ss) {
+    ctx.beginPath(); ctx.arc(x, 0, sr, 0, Math.PI); ctx.fill();
+    ctx.beginPath(); ctx.arc(x, h, sr, Math.PI, 0); ctx.fill();
+  }
+  for (let y2 = ss; y2 < h; y2 += ss) {
+    ctx.beginPath(); ctx.arc(0, y2, sr, -Math.PI / 2, Math.PI / 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(w, y2, sr, Math.PI / 2, -Math.PI / 2); ctx.fill();
+  }
+
+  // Inner thin border
+  const ins = Math.round(34 * s);
+  ctx.strokeStyle = maroon; ctx.lineWidth = Math.round(1.5 * s);
+  ctx.strokeRect(ins, ins, w - ins * 2, h - ins * 2);
+
+  // ── Header ──
+  aTxt(ctx, '★  ★', w / 2, Math.round(66 * s), `bold ${Math.round(18 * s)}px serif`, maroon);
+  aTxt(ctx, 'PinkSnap', w / 2, Math.round(106 * s),
+    `italic bold ${Math.round(40 * s)}px Georgia, "Times New Roman", serif`, maroon);
+  aTxt(ctx, 'PHOTO BOOTH', w / 2, Math.round(132 * s),
+    `bold ${Math.round(14 * s)}px "Inter", sans-serif`, maroon);
+
+  aLine(ctx, ins + Math.round(8 * s), Math.round(144 * s), w - ins - Math.round(8 * s), Math.round(144 * s), maroon, Math.round(s));
+
+  // Info row
+  const boxY = Math.round(150 * s), boxH = Math.round(46 * s);
+  const x0 = ins + Math.round(8 * s);
+  const dateStr = new Date(date).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: '2-digit' });
+
+  // ROW box
+  aBox(ctx, x0, boxY, Math.round(60 * s), boxH, 0, undefined, maroon, Math.round(s));
+  aTxt(ctx, 'Row', x0 + Math.round(30 * s), boxY + Math.round(16 * s), `${Math.round(11 * s)}px "Inter", sans-serif`, maroon);
+  aTxt(ctx, 'P1', x0 + Math.round(30 * s), boxY + Math.round(38 * s), `bold ${Math.round(22 * s)}px "Inter", sans-serif`, maroon);
+
+  // SHOW box
+  const x1 = x0 + Math.round(68 * s);
+  aBox(ctx, x1, boxY, Math.round(60 * s), boxH, 0, undefined, maroon, Math.round(s));
+  aTxt(ctx, 'Show', x1 + Math.round(30 * s), boxY + Math.round(16 * s), `${Math.round(11 * s)}px "Inter", sans-serif`, maroon);
+  aTxt(ctx, '01', x1 + Math.round(30 * s), boxY + Math.round(38 * s), `bold ${Math.round(22 * s)}px "Inter", sans-serif`, maroon);
+
+  // DATE box
+  const x2 = x1 + Math.round(68 * s);
+  const x2w = w - ins - Math.round(8 * s) - x2;
+  aBox(ctx, x2, boxY, x2w, boxH, 0, undefined, maroon, Math.round(s));
+  aTxt(ctx, dateStr.toUpperCase(), x2 + x2w / 2, boxY + Math.round(28 * s),
+    `bold ${Math.round(11 * s)}px "Inter", sans-serif`, maroon);
+
+  aLine(ctx, ins + Math.round(8 * s), Math.round(206 * s), w - ins - Math.round(8 * s), Math.round(206 * s), maroon, Math.round(s));
+
+  // Dark slot placeholders (photos composite here)
+  THEATER_SLOTS.forEach(sl => aBox(ctx, sl.x * s, sl.y * s, sl.w * s, sl.h * s, sl.r * s, '#171010'));
+
+  // Footer text
+  aTxt(ctx, 'SAVE THE BEST MOMENT  ★  SAVE THE BEST MOMENT', w / 2, Math.round(1348 * s),
+    `${Math.round(11 * s)}px "Inter", sans-serif`, maroon);
+}
+
+function theaterFg(ctx: CanvasRenderingContext2D, w: number, h: number, s: number, _date: number) {
+  const maroon = '#78141e';
+  // Slot outlines over photos
+  THEATER_SLOTS.forEach(sl => aBox(ctx, sl.x * s, sl.y * s, sl.w * s, sl.h * s, sl.r * s, undefined, maroon, Math.round(1.5 * s)));
+  // Brand at bottom in italic script style
+  aTxt(ctx, 'pinksnap.', w / 2, Math.round(1462 * s),
+    `italic bold ${Math.round(46 * s)}px Georgia, "Times New Roman", serif`, maroon);
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// MORA — Dark editorial strip · near-black · 4 landscape shots
+// ══════════════════════════════════════════════════════════════════════════
+
+const MORA_SLOTS: ArtisanSlot[] = [
+  { x: 158, y: 112, w: 372, h: 208, r: 0 },
+  { x: 158, y: 336, w: 372, h: 208, r: 0 },
+  { x: 158, y: 560, w: 372, h: 208, r: 0 },
+  { x: 158, y: 784, w: 372, h: 208, r: 0 },
+];
+
+function moraBg(ctx: CanvasRenderingContext2D, w: number, h: number, s: number, _date: number) {
+  const bg = '#100707', wh = '#ffffff', red = '#c41818';
+
+  ctx.fillStyle = bg; ctx.fillRect(0, 0, w, h);
+  aBox(ctx, Math.round(8 * s), Math.round(8 * s), w - Math.round(16 * s), h - Math.round(16 * s), 0,
+    undefined, 'rgba(255,255,255,0.08)', Math.round(s));
+
+  // Top label bar
+  const lbW = Math.round(280 * s);
+  aBox(ctx, (w - lbW) / 2, Math.round(28 * s), lbW, Math.round(34 * s), Math.round(2 * s), undefined, wh, Math.round(s));
+  aTxt(ctx, 'SHAWN PHOTO STUDIO', w / 2, Math.round(50 * s), `bold ${Math.round(11 * s)}px "Inter", sans-serif`, wh);
+
+  // Photo slots: dark box + white border + red left accent
+  MORA_SLOTS.forEach((sl, i) => {
+    aBox(ctx, sl.x * s, sl.y * s, sl.w * s, sl.h * s, 0, '#060202');
+    ctx.save();
+    ctx.strokeStyle = wh; ctx.lineWidth = Math.round(2 * s);
+    ctx.strokeRect(sl.x * s, sl.y * s, sl.w * s, sl.h * s);
+    ctx.restore();
+    aBox(ctx, sl.x * s - Math.round(4 * s), sl.y * s, Math.round(4 * s), sl.h * s, 0, red);
+
+    // Side label rotated text
+    ctx.save();
+    ctx.fillStyle = 'rgba(255,255,255,0.2)';
+    ctx.font = `${Math.round(9 * s)}px "Inter", sans-serif`;
+    ctx.translate(sl.x * s - Math.round(14 * s), sl.y * s + sl.h * s / 2);
+    ctx.rotate(-Math.PI / 2);
+    ctx.textAlign = 'center';
+    ctx.fillText(i % 2 === 0 ? '#picturememories' : 'pictee', 0, 0);
+    ctx.restore();
+  });
+}
+
+function moraFg(ctx: CanvasRenderingContext2D, w: number, h: number, s: number, date: number) {
+  const wh = '#ffffff';
+  aTxt(ctx, 'MORA', w / 2, Math.round(1085 * s),
+    `italic bold ${Math.round(76 * s)}px Georgia, "Times New Roman", serif`, wh);
+  aTxt(ctx, 'YOU AND MEE AGAINST', w / 2, Math.round(1160 * s),
+    `bold ${Math.round(20 * s)}px "Inter", sans-serif`, wh);
+  aTxt(ctx, 'EVERYTHING', w / 2, Math.round(1190 * s),
+    `bold ${Math.round(20 * s)}px "Inter", sans-serif`, wh);
+
+  const lbW = Math.round(260 * s);
+  aBox(ctx, (w - lbW) / 2, Math.round(1220 * s), lbW, Math.round(34 * s), Math.round(2 * s), undefined, wh, Math.round(s));
+  aTxt(ctx, 'PINKSNAP STUDIO', w / 2, Math.round(1242 * s), `bold ${Math.round(11 * s)}px "Inter", sans-serif`, wh);
+
+  const dStr = new Date(date).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }).toUpperCase();
+  aTxt(ctx, dStr, w / 2, Math.round(1282 * s), `bold ${Math.round(11 * s)}px "Inter", sans-serif`, 'rgba(255,255,255,0.45)');
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// EVERY MOMENT — Bold blue gradient · 3 square shots · UP and DOWN variants
+// ══════════════════════════════════════════════════════════════════════════
+
+const EVERY_UP_SLOTS: ArtisanSlot[] = [
+  { x: 36, y: 468, w: 448, h: 282, r: 22 },
+  { x: 36, y: 762, w: 448, h: 282, r: 22 },
+  { x: 36, y: 1056, w: 448, h: 282, r: 22 },
+];
+
+const EVERY_DOWN_SLOTS: ArtisanSlot[] = [
+  { x: 36, y: 30, w: 448, h: 282, r: 22 },
+  { x: 36, y: 324, w: 448, h: 282, r: 22 },
+  { x: 36, y: 618, w: 448, h: 282, r: 22 },
+];
+
+function everyBg(
+  ctx: CanvasRenderingContext2D,
+  w: number, h: number, s: number, date: number,
+  variant: 'up' | 'down',
+) {
+  const isUp = variant === 'up';
+  const slots = isUp ? EVERY_UP_SLOTS : EVERY_DOWN_SLOTS;
+
+  // Blue gradient — light at header side, dark at photo side
+  const grad = ctx.createLinearGradient(0, 0, 0, h);
+  if (isUp) {
+    grad.addColorStop(0, '#b8d0f0'); grad.addColorStop(0.42, '#1b52da'); grad.addColorStop(1, '#0e34a8');
+  } else {
+    grad.addColorStop(0, '#0e34a8'); grad.addColorStop(0.58, '#1b52da'); grad.addColorStop(1, '#b8d0f0');
+  }
+  ctx.fillStyle = grad; ctx.fillRect(0, 0, w, h);
+
+  // Scanline texture
+  ctx.fillStyle = 'rgba(255,255,255,0.05)';
+  const scanStep = Math.max(3, Math.round(4 * s));
+  const scanH = Math.max(1, Math.round(s));
+  for (let y2 = 0; y2 < h; y2 += scanStep) ctx.fillRect(0, y2, w, scanH);
+
+  // Slot backgrounds with pressed-in look
+  slots.forEach(sl => {
+    aBox(ctx, sl.x * s, sl.y * s, sl.w * s, sl.h * s, Math.round(sl.r * s), '#0c2d8a');
+    // Inner shadow gradient
+    ctx.save();
+    const ig = ctx.createRadialGradient(
+      (sl.x + sl.w * 0.5) * s, (sl.y + sl.h * 0.5) * s, Math.round(20 * s),
+      (sl.x + sl.w * 0.5) * s, (sl.y + sl.h * 0.5) * s, Math.round(Math.max(sl.w, sl.h) * 0.7 * s),
+    );
+    ig.addColorStop(0, 'rgba(0,0,0,0)');
+    ig.addColorStop(1, 'rgba(0,0,0,0.45)');
+    ctx.fillStyle = ig;
+    roundedRect(ctx, sl.x * s, sl.y * s, sl.w * s, sl.h * s, Math.round(sl.r * s));
+    ctx.fill();
+    ctx.restore();
+  });
+
+  const wh = '#ffffff';
+  const hdrColor = isUp ? wh : '#0e34a8';
+
+  if (isUp) {
+    // Top ornament
+    aTxt(ctx, '✱', Math.round(42 * s), Math.round(52 * s), `bold ${Math.round(20 * s)}px "Inter", sans-serif`, wh, 'left');
+    aLine(ctx, Math.round(66 * s), Math.round(44 * s), w - Math.round(80 * s), Math.round(44 * s), wh, Math.round(1.5 * s));
+    aTxt(ctx, '1.0', w - Math.round(38 * s), Math.round(52 * s), `bold ${Math.round(18 * s)}px "Inter", sans-serif`, wh, 'right');
+    // Bold header text
+    aTxt(ctx, 'EVERY', w / 2, Math.round(148 * s), `900 ${Math.round(90 * s)}px "Inter", system-ui, sans-serif`, wh);
+    aTxt(ctx, 'MOMENT', w / 2, Math.round(248 * s), `900 ${Math.round(90 * s)}px "Inter", system-ui, sans-serif`, wh);
+    aTxt(ctx, 'matters.', w / 2, Math.round(322 * s), `italic bold ${Math.round(52 * s)}px Georgia, serif`, wh);
+    aBarcode(ctx, w / 2, Math.round(368 * s), Math.round(200 * s), Math.round(28 * s), wh);
+    // PINKSNAP at bottom
+    aTxt(ctx, 'PINK', w / 2, Math.round(1368 * s), `900 ${Math.round(19 * s)}px "Inter", sans-serif`, 'rgba(255,255,255,0.9)');
+    aTxt(ctx, 'SNAP', w / 2, Math.round(1390 * s), `900 ${Math.round(19 * s)}px "Inter", sans-serif`, '#f53d89');
+    const dStr = new Date(date).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }).toUpperCase();
+    aTxt(ctx, dStr, w / 2, Math.round(1412 * s), `bold ${Math.round(9 * s)}px "Inter", sans-serif`, 'rgba(255,255,255,0.6)');
+  } else {
+    // Photos at top, footer text at bottom
+    const fy = 920;
+    aTxt(ctx, 'EVERY', w / 2, Math.round((fy + 76) * s), `900 ${Math.round(90 * s)}px "Inter", system-ui, sans-serif`, hdrColor);
+    aTxt(ctx, 'MOMENT', w / 2, Math.round((fy + 176) * s), `900 ${Math.round(90 * s)}px "Inter", system-ui, sans-serif`, hdrColor);
+    aTxt(ctx, 'matters.', w / 2, Math.round((fy + 250) * s), `italic bold ${Math.round(52 * s)}px Georgia, serif`, hdrColor);
+    aBarcode(ctx, w / 2, Math.round((fy + 296) * s), Math.round(200 * s), Math.round(28 * s), hdrColor);
+    aTxt(ctx, '✱', Math.round(42 * s), Math.round((fy + 336) * s), `bold ${Math.round(20 * s)}px "Inter", sans-serif`, hdrColor, 'left');
+    aLine(ctx, Math.round(66 * s), Math.round((fy + 328) * s), w - Math.round(80 * s), Math.round((fy + 328) * s), hdrColor, Math.round(1.5 * s));
+    aTxt(ctx, '1.0', w - Math.round(38 * s), Math.round((fy + 336) * s), `bold ${Math.round(18 * s)}px "Inter", sans-serif`, hdrColor, 'right');
+    // PINKSNAP at top (small, above first photo slot)
+    const dStr = new Date(date).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }).toUpperCase();
+    aTxt(ctx, `PINKSNAP  ·  ${dStr}`, w / 2, Math.round(18 * s), `900 ${Math.round(11 * s)}px "Inter", sans-serif`, 'rgba(255,255,255,0.85)');
+  }
+}
+
+function everyFg(
+  ctx: CanvasRenderingContext2D,
+  w: number, h: number, s: number, _date: number,
+  variant: 'up' | 'down',
+) {
+  const slots = variant === 'up' ? EVERY_UP_SLOTS : EVERY_DOWN_SLOTS;
+  slots.forEach(sl => aBox(ctx, sl.x * s, sl.y * s, sl.w * s, sl.h * s,
+    Math.round(sl.r * s), undefined, 'rgba(255,255,255,0.15)', Math.round(1.5 * s)));
+}
+
+// ── Template registry ──────────────────────────────────────────────────────
+
+export const ARTISAN_TEMPLATES: ArtisanTemplate[] = [
+  {
+    id: 'theater-show',
+    label: 'Theater Show',
+    note: 'Vintage ticket · 4 shots',
+    nw: 600, nh: 1700,
+    slots: THEATER_SLOTS,
+    paintBg: theaterBg,
+    paintFg: theaterFg,
+  },
+  {
+    id: 'every-moment-up',
+    label: 'Every Moment Matters',
+    note: 'Bold blue · header top · 3 shots',
+    nw: 520, nh: 1430,
+    slots: EVERY_UP_SLOTS,
+    paintBg: (ctx, w, h, s, date) => everyBg(ctx, w, h, s, date, 'up'),
+    paintFg: (ctx, w, h, s, date) => everyFg(ctx, w, h, s, date, 'up'),
+  },
+
+];
+
+export function getArtisanTemplate(id: ArtisanTemplateId): ArtisanTemplate {
+  return ARTISAN_TEMPLATES.find((t) => t.id === id) ?? ARTISAN_TEMPLATES[0];
+}
+
+/**
+ * Render an artisan strip to a canvas data-URL.
+ * @param template  ArtisanTemplate definition
+ * @param photos    Filtered HTMLCanvasElement per slot (null = skip)
+ * @param date      Session timestamp
+ * @param scale     Output scale (2 = hi-dpi export, 0.35 = preview)
+ */
+export async function renderArtisanStrip(
+  template: ArtisanTemplate,
+  photos: (HTMLCanvasElement | null)[],
+  date: number,
+  scale = 2,
+): Promise<string> {
+  const W = Math.round(template.nw * scale);
+  const H = Math.round(template.nh * scale);
+  const s = scale;
+
+  const canvas = document.createElement('canvas');
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return '';
+
+  // 1. Background + frame decoration (slot placeholders drawn here)
+  template.paintBg(ctx, W, H, s, date);
+
+  // 2. Composite user photos into slots
+  template.slots.forEach((slot, i) => {
+    const photo = photos[i];
+    if (!photo) return;
+
+    const sx = slot.x * s, sy = slot.y * s;
+    const sw = slot.w * s, sh = slot.h * s;
+    const r = Math.min(slot.r * s, sw / 2, sh / 2);
+
+    ctx.save();
+    roundedRect(ctx, sx, sy, sw, sh, r);
+    ctx.clip();
+
+    // Cover-fit the photo
+    const ir = photo.width / photo.height, sr2 = sw / sh;
+    let srcX = 0, srcY = 0, srcW = photo.width, srcH = photo.height;
+    if (ir > sr2) { srcW = photo.height * sr2; srcX = (photo.width - srcW) / 2; }
+    else { srcH = photo.width / sr2; srcY = (photo.height - srcH) / 2; }
+    ctx.drawImage(photo, srcX, srcY, srcW, srcH, sx, sy, sw, sh);
+    ctx.restore();
+  });
+
+  // 3. Foreground — borders and overlays on top of photos
+  template.paintFg(ctx, W, H, s, date);
+
+  return canvas.toDataURL('image/png', 1.0);
+}
+

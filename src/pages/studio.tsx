@@ -144,9 +144,9 @@ export default function Studio() {
       
       <main className="flex-1 overflow-y-auto flex flex-col items-center px-4 py-7 sm:px-6 sm:py-9">
         <div className="studio-heading text-center mb-7 w-full max-w-[34rem]">
-          <span className="booth-heading-kicker mb-3">Step 2 of 3 · Live booth</span>
+          <span className="booth-heading-kicker mb-3">Step 2 of 3 · STUDIO</span>
           <h1 className="font-display text-[2.6rem] leading-[.95] sm:text-5xl md:text-6xl text-foreground mt-4 mb-2">
-            STEP INSIDE.
+            LET'S GOO!
           </h1>
           <p className="text-[11px] sm:text-xs font-black text-primary uppercase tracking-[.2em] h-5">
             {countdown === null ? 'READY WHEN YOU ARE' : countdown === 0 ? 'SMILE!' : 'GET READY...'}

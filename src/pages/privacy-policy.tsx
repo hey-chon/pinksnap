@@ -27,7 +27,7 @@ export default function PrivacyPolicy() {
 
   const handleStartSnapping = () => {
     if (isAuthenticated) {
-      navigate('/setup');
+      navigate('/loading');
     } else {
       setShowAuthGate(true);
     }
@@ -38,7 +38,7 @@ export default function PrivacyPolicy() {
       {showAuthGate && (
         <AuthGateModal
           onClose={() => setShowAuthGate(false)}
-          onSuccess={() => { setShowAuthGate(false); navigate('/setup'); }}
+          onSuccess={() => { setShowAuthGate(false); navigate('/loading'); }}
         />
       )}
       <TopNav backTo="/" title="PRIVACY POLICY" />
@@ -299,7 +299,7 @@ export default function PrivacyPolicy() {
                 </p>
                 <div className="flex flex-wrap items-center gap-3 pt-2">
                   <a
-                    href="https://chon.is-a.dev"
+                    href="https://chon-vert.vercel.app"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-2 rounded-xl bg-primary text-white px-4 py-2.5 text-xs font-black tracking-wider uppercase shadow-md shadow-primary/25 hover:bg-primary/90 transition-colors"
@@ -339,7 +339,7 @@ export default function PrivacyPolicy() {
               onClick={handleStartSnapping}
               className="inline-flex items-center gap-2 bg-primary text-white px-6 py-3 rounded-full font-black text-sm uppercase tracking-wider shadow-lg shadow-primary/25 hover:scale-105 active:scale-95 transition-all"
             >
-              <Camera className="w-4 h-4" /> Start Snapping <ArrowRight className="w-4 h-4" />
+              <Camera className="w-4 h-4" /> Let's Go <ArrowRight className="w-4 h-4" />
             </button>
           </div>
         </div>

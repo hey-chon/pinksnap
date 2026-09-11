@@ -18,9 +18,9 @@ export default function Setup() {
 
       <main className="flex-1 overflow-y-auto flex flex-col items-center px-4 py-8 sm:px-6 sm:py-10">
         <div className="text-center mb-8 sm:mb-10 w-full max-w-2xl">
-          <span className="booth-heading-kicker mb-4">Step 1 of 3 · Booth ticket</span>
+          <span className="booth-heading-kicker mb-4">Step 1 of 3 · Booth layout</span>
           <h1 className="font-display text-[2.6rem] leading-[.95] sm:text-6xl md:text-7xl text-foreground mt-4 mb-3">
-            PICK YOUR <span className="text-primary">STRIP.</span>
+            CHOOSE YOUR <span className="text-primary">LAYOUT.</span>
           </h1>
           <p className="text-[11px] sm:text-sm font-bold text-foreground/55 uppercase tracking-[.16em] sm:tracking-[.2em] leading-relaxed">
             Every layout prints a different keepsake.
@@ -30,7 +30,7 @@ export default function Setup() {
         <div className="w-full max-w-3xl booth-plate p-4 sm:p-7">
           <div className="flex items-center justify-between gap-3 mb-5">
             <h2 className="flex items-center gap-2 text-[11px] sm:text-xs font-black uppercase tracking-[.16em] sm:tracking-[.2em] text-foreground/70">
-              <Ticket className="w-4 h-4 text-primary" /> Choose a layout
+              <Ticket className="w-4 h-4 text-primary" /> PICK
             </h2>
             <span className="text-[10px] font-black uppercase tracking-[.18em] text-foreground/40 shrink-0">3 formats</span>
           </div>

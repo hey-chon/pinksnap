@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation } from 'wouter';
 import { TopNav, BottomNav } from '@/components/layout';
 import { useAppContext } from '@/lib/store';
@@ -14,8 +14,15 @@ import {
   roundedRect,
   FrameCategory,
   FilterType,
+  FrameType,
+  FrameOption,
+  ARTISAN_TEMPLATES,
+  ArtisanTemplate,
+  ArtisanTemplateId,
+  getArtisanTemplate,
+  renderArtisanStrip,
 } from '@/lib/customization';
-import { RefreshCw, Download, Share2, Check, Sparkles, SlidersHorizontal } from 'lucide-react';
+import { RefreshCw, Download, Share2, Check, Sparkles, SlidersHorizontal, ImageIcon } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast.tsx';
 import { createGalleryPreview, createMemoryId, dataUrlToBlob, downloadImage } from '@/lib/image-utils';
 
@@ -48,28 +55,284 @@ function drawImageCover(
 const formatStripDate = (value: number) =>
   new Date(value).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }).toUpperCase();
 
+type TabMode = FrameCategory | 'artisan';
+
+function ArtisanThumbnailCard({
+  template,
+  isSelected,
+  onClick,
+}: {
+  template: ArtisanTemplate;
+  isSelected: boolean;
+  onClick: () => void;
+}) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const targetHeight = 130;
+    const scale = targetHeight / template.nh;
+    const targetWidth = Math.round(template.nw * scale);
+    canvas.width = targetWidth;
+    canvas.height = targetHeight;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    template.paintBg(ctx, targetWidth, targetHeight, scale, Date.now());
+    template.paintFg(ctx, targetWidth, targetHeight, scale, Date.now());
+  }, [template]);
+
+  return (
+    <button
+      onClick={onClick}
+      data-testid={`button-artisan-${template.id}`}
+      aria-pressed={isSelected}
+      className={`group relative flex flex-col items-center p-2 rounded-2xl transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 active:scale-95 ${
+        isSelected
+          ? 'bg-primary/10 ring-2 ring-primary shadow-lg shadow-primary/20 scale-[1.02]'
+          : 'bg-foreground/[0.03] hover:bg-foreground/[0.06] ring-1 ring-foreground/10 hover:ring-primary/40'
+      }`}
+    >
+      <div className="rounded-lg overflow-hidden shadow-sm bg-black/5 flex items-center justify-center">
+        <canvas ref={canvasRef} className="block pointer-events-none" />
+      </div>
+      <div className="mt-2 text-center w-full px-1">
+        <span className={`block text-[11px] font-black truncate leading-tight ${isSelected ? 'text-primary' : 'text-foreground/80'}`}>
+          {template.label}
+        </span>
+        <span className="block text-[9px] text-foreground/45 truncate leading-tight mt-0.5">
+          {template.slots.length} photos
+        </span>
+      </div>
+      {isSelected && (
+        <div className="absolute top-1.5 right-1.5 w-4 h-4 bg-primary rounded-full flex items-center justify-center shadow-md">
+          <Check className="w-2.5 h-2.5 text-white" />
+        </div>
+      )}
+    </button>
+  );
+}
+
+function FrameThumbnailCard({
+  option,
+  shots,
+  isSelected,
+  onClick,
+}: {
+  option: FrameOption;
+  shots: string[];
+  isSelected: boolean;
+  onClick: () => void;
+}) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const CW = 130, CH = 260;
+    canvas.width = CW;
+    canvas.height = CH;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const SIDE = 10, TOP = 8, GAP = 5, N = 3;
+    const sw = CW - SIDE * 2;
+    const sh = Math.floor((CH - TOP - 26 - GAP * (N - 1)) / N);
+    const footerY = TOP + N * sh + (N - 1) * GAP + 4;
+
+    const renderFrame = (c: CanvasRenderingContext2D, images: (HTMLImageElement | null)[]) => {
+      drawFrameBackground(c, option.id as FrameType, CW, CH, 100);
+      images.forEach((img, i) => {
+        const sy = TOP + i * (sh + GAP);
+        c.save();
+        roundedRect(c, SIDE, sy, sw, sh, 5);
+        c.clip();
+        if (img) {
+          const ir = img.width / img.height, tr = sw / sh;
+          let sx2 = 0, sy2 = 0, sw2 = img.width, sh2 = img.height;
+          if (ir > tr) { sw2 = img.height * tr; sx2 = (img.width - sw2) / 2; }
+          else { sh2 = img.width / tr; sy2 = (img.height - sh2) / 2; }
+          c.drawImage(img, sx2, sy2, sw2, sh2, SIDE, sy, sw, sh);
+        } else {
+          c.fillStyle = option.dark ? 'rgba(255,255,255,0.14)' : 'rgba(0,0,0,0.09)';
+          c.fillRect(SIDE, sy, sw, sh);
+        }
+        c.restore();
+        c.save();
+        c.strokeStyle = option.dark ? 'rgba(255,255,255,0.18)' : 'rgba(0,0,0,0.09)';
+        c.lineWidth = 1;
+        roundedRect(c, SIDE, sy, sw, sh, 5);
+        c.stroke();
+        c.restore();
+      });
+      c.textAlign = 'center';
+      c.font = `900 8px "Inter", sans-serif`;
+      c.fillStyle = option.dark ? 'rgba(253,247,250,0.9)' : 'rgba(31,29,43,0.75)';
+      c.fillText('PINK', CW / 2, footerY + 7);
+      c.fillStyle = '#ff5fa2';
+      c.fillText('SNAP', CW / 2, footerY + 16);
+    };
+
+    // Instant placeholder render
+    renderFrame(ctx, Array(N).fill(null));
+
+    // Load actual photos
+    if (shots.length === 0) return;
+    let cancelled = false;
+    Promise.all(
+      Array.from({ length: N }, (_, i) => {
+        const src = shots[i] ?? shots[shots.length - 1];
+        return new Promise<HTMLImageElement | null>((resolve) => {
+          const img = new Image();
+          img.onload = () => resolve(img);
+          img.onerror = () => resolve(null);
+          img.src = src;
+          if (img.complete && img.naturalWidth > 0) resolve(img);
+        });
+      })
+    ).then((images) => {
+      if (cancelled || !canvasRef.current) return;
+      const c = canvasRef.current.getContext('2d');
+      if (!c) return;
+      renderFrame(c, images);
+    });
+    return () => { cancelled = true; };
+  }, [option, shots]);
+
+  return (
+    <button
+      onClick={onClick}
+      data-testid={`button-frame-${option.id}`}
+      aria-pressed={isSelected}
+      className={`group relative flex flex-col items-center p-2 rounded-2xl transition-all duration-200 focus:outline-none active:scale-95 ${
+        isSelected
+          ? 'bg-primary/10 ring-2 ring-primary shadow-lg shadow-primary/20 scale-[1.02]'
+          : 'bg-foreground/[0.03] hover:bg-foreground/[0.06] ring-1 ring-foreground/10 hover:ring-primary/40'
+      }`}
+    >
+      <div className="rounded-xl overflow-hidden shadow-md w-full">
+        <canvas ref={canvasRef} className="block pointer-events-none w-full h-auto" />
+      </div>
+      <div className="mt-2 text-center w-full px-1">
+        <span className={`block text-[11px] font-black truncate leading-tight ${isSelected ? 'text-primary' : 'text-foreground/80'}`}>
+          {option.label}
+        </span>
+        <span className="block text-[9px] text-foreground/40 truncate leading-tight mt-0.5">
+          {option.note}
+        </span>
+      </div>
+      {isSelected && (
+        <div className="absolute top-1.5 right-1.5 w-4 h-4 bg-primary rounded-full flex items-center justify-center shadow-md">
+          <Check className="w-2.5 h-2.5 text-white" />
+        </div>
+      )}
+    </button>
+  );
+}
+
 export default function Edit() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const {
-    shots, layout, frame, setFrame, filter, setFilter,
+    shots, addShot, layout, frame, setFrame, filter, setFilter,
     frameOpacity, setFrameOpacity, saveMemory, clearShots,
   } = useAppContext();
 
   const [isSaving, setIsSaving] = useState(false);
-  const [category, setCategory] = useState<FrameCategory>('booth');
+  const [category, setCategory] = useState<TabMode>('booth');
+  const [artisanId, setArtisanId] = useState<ArtisanTemplateId>('theater-show');
+  const artisanCanvasRef = useRef<HTMLCanvasElement>(null);
   const stripRef = useRef<HTMLDivElement>(null);
   const sessionDate = useMemo(() => Date.now(), []);
 
+  const isArtisan = category === 'artisan';
   const activeFrame = getFrameOption(frame);
+  const activeArtisan = getArtisanTemplate(artisanId);
   const stripFilterClass = getFilterOption(filter).className;
-  const visibleFrames = FRAME_OPTIONS.filter((option) => option.category === category);
+  const visibleFrames = isArtisan ? [] : FRAME_OPTIONS.filter((o) => o.category === (category as FrameCategory));
+
+  useEffect(() => {
+    if (!isArtisan || shots.length === 0) return;
+    let isCancelled = false;
+
+    const canvas = artisanCanvasRef.current;
+    if (!canvas) return;
+
+    const template = getArtisanTemplate(artisanId);
+    const targetHeight = Math.min(620, Math.round(window.innerHeight * 0.68));
+    const scale = targetHeight / template.nh;
+    const targetWidth = Math.round(template.nw * scale);
+
+    canvas.width = targetWidth;
+    canvas.height = targetHeight;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    // 1. Instant background + placeholder render
+    template.paintBg(ctx, targetWidth, targetHeight, scale, sessionDate);
+    template.paintFg(ctx, targetWidth, targetHeight, scale, sessionDate);
+
+    // 2. Load and composite photos
+    const loadPhoto = (src: string): Promise<HTMLImageElement | null> =>
+      new Promise((resolve) => {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        const done = () => resolve(img);
+        img.onload = done;
+        img.onerror = () => resolve(null);
+        img.src = src;
+        if (img.complete && img.naturalWidth > 0) done();
+      });
+
+    Promise.all(
+      template.slots.map((_, i) => loadPhoto(shots[i] ?? shots[shots.length - 1]))
+    ).then((images) => {
+      if (isCancelled || !artisanCanvasRef.current) return;
+      const c = artisanCanvasRef.current;
+      const cctx = c.getContext('2d');
+      if (!cctx) return;
+
+      // Redraw background
+      template.paintBg(cctx, targetWidth, targetHeight, scale, sessionDate);
+
+      // Draw each photo in slot
+      template.slots.forEach((slot, i) => {
+        const rawImg = images[i];
+        if (!rawImg) return;
+        const photo = filterImageForCanvas(rawImg, filter);
+
+        const sx = slot.x * scale, sy = slot.y * scale;
+        const sw = slot.w * scale, sh = slot.h * scale;
+        const r = Math.min(slot.r * scale, sw / 2, sh / 2);
+
+        cctx.save();
+        roundedRect(cctx, sx, sy, sw, sh, r);
+        cctx.clip();
+
+        const ir = photo.width / photo.height, sr2 = sw / sh;
+        let srcX = 0, srcY = 0, srcW = photo.width, srcH = photo.height;
+        if (ir > sr2) { srcW = photo.height * sr2; srcX = (photo.width - srcW) / 2; }
+        else { srcH = photo.width / sr2; srcY = (photo.height - srcH) / 2; }
+        cctx.drawImage(photo, srcX, srcY, srcW, srcH, sx, sy, sw, sh);
+        cctx.restore();
+      });
+
+      // Foreground overlays
+      template.paintFg(cctx, targetWidth, targetHeight, scale, sessionDate);
+    });
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [isArtisan, artisanId, shots, filter, sessionDate]);
 
   const handleRetake = () => {
     clearShots();
     setLocation('/studio');
   };
 
+  // ── Standard strip canvas renderer ────────────────────────────────────────
   const generateStripImage = async (): Promise<string> => {
     if (shots.length === 0) return '';
 
@@ -99,9 +362,9 @@ export default function Edit() {
       drawImageCover(ctx, image, position.x, position.y, geometry.shotWidth, geometry.shotHeight);
       ctx.restore();
       ctx.save();
-      ctx.strokeStyle = activeFrame.matte;
-      ctx.lineWidth = 6;
-      roundedRect(ctx, position.x - 3, position.y - 3, geometry.shotWidth + 6, geometry.shotHeight + 6, geometry.radius + 3);
+      ctx.strokeStyle = activeFrame.dark ? 'rgba(255,255,255,.32)' : 'rgba(31,29,43,.20)';
+      ctx.lineWidth = 2.5;
+      roundedRect(ctx, position.x, position.y, geometry.shotWidth, geometry.shotHeight, geometry.radius);
       ctx.stroke();
       ctx.restore();
     });
@@ -120,6 +383,28 @@ export default function Edit() {
 
     return canvas.toDataURL('image/png', 1.0);
   };
+
+  // ── Artisan strip canvas renderer ──────────────────────────────────────────
+  const generateArtisanImage = async (): Promise<string> => {
+    if (shots.length === 0) return '';
+    const template = getArtisanTemplate(artisanId);
+
+    const photos = await Promise.all(
+      template.slots.map((_, i) => {
+        const src = shots[i] ?? shots[shots.length - 1];
+        return new Promise<HTMLCanvasElement | null>((resolve) => {
+          const img = new Image();
+          img.onload = () => resolve(filterImageForCanvas(img, filter));
+          img.onerror = () => resolve(null);
+          img.src = src;
+        });
+      })
+    );
+
+    return renderArtisanStrip(template, photos, sessionDate);
+  };
+
+  const getOutputImage = () => isArtisan ? generateArtisanImage() : generateStripImage();
 
   const saveToGallery = async (dataUrl: string) => {
     try {
@@ -158,7 +443,7 @@ export default function Edit() {
     setIsSaving(true);
 
     try {
-      const dataUrl = await generateStripImage();
+      const dataUrl = await getOutputImage();
       if (!dataUrl) throw new Error('empty strip');
 
       if (!skipDownload) {
@@ -189,7 +474,7 @@ export default function Edit() {
     setIsSaving(true);
 
     try {
-      const dataUrl = await generateStripImage();
+      const dataUrl = await getOutputImage();
 
       if (navigator.share && navigator.canShare) {
         const blob = dataUrlToBlob(dataUrl);
@@ -222,7 +507,7 @@ export default function Edit() {
           title: 'Share unavailable',
           description: 'Your strip will be downloaded instead.',
         });
-        const dataUrl = await generateStripImage();
+        const dataUrl = await getOutputImage();
         if (dataUrl) await executeDownload(dataUrl, true);
       }
     } finally {
@@ -236,12 +521,39 @@ export default function Edit() {
         <TopNav backTo="/setup" />
         <main className="flex-1 flex flex-col items-center justify-center p-6">
           <p className="text-xl font-bold mb-6 text-foreground/60 tracking-wide uppercase">No shots captured yet.</p>
-          <button
-            onClick={() => setLocation('/studio')}
-            className="px-8 py-4 bg-primary text-white font-black rounded-full shadow-lg hover:scale-105 active:scale-95 transition-transform"
-          >
-            GO TO STUDIO
-          </button>
+          <div className="flex flex-wrap gap-4 justify-center">
+            <button
+              onClick={() => setLocation('/studio')}
+              className="px-8 py-4 bg-primary text-white font-black rounded-full shadow-lg hover:scale-105 active:scale-95 transition-transform"
+            >
+              GO TO STUDIO
+            </button>
+            <button
+              onClick={() => {
+                const sampleColors = [
+                  ['#ffd5e6', '#cceaff'],
+                  ['#d7f5f0', '#ead6ff'],
+                  ['#ffe0c7', '#ffd2ed'],
+                  ['#d6e4ff', '#f9d7e8'],
+                ];
+                [0, 1, 2, 3].forEach((i) => {
+                  const [start, end] = sampleColors[i % sampleColors.length];
+                  addShot(`data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
+                    <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="900" viewBox="0 0 1200 900">
+                      <defs><linearGradient id="g" x1="0" x2="1" y1="0" y2="1"><stop stop-color="${start}"/><stop offset="1" stop-color="${end}"/></linearGradient></defs>
+                      <rect width="1200" height="900" fill="url(#g)"/>
+                      <circle cx="600" cy="380" r="140" fill="#fff" fill-opacity=".6"/>
+                      <circle cx="600" cy="380" r="70" fill="${start}"/>
+                      <text x="600" y="620" text-anchor="middle" font-family="sans-serif" font-size="52" font-weight="900" fill="#333">SAMPLE PHOTO ${i + 1}</text>
+                    </svg>
+                  `)}`);
+                });
+              }}
+              className="px-6 py-4 bg-foreground/10 text-foreground font-black rounded-full hover:bg-foreground/15 active:scale-95 transition-all text-sm"
+            >
+              USE SAMPLE SHOTS
+            </button>
+          </div>
         </main>
       </div>
     );
@@ -259,7 +571,6 @@ export default function Edit() {
       ? 'max-w-[280px] sm:max-w-[360px]'
       : 'max-w-[312px] sm:max-w-[460px]';
 
-
   const matteClass = activeFrame.dark ? 'strip-matte-light' : 'strip-matte-dark';
   const inkClass = activeFrame.dark ? 'strip-ink-light' : 'strip-ink-dark';
 
@@ -267,127 +578,171 @@ export default function Edit() {
     <div className="flex flex-col h-dvh">
       <TopNav backTo="/studio" />
 
-      <main className="flex-1 overflow-y-auto flex flex-col items-center px-4 py-7 sm:px-6 sm:py-9">
-        <div className="edit-heading text-center mb-7 sm:mb-9 w-full max-w-xl">
+      <main className="flex-1 overflow-y-auto flex flex-col items-center px-4 py-6 sm:px-6 sm:py-8">
+        <div className="edit-heading text-center mb-6 sm:mb-8 w-full max-w-4xl">
           <span className="booth-heading-kicker mb-3">Step 3 of 3 · Print</span>
-          <h1 className="font-display text-[2.35rem] leading-[.95] sm:text-5xl md:text-6xl text-foreground mt-4 mb-3">
-            CHOOSE YOUR STRIP.
+          <h1 className="font-display text-[2.35rem] leading-[.95] sm:text-5xl md:text-6xl mt-4 mb-3">
+            <span className="text-foreground">CHOOSE YOUR </span><span className="text-primary">STRIP.</span>
           </h1>
           <p className="text-[11px] sm:text-xs font-bold text-primary uppercase tracking-[.18em] sm:tracking-[.24em] leading-relaxed">
             Pick a booth theme, set the mood, keep the print.
           </p>
         </div>
 
+        <div className="flex flex-col xl:flex-row gap-6 sm:gap-8 xl:gap-10 w-full max-w-7xl items-center xl:items-start justify-center pb-14">
 
-        <div className="flex flex-col xl:flex-row gap-7 sm:gap-9 xl:gap-12 w-full max-w-6xl items-center xl:items-start justify-center pb-14">
-
+          {/* ── LEFT: Preview ───────────────────────────────────────────── */}
           <div className="edit-card w-full flex justify-center shrink-0 xl:w-auto xl:sticky xl:top-6">
-            <div ref={stripRef} className={`strip-shell relative overflow-hidden w-full xl:max-w-none p-3 sm:p-5 ${shellClass}`}>
-              <div className={`absolute inset-0 z-0 ${activeFrame.className} frame-opacity-${Math.round(frameOpacity / 10) * 10}`} />
 
-              <div className={`relative z-10 grid gap-3 sm:gap-3.5 mx-auto ${gridClass}`}>
-                {shots.map((shot, i) => (
-                  <div key={i} className={`strip-photo ${matteClass}`}>
-                    <img src={shot} alt={`Shot ${i + 1}`} className={stripFilterClass} />
-                  </div>
-                ))}
+            {isArtisan ? (
+              <div className="flex flex-col items-center justify-center p-1">
+                <div className="rounded-2xl overflow-hidden shadow-2xl border border-white/60 bg-black/5">
+                  <canvas ref={artisanCanvasRef} className="block pointer-events-none" />
+                </div>
               </div>
+            ) : (
+              <div ref={stripRef} className={`strip-shell relative overflow-hidden w-full xl:max-w-none p-3 sm:p-5 ${shellClass}`}>
+                <div className={`absolute inset-0 z-0 ${activeFrame.className} frame-opacity-${Math.round(frameOpacity / 10) * 10}`} />
 
-              <div className={`strip-footer relative z-10 pt-5 pb-1 text-center font-black ${inkClass}`}>
-                <span className="block text-[19px] sm:text-[22px]">PINK</span>
-                <span className="block text-[19px] sm:text-[22px] strip-brand-accent">SNAP</span>
-                <span className="strip-caption block pt-2">{formatStripDate(sessionDate)}</span>
+                <div className={`relative z-10 grid gap-3 sm:gap-3.5 mx-auto ${gridClass}`}>
+                  {shots.map((shot, i) => (
+                    <div key={i} className={`strip-photo ${matteClass}`}>
+                      <img src={shot} alt={`Shot ${i + 1}`} className={stripFilterClass} />
+                    </div>
+                  ))}
+                </div>
+
+                <div className={`strip-footer relative z-10 pt-5 pb-1 text-center font-black ${inkClass}`}>
+                  <span className="block text-[19px] sm:text-[22px]">PINK</span>
+                  <span className="block text-[19px] sm:text-[22px] strip-brand-accent">SNAP</span>
+                  <span className="strip-caption block pt-2">{formatStripDate(sessionDate)}</span>
+                </div>
               </div>
-            </div>
+            )}
           </div>
 
-          <div className="edit-card flex-1 w-full max-w-xl booth-plate p-4 sm:p-7">
+          {/* ── RIGHT: Controls ─────────────────────────────────────────── */}
+          <div className="edit-card flex-1 w-full booth-plate p-4 sm:p-6">
 
-            <div className="flex items-center justify-between gap-3 mb-5">
-              <h2 className="font-display text-2xl text-foreground/85 tracking-[.08em] flex items-center gap-2">
-                <Sparkles className="w-5 h-5 text-primary" /> themes
-              </h2>
-              <span className="text-[10px] font-black uppercase tracking-widest text-foreground/40">
-                {FRAME_OPTIONS.length} STRIPS
-              </span>
+            <div className="flex items-center gap-2 mb-4">
+              <Sparkles className="w-4 h-4 text-primary flex-none" />
+              <h2 className="font-display text-lg text-foreground/80 tracking-[.08em]">Themes</h2>
             </div>
 
-
-            <div className="flex flex-wrap gap-2 mb-4">
+            {/* Segment-style tabs */}
+            <div className="ctrl-seg mb-5">
               {FRAME_CATEGORIES.map((tab) => (
                 <button
                   key={tab.id}
                   onClick={() => setCategory(tab.id)}
                   aria-pressed={category === tab.id}
                   data-testid={`button-category-${tab.id}`}
-                  className={`tab-chip ${category === tab.id ? 'tab-chip-active' : ''}`}
+                  className={`ctrl-seg-btn ${category === tab.id ? 'ctrl-seg-active' : ''}`}
                 >
                   {tab.label}
                 </button>
               ))}
+              <button
+                onClick={() => setCategory('artisan')}
+                aria-pressed={isArtisan}
+                data-testid="button-category-artisan"
+                className={`ctrl-seg-btn flex items-center gap-1 ${isArtisan ? 'ctrl-seg-active' : ''}`}
+              >
+                <ImageIcon className="w-3 h-3" /> Artisan
+              </button>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-7">
-              {visibleFrames.map((option) => (
-                <button
-                  key={option.id}
-                  onClick={() => setFrame(option.id)}
-                  data-testid={`button-frame-${option.id}`}
-                  aria-pressed={frame === option.id}
-                  className={`theme-card ${frame === option.id ? 'theme-card-active' : ''}`}
-                >
-                  <span className={`theme-preview ${option.className} ${option.dark ? 'theme-preview-dark' : ''}`}>
-                    <span />
-                    <span />
-                    <span />
-                  </span>
-                  {frame === option.id && (
-                    <Check className="theme-check p-0.5" aria-hidden="true" />
-                  )}
-                  <span className="px-0.5">
-                    <span className="theme-name block">{option.label}</span>
-                    <span className="theme-note block">{option.note}</span>
-                  </span>
-                </button>
-              ))}
-            </div>
+            {isArtisan ? (
+              /* ── Artisan template picker ── */
+              <div className="mb-6">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-5">
+                  {ARTISAN_TEMPLATES.map((tpl) => (
+                    <ArtisanThumbnailCard
+                      key={tpl.id}
+                      template={tpl}
+                      isSelected={artisanId === tpl.id}
+                      onClick={() => setArtisanId(tpl.id)}
+                    />
+                  ))}
+                </div>
 
-            <div className="panel-block mb-4">
-              <h3 className="text-xs font-black text-foreground/70 uppercase tracking-widest mb-3">Film look</h3>
-              <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
-                {FILTER_OPTIONS.map((option) => (
-                  <button
-                    key={option.id}
-                    onClick={() => setFilter(option.id as FilterType)}
-                    data-testid={`button-filter-${option.id}`}
-                    aria-pressed={filter === option.id}
-                    className={`filter-choice ${filter === option.id ? 'filter-choice-active' : ''}`}
-                  >
-                    <span className="filter-thumb">
-                      <img src={shots[0]} alt="" className={option.className} />
-                    </span>
-                    {option.label}
-                  </button>
-                ))}
+                {/* Film look */}
+                <div className="panel-block">
+                  <h3 className="ctrl-label mb-3">Film look</h3>
+                  <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+                    {FILTER_OPTIONS.map((option) => (
+                      <button
+                        key={option.id}
+                        onClick={() => setFilter(option.id as FilterType)}
+                        data-testid={`button-filter-${option.id}`}
+                        aria-pressed={filter === option.id}
+                        className={`filter-choice ${filter === option.id ? 'filter-choice-active' : ''}`}
+                      >
+                        <span className="filter-thumb">
+                          <img src={shots[0]} alt="" className={option.className} />
+                        </span>
+                        {option.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </div>
-            </div>
+            ) : (
+              /* ── Standard theme picker ── */
+              <>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 mb-5">
+                  {visibleFrames.map((option) => (
+                    <FrameThumbnailCard
+                      key={option.id}
+                      option={option}
+                      shots={shots}
+                      isSelected={frame === option.id}
+                      onClick={() => setFrame(option.id)}
+                    />
+                  ))}
+                </div>
 
-            <div className="panel-block mb-6">
-              <label className="flex justify-between text-xs font-black text-foreground/70 uppercase tracking-widest mb-3">
-                <span className="flex items-center gap-2"><SlidersHorizontal className="w-4 h-4 text-primary" /> Theme strength</span>
-                <span>{frameOpacity}%</span>
-              </label>
-              <input
-                type="range"
-                min="20"
-                max="100"
-                value={frameOpacity}
-                onChange={(e) => setFrameOpacity(Number(e.target.value))}
-                className="range-pink focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                aria-label="Theme strength"
-              />
-            </div>
+                {/* Film look */}
+                <div className="panel-block mb-4">
+                  <h3 className="ctrl-label mb-3">Film look</h3>
+                  <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+                    {FILTER_OPTIONS.map((option) => (
+                      <button
+                        key={option.id}
+                        onClick={() => setFilter(option.id as FilterType)}
+                        data-testid={`button-filter-${option.id}`}
+                        aria-pressed={filter === option.id}
+                        className={`filter-choice ${filter === option.id ? 'filter-choice-active' : ''}`}
+                      >
+                        <span className="filter-thumb">
+                          <img src={shots[0]} alt="" className={option.className} />
+                        </span>
+                        {option.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
 
+                {/* Theme strength */}
+                <div className="panel-block mb-5">
+                  <label className="flex items-center justify-between ctrl-label mb-3">
+                    <span className="flex items-center gap-1.5"><SlidersHorizontal className="w-3.5 h-3.5 text-primary" /> Strength</span>
+                    <span className="text-primary font-black">{frameOpacity}%</span>
+                  </label>
+                  <input
+                    type="range"
+                    min="20"
+                    max="100"
+                    value={frameOpacity}
+                    onChange={(e) => setFrameOpacity(Number(e.target.value))}
+                    className="range-pink focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                    aria-label="Theme strength"
+                  />
+                </div>
+              </>
+            )}
+
+            {/* Action buttons — same for both modes */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <button
                 onClick={handleRetake}

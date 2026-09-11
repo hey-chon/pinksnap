@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useLocation } from 'wouter';
 import { Camera, Check, Frame, Settings2, Sparkles, SunMedium } from 'lucide-react';
 
@@ -11,9 +11,6 @@ const messages = [
 
 export default function StudioLoading() {
   const [, setLocation] = useLocation();
-  const pageRef = useRef<HTMLDivElement>(null);
-  const ringRef = useRef<HTMLDivElement>(null);
-  const logoRef = useRef<HTMLDivElement>(null);
   const [step, setStep] = useState(0);
 
   useEffect(() => {
@@ -21,48 +18,147 @@ export default function StudioLoading() {
       setStep((current) => Math.min(current + 1, messages.length - 1));
     }, 650);
     const timeout = window.setTimeout(() => setLocation('/setup'), 3100);
-
     return () => {
       window.clearInterval(interval);
       window.clearTimeout(timeout);
     };
   }, [setLocation]);
 
+  const progress = ((step + 1) / messages.length) * 100;
+
   return (
-    <div ref={pageRef} className="min-h-[100dvh] flex items-center justify-center px-6 py-12 bg-[#f8f7ff] overflow-hidden">
-      <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_20%_30%,rgba(174,231,247,.62),transparent_32%),radial-gradient(circle_at_82%_68%,rgba(239,204,255,.72),transparent_36%),linear-gradient(120deg,#eaf8f6_0%,#edf3ff_49%,#f8eafe_100%)]" />
+    <div
+      className="min-h-[100dvh] flex items-center justify-center px-6 py-12 overflow-hidden"
+      style={{ background: 'linear-gradient(160deg, #0a0507 0%, #100810 50%, #0d060b 100%)' }}
+    >
+      {/* Ambient glow blobs */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div style={{
+          position: 'absolute', top: '15%', left: '10%',
+          width: '340px', height: '340px', borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(245,61,137,.18) 0%, transparent 70%)',
+          filter: 'blur(40px)',
+        }} />
+        <div style={{
+          position: 'absolute', bottom: '20%', right: '8%',
+          width: '280px', height: '280px', borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(226,183,106,.10) 0%, transparent 70%)',
+          filter: 'blur(40px)',
+        }} />
+      </div>
+
+      {/* Film sprocket dots left */}
+      <div className="absolute left-0 top-0 bottom-0 w-8 flex flex-col justify-evenly items-center py-8 pointer-events-none"
+        style={{ opacity: 0.18 }}>
+        {Array.from({ length: 11 }).map((_, i) => (
+          <div key={i} style={{ width: '13px', height: '18px', borderRadius: '3px', background: 'rgba(255,255,255,.7)' }} />
+        ))}
+      </div>
+      {/* Film sprocket dots right */}
+      <div className="absolute right-0 top-0 bottom-0 w-8 flex flex-col justify-evenly items-center py-8 pointer-events-none"
+        style={{ opacity: 0.18 }}>
+        {Array.from({ length: 11 }).map((_, i) => (
+          <div key={i} style={{ width: '13px', height: '18px', borderRadius: '3px', background: 'rgba(255,255,255,.7)' }} />
+        ))}
+      </div>
 
       <main className="relative z-10 w-full max-w-sm text-center">
-        <div ref={logoRef} className="loading-item reveal-pop relative mx-auto mb-8 w-28 h-28 rounded-[30px] bg-primary text-white flex items-center justify-center shadow-[0_18px_45px_rgba(245,61,137,.3)]">
-          <div ref={ringRef} className="absolute -inset-3 rounded-[36px] border border-primary/35 border-t-primary/80 border-dashed animate-spin" />
-          <Camera className="w-12 h-12 stroke-[2.4]" />
-          <Sparkles className="absolute top-3 right-3 w-5 h-5" />
+
+        {/* Logo icon */}
+        <div
+          className="reveal-pop relative mx-auto mb-7 w-24 h-24 flex items-center justify-center"
+          style={{
+            borderRadius: '22px',
+            background: 'linear-gradient(145deg, #1e1118, #2a0f1c)',
+            border: '1px solid rgba(245,61,137,.35)',
+            boxShadow: '0 0 40px -8px rgba(245,61,137,.45), inset 0 1px 0 rgba(255,255,255,.07)',
+          }}
+        >
+          <div
+            className="absolute -inset-3 animate-spin"
+            style={{
+              borderRadius: '28px',
+              border: '1px dashed rgba(245,61,137,.4)',
+              borderTopColor: 'rgba(245,61,137,.85)',
+              animationDuration: '2.8s',
+            }}
+          />
+          <Camera className="w-11 h-11 text-white stroke-[2.2]" />
+          <Sparkles className="absolute top-2.5 right-2.5 w-4 h-4" style={{ color: '#f53d89' }} />
         </div>
 
-        <div className="loading-item flex items-center justify-center gap-1.5 font-black text-[28px] leading-none tracking-[-.05em] mb-3">
-          <span className="text-[#1f1d2b]">PINK</span>
-          <span className="text-primary">SNAP</span>
+        {/* Wordmark */}
+        <div className="reveal-pop flex items-center justify-center gap-1.5 font-black text-[30px] leading-none tracking-[-.04em] mb-2">
+          <span style={{ color: '#fdf7fa' }}>PINK</span>
+          <span style={{ color: '#f53d89' }}>SNAP</span>
         </div>
-        <p className="loading-item text-xs font-black uppercase tracking-[.2em] text-foreground/55 mb-8">
-          give us a sec...
+        <p className="reveal-pop text-[10px] font-black uppercase tracking-[.26em] mb-8"
+          style={{ color: 'rgba(255,255,255,.35)' }}>
+          warming up the booth...
         </p>
 
-        <div className="loading-item rounded-3xl bg-white/65 border border-white/80 backdrop-blur-md p-5 shadow-xl">
-          <div className="space-y-3 text-left">
-            {messages.map(({ label, icon: Icon }, index) => (
-              <div key={label} className={`flex items-center gap-3 text-sm font-bold transition-all duration-300 ${index <= step ? 'text-foreground' : 'text-foreground/30'}`}>
-                <span className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 ${index < step ? 'bg-primary text-white' : index === step ? 'bg-primary/15 text-primary' : 'bg-foreground/5 text-foreground/20'}`}>
-                  {index < step ? <Check className="w-4 h-4" /> : <Icon className={`w-3.5 h-3.5 ${index === step ? 'loading-dot' : ''}`} />}
+        {/* Step list card */}
+        <div
+          className="reveal-pop p-5 space-y-3"
+          style={{
+            borderRadius: '1.4rem',
+            background: 'rgba(255,255,255,.04)',
+            border: '1px solid rgba(255,255,255,.09)',
+            boxShadow: '0 24px 48px -20px rgba(0,0,0,.7)',
+            backdropFilter: 'blur(20px)',
+          }}
+        >
+          {messages.map(({ label, icon: Icon }, index) => (
+            <div
+              key={label}
+              className="flex items-center gap-3 text-sm font-bold transition-all duration-300"
+              style={{ color: index <= step ? 'rgba(255,255,255,.9)' : 'rgba(255,255,255,.22)' }}
+            >
+              <span
+                className="w-7 h-7 rounded-full flex items-center justify-center shrink-0 transition-all duration-300"
+                style={{
+                  background: index < step
+                    ? 'linear-gradient(135deg, #f53d89, #c42d6a)'
+                    : index === step
+                      ? 'rgba(245,61,137,.15)'
+                      : 'rgba(255,255,255,.05)',
+                  boxShadow: index < step ? '0 4px 12px rgba(245,61,137,.4)' : 'none',
+                }}
+              >
+                {index < step
+                  ? <Check className="w-4 h-4 text-white" />
+                  : <Icon
+                      className={`w-3.5 h-3.5 ${index === step ? 'loading-dot' : ''}`}
+                      style={{ color: index === step ? '#f53d89' : 'rgba(255,255,255,.2)' }}
+                    />}
+              </span>
+
+              <span className="flex-1 text-left">{label}</span>
+
+              {index === step && (
+                <span className="flex gap-1">
+                  <i className="loading-bounce" style={{ background: '#f53d89' }} />
+                  <i className="loading-bounce" style={{ background: '#f53d89', animationDelay: '120ms' }} />
+                  <i className="loading-bounce" style={{ background: '#f53d89', animationDelay: '240ms' }} />
                 </span>
-                <span>{label}</span>
-                {index === step && <span className="ml-auto flex gap-1"><i className="loading-bounce" /><i className="loading-bounce [animation-delay:120ms]" /><i className="loading-bounce [animation-delay:240ms]" /></span>}
-              </div>
-            ))}
-          </div>
-          <div className="mt-5 h-2 rounded-full bg-foreground/5 overflow-hidden">
-            <div className={`loading-progress loading-progress-${step + 1} h-full rounded-full bg-primary transition-all duration-500 ease-out`} />
+              )}
+            </div>
+          ))}
+
+          {/* Progress bar */}
+          <div className="mt-5 h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,.07)' }}>
+            <div
+              className="h-full rounded-full transition-all duration-500 ease-out"
+              style={{
+                width: `${progress}%`,
+                background: 'linear-gradient(90deg, #c42d6a, #f53d89, #ff8ab8)',
+                boxShadow: '0 0 10px rgba(245,61,137,.55)',
+              }}
+            />
           </div>
         </div>
+
+        
       </main>
     </div>
   );
