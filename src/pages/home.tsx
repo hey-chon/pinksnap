@@ -77,7 +77,7 @@ export default function Home() {
           </h1>
           
           <p className="home-hero-item text-xs sm:text-sm font-black text-foreground/60 mb-8 tracking-[.22em] uppercase">
-            YOUR MODERN VIRTUAL PHOTOBOOTH.
+            YOUR VIRTUAL PHOTOBOOTH.
           </p>
           
           <button
