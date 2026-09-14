@@ -127,7 +127,7 @@ export default function Gallery() {
                 data-testid="link-start-session"
                 className="px-4 py-4 bg-primary text-white font-black rounded-full shadow-lg shadow-primary/30 hover:scale-105 active:scale-95 transition-transform flex items-center gap-2"
               >
-                START <ArrowRight className="w-5 h-5" />
+                GET STARTED <ArrowRight className="w-5 h-5" />
               </button>
             </div>
           ) : (
