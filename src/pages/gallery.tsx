@@ -111,7 +111,7 @@ export default function Gallery() {
       <main className="flex-1 overflow-y-auto flex flex-col items-center px-4 py-7 sm:px-6 sm:py-9">
         <div className="w-full max-w-6xl pb-14">
           <div className="text-center mb-8">
-            <span className="booth-heading-kicker mb-3">Your print archive</span>
+            <span className="booth-heading-kicker mb-3">print archive</span>
             <h1 className="font-display text-[2.6rem] leading-[.95] sm:text-6xl mt-4 text-white">THE <span className="text-primary">GALLERY.</span></h1>
           </div>
           
