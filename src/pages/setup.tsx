@@ -30,9 +30,8 @@ export default function Setup() {
         <div className="w-full max-w-3xl booth-plate p-4 sm:p-7">
           <div className="flex items-center justify-between gap-3 mb-5">
             <h2 className="flex items-center gap-2 text-[11px] sm:text-xs font-black uppercase tracking-[.16em] sm:tracking-[.2em] text-foreground/70">
-              <Ticket className="w-4 h-4 text-primary" /> PICK
+              <Ticket className="w-4 h-4 text-primary" /> FORMATS
             </h2>
-            <span className="text-[10px] font-black uppercase tracking-[.18em] text-foreground/40 shrink-0">3 formats</span>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-5">
