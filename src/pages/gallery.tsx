@@ -120,7 +120,7 @@ export default function Gallery() {
               <div className="w-24 h-24 bg-white/10 rounded-full flex items-center justify-center mb-6 shadow-inner border border-white/20">
                 <ImageIcon className="w-10 h-10 text-white/60" />
               </div>
-              <h2 data-testid="gallery-empty-state" className="font-display text-[2.2rem] sm:text-5xl text-white/90 mb-3">NO PRINTS YET</h2>
+              
               <button
                 type="button"
                 onClick={handleStartSession}
