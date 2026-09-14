@@ -125,7 +125,7 @@ export default function Gallery() {
                 type="button"
                 onClick={handleStartSession}
                 data-testid="link-start-session"
-                className="px-8 py-4 bg-primary text-white font-black rounded-full shadow-lg shadow-primary/30 hover:scale-105 active:scale-50 transition-transform flex items-center gap-2"
+                className="px-4 py-4 bg-primary text-white font-black rounded-full shadow-lg shadow-primary/30 hover:scale-105 active:scale-95 transition-transform flex items-center gap-2"
               >
                 START A SESSION <ArrowRight className="w-5 h-5" />
               </button>
