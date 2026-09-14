@@ -121,9 +121,6 @@ export default function Gallery() {
                 <ImageIcon className="w-10 h-10 text-white/60" />
               </div>
               <h2 data-testid="gallery-empty-state" className="font-display text-[2.2rem] sm:text-5xl text-white/90 mb-3">NO PRINTS YET</h2>
-              <p className="text-white/65 mb-10 max-w-md font-medium text-sm sm:text-base">
-                Your gallery is empty. Head over to the studio to capture your first photo strip!
-              </p>
               <button
                 type="button"
                 onClick={handleStartSession}

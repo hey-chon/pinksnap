@@ -557,7 +557,7 @@ export default function Edit() {
             <span className="text-foreground">CHOOSE YOUR </span><span className="text-primary">STRIP.</span>
           </h1>
           <p className="text-[11px] sm:text-xs font-bold text-primary uppercase tracking-[.18em] sm:tracking-[.24em] leading-relaxed">
-            Pick a booth theme, set the mood, keep the print.
+            Pick a theme, set the mood, keep the print.
           </p>
         </div>
 
