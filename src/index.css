@@ -255,8 +255,7 @@ img { max-width: 100%; }
   background-color: #fff2f7;
   background-image:
     radial-gradient(circle at 20px 24px, #f66f96 0 6px, transparent 6.5px),
-    radial-gradient(circle at 52px 60px, #f66f96 0 6px, transparent 6.5px),
-    linear-gradient(135deg, transparent 45%, #59ad71 46% 52%, transparent 53%);
+    radial-gradient(circle at 52px 60px, #f66f96 0 6px, transparent 6.5px);
   background-size: 74px 74px;
 }
 
@@ -307,7 +306,7 @@ img { max-width: 100%; }
 
 /* strip shell */
 .strip-shell {
-  border-radius: 1.35rem;
+  border-radius: 1.15rem;
   box-shadow: 0 26px 60px -22px rgba(31, 29, 43, .45);
   isolation: isolate;
 }
@@ -315,7 +314,7 @@ img { max-width: 100%; }
 .strip-photo {
   aspect-ratio: 4 / 3;
   overflow: hidden;
-  border-radius: .7rem;
+  border-radius: 0.6rem;
   background: rgba(0, 0, 0, .18);
 }
 
@@ -325,7 +324,7 @@ img { max-width: 100%; }
 .strip-matte-dark { box-shadow: 0 0 0 2px rgba(31, 29, 43, .22); }
 
 .strip-footer { letter-spacing: -.03em; line-height: .92; }
-.strip-caption { font-size: .55rem; letter-spacing: .28em; font-weight: 800; }
+.strip-caption { font-size: .52rem; letter-spacing: .24em; font-weight: 800; opacity: 0.75; }
 .strip-ink-light { color: #fdf7fa; }
 .strip-ink-light .strip-caption { color: rgba(253, 247, 250, .7); }
 .strip-ink-dark { color: #1f1d2b; }

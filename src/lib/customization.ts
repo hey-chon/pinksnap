@@ -19,12 +19,6 @@ export type FrameType =
   | 'mint'
   | 'ocean'
   | 'white'
-  | 'strawberry'
-  | 'bubblegum'
-  | 'sakura'
-  | 'checkered'
-  | 'confetti'
-  | 'lavender'
   | 'sky';
 
 export type FilterType =
@@ -38,7 +32,7 @@ export type FilterType =
   | 'cool'
   | 'candy';
 
-export type FrameCategory = 'booth' | 'glow' | 'cute';
+export type FrameCategory = 'booth';
 
 export type FrameOption = {
   id: FrameType;
@@ -52,9 +46,7 @@ export type FrameOption = {
 };
 
 export const FRAME_CATEGORIES: { id: FrameCategory; label: string }[] = [
-  { id: 'booth', label: 'Elegant' },
-  { id: 'glow', label: 'Glowy' },
-  { id: 'cute', label: 'Cutesy' },
+  { id: 'booth', label: 'PINKSNAP' },
 ];
 
 function fill(ctx: CanvasRenderingContext2D, color: string, w: number, h: number) {
@@ -111,6 +103,49 @@ export function roundedRect(
   ctx.closePath();
 }
 
+function drawCssTiledLinearGradient(
+  ctx: CanvasRenderingContext2D,
+  w: number,
+  h: number,
+  tileW: number,
+  tileH: number,
+  angleDeg: number,
+  color: string,
+) {
+  const tileCanvas = document.createElement('canvas');
+  tileCanvas.width = tileW;
+  tileCanvas.height = tileH;
+  const tctx = tileCanvas.getContext('2d');
+  if (!tctx) return;
+
+  const rad = (angleDeg * Math.PI) / 180;
+  const vx = Math.sin(rad);
+  const vy = -Math.cos(rad);
+  const D = 0.5 * (Math.abs(tileW * vx) + Math.abs(tileH * vy));
+
+  const x0 = tileW / 2 - D * vx;
+  const y0 = tileH / 2 - D * vy;
+  const x1 = tileW / 2 + D * vx;
+  const y1 = tileH / 2 + D * vy;
+
+  const grad = tctx.createLinearGradient(x0, y0, x1, y1);
+  grad.addColorStop(0, 'transparent');
+  grad.addColorStop(0.42, 'transparent');
+  grad.addColorStop(0.43, color);
+  grad.addColorStop(0.57, color);
+  grad.addColorStop(0.58, 'transparent');
+  grad.addColorStop(1, 'transparent');
+
+  tctx.fillStyle = grad;
+  tctx.fillRect(0, 0, tileW, tileH);
+
+  const pattern = ctx.createPattern(tileCanvas, 'repeat');
+  if (pattern) {
+    ctx.fillStyle = pattern;
+    ctx.fillRect(0, 0, w, h);
+  }
+}
+
 export const FRAME_OPTIONS: FrameOption[] = [
   {
     id: 'classic',
@@ -138,6 +173,41 @@ export const FRAME_OPTIONS: FrameOption[] = [
       ctx.strokeStyle = 'rgba(226,183,106,.3)';
       ctx.lineWidth = 1;
       ctx.strokeRect(18, 18, w - 36, h - 36);
+    },
+  },
+  {
+    id: 'onyx',
+    label: 'Midnight Onyx',
+    note: 'Jet black & silver',
+    category: 'booth',
+    className: 'frame-onyx',
+    dark: true,
+    matte: 'rgba(220,225,235,.45)',
+    paint: (ctx, w, h) => {
+      verticalGradient(ctx, w, h, [
+        [0, '#0a0a0c'],
+        [0.5, '#141419'],
+        [1, '#050507'],
+      ]);
+      speckle(ctx, w, h, 'rgba(220,225,235,.30)', 50, 2.2);
+      ctx.strokeStyle = 'rgba(220,225,235,.35)';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(16, 16, w - 32, h - 32);
+    },
+  },
+  {
+    id: 'filmstrip',
+    label: '35mm Film',
+    note: 'Sprocket edges',
+    category: 'booth',
+    className: 'frame-filmstrip',
+    dark: true,
+    matte: 'rgba(244,241,234,.35)',
+    paint: (ctx, w, h) => {
+      fill(ctx, '#1b1a18', w, h);
+      ctx.fillStyle = 'rgba(255,255,255,.04)';
+      for (let y = 0; y < h; y += 6) ctx.fillRect(0, y, w, 2);
+      sprockets(ctx, w, h);
     },
   },
   {
@@ -290,41 +360,6 @@ export const FRAME_OPTIONS: FrameOption[] = [
     },
   },
   {
-    id: 'onyx',
-    label: 'Midnight Onyx',
-    note: 'Jet black & silver',
-    category: 'booth',
-    className: 'frame-onyx',
-    dark: true,
-    matte: 'rgba(220,225,235,.45)',
-    paint: (ctx, w, h) => {
-      verticalGradient(ctx, w, h, [
-        [0, '#0a0a0c'],
-        [0.5, '#141419'],
-        [1, '#050507'],
-      ]);
-      speckle(ctx, w, h, 'rgba(220,225,235,.30)', 50, 2.2);
-      ctx.strokeStyle = 'rgba(220,225,235,.35)';
-      ctx.lineWidth = 1;
-      ctx.strokeRect(16, 16, w - 32, h - 32);
-    },
-  },
-  {
-    id: 'filmstrip',
-    label: '35mm Film',
-    note: 'Sprocket edges',
-    category: 'booth',
-    className: 'frame-filmstrip',
-    dark: true,
-    matte: 'rgba(244,241,234,.35)',
-    paint: (ctx, w, h) => {
-      fill(ctx, '#1b1a18', w, h);
-      ctx.fillStyle = 'rgba(255,255,255,.04)';
-      for (let y = 0; y < h; y += 6) ctx.fillRect(0, y, w, 2);
-      sprockets(ctx, w, h);
-    },
-  },
-  {
     id: 'sepia',
     label: 'Warm Sepia',
     note: 'Espresso sepia',
@@ -382,7 +417,7 @@ export const FRAME_OPTIONS: FrameOption[] = [
     id: 'midnight',
     label: 'Midnight Neon',
     note: 'After hours glow',
-    category: 'glow',
+    category: 'booth',
     className: 'frame-midnight',
     dark: true,
     matte: 'rgba(255,140,205,.42)',
@@ -404,7 +439,7 @@ export const FRAME_OPTIONS: FrameOption[] = [
     id: 'sunset',
     label: 'Sunset Strip',
     note: 'Golden hour fade',
-    category: 'glow',
+    category: 'booth',
     className: 'frame-sunset',
     dark: true,
     matte: 'rgba(255,244,230,.5)',
@@ -422,7 +457,7 @@ export const FRAME_OPTIONS: FrameOption[] = [
     id: 'y2k',
     label: 'Y2K Chrome',
     note: 'Glitter bubblegum',
-    category: 'glow',
+    category: 'booth',
     className: 'frame-y2k',
     dark: false,
     matte: 'rgba(255,255,255,.7)',
@@ -444,7 +479,7 @@ export const FRAME_OPTIONS: FrameOption[] = [
     id: 'mint',
     label: 'Mint Terrazzo',
     note: 'Studio tile floor',
-    category: 'glow',
+    category: 'booth',
     className: 'frame-mint',
     dark: false,
     matte: 'rgba(31,29,43,.12)',
@@ -469,7 +504,7 @@ export const FRAME_OPTIONS: FrameOption[] = [
     id: 'ocean',
     label: 'Ocean Drive',
     note: 'Cool wave stripes',
-    category: 'glow',
+    category: 'booth',
     className: 'frame-ocean',
     dark: false,
     matte: 'rgba(255,255,255,.7)',
@@ -496,183 +531,40 @@ export const FRAME_OPTIONS: FrameOption[] = [
     id: 'white',
     label: 'Pure White',
     note: 'Clean and simple',
-    category: 'cute',
+    category: 'booth',
     className: 'frame-white',
     dark: false,
     matte: 'rgba(31,29,43,.12)',
     paint: (ctx, w, h) => fill(ctx, '#ffffff', w, h),
   },
   {
-    id: 'strawberry',
-    label: 'Strawberry',
-    note: 'Berry sweet dots',
-    category: 'cute',
-    className: 'frame-strawberry',
-    dark: false,
-    matte: 'rgba(246,111,150,.4)',
-    paint: (ctx, w, h) => {
-      fill(ctx, '#fff2f7', w, h);
-      for (let y = 30; y < h; y += 74) {
-        for (let x = 28; x < w; x += 74) {
-          ctx.fillStyle = '#f66f96';
-          ctx.beginPath();
-          ctx.moveTo(x, y + 9);
-          ctx.bezierCurveTo(x - 11, y - 2, x - 7, y - 12, x, y - 6);
-          ctx.bezierCurveTo(x + 7, y - 12, x + 11, y - 2, x, y + 9);
-          ctx.fill();
-          ctx.strokeStyle = '#59ad71';
-          ctx.lineWidth = 3;
-          ctx.beginPath();
-          ctx.moveTo(x - 6, y - 9);
-          ctx.lineTo(x, y - 14);
-          ctx.lineTo(x + 6, y - 9);
-          ctx.stroke();
-        }
-      }
-    },
-  },
-  {
-    id: 'bubblegum',
-    label: 'Bubblegum',
-    note: 'Big soft bubbles',
-    category: 'cute',
-    className: 'frame-bubblegum',
-    dark: false,
-    matte: 'rgba(244,126,174,.45)',
-    paint: (ctx, w, h) => {
-      fill(ctx, '#ffe1ec', w, h);
-      ctx.fillStyle = 'rgba(244,126,174,.55)';
-      let n = 0;
-      for (let y = 40; y < h; y += 84) {
-        for (let x = 30 + (n % 2) * 30; x < w; x += 84) {
-          ctx.beginPath();
-          ctx.arc(x, y, 16 + (n % 3) * 5, 0, Math.PI * 2);
-          ctx.fill();
-          n += 1;
-        }
-      }
-    },
-  },
-  {
-    id: 'sakura',
-    label: 'Sakura Drift',
-    note: 'Falling petals',
-    category: 'cute',
-    className: 'frame-sakura',
-    dark: false,
-    matte: 'rgba(31,29,43,.12)',
-    paint: (ctx, w, h) => {
-      verticalGradient(ctx, w, h, [
-        [0, '#fff6f8'],
-        [1, '#ffe4ee'],
-      ]);
-      let n = 0;
-      for (let y = 34; y < h; y += 66) {
-        for (let x = 26; x < w; x += 70) {
-          ctx.save();
-          ctx.translate(x + ((n * 11) % 19), y);
-          ctx.rotate(n * 0.7);
-          ctx.fillStyle = n % 3 === 0 ? 'rgba(255,183,206,.9)' : 'rgba(255,205,222,.85)';
-          for (let p = 0; p < 5; p += 1) {
-            ctx.rotate((Math.PI * 2) / 5);
-            ctx.beginPath();
-            ctx.ellipse(0, -7, 3.4, 6.5, 0, 0, Math.PI * 2);
-            ctx.fill();
-          }
-          ctx.restore();
-          n += 1;
-        }
-      }
-    },
-  },
-  {
-    id: 'checkered',
-    label: 'Checkered',
-    note: 'Diner tiles',
-    category: 'cute',
-    className: 'frame-checkered',
-    dark: false,
-    matte: 'rgba(31,29,43,.14)',
-    paint: (ctx, w, h) => {
-      fill(ctx, '#ffd2df', w, h);
-      ctx.fillStyle = '#fff8fb';
-      const size = 44;
-      for (let y = 0; y < h; y += size) {
-        for (let x = 0; x < w; x += size) {
-          if ((x / size + y / size) % 2 === 0) ctx.fillRect(x, y, size, size);
-        }
-      }
-    },
-  },
-  {
-    id: 'confetti',
-    label: 'Confetti Party',
-    note: 'Toss it up',
-    category: 'cute',
-    className: 'frame-confetti',
-    dark: false,
-    matte: 'rgba(31,29,43,.12)',
-    paint: (ctx, w, h) => {
-      fill(ctx, '#fff5df', w, h);
-      const colors = ['#f78fb3', '#82c9c0', '#f2bd63', '#a895db'];
-      let n = 0;
-      for (let y = 26; y < h; y += 58) {
-        for (let x = 24; x < w; x += 56) {
-          ctx.save();
-          ctx.translate(x + ((n * 9) % 15), y);
-          ctx.rotate(n % 2 ? 0.5 : -0.6);
-          ctx.fillStyle = colors[n % colors.length];
-          ctx.fillRect(-4, -10, 8, 20);
-          ctx.restore();
-          n += 1;
-        }
-      }
-    },
-  },
-  {
-    id: 'lavender',
-    label: 'Lavender Haze',
-    note: 'Dreamy rings',
-    category: 'cute',
-    className: 'frame-lavender',
-    dark: false,
-    matte: 'rgba(31,29,43,.12)',
-    paint: (ctx, w, h) => {
-      fill(ctx, '#eee7ff', w, h);
-      ctx.strokeStyle = '#b59de7';
-      ctx.lineWidth = 5;
-      for (let y = 28; y < h; y += 74) {
-        for (let x = 30; x < w; x += 76) {
-          ctx.beginPath();
-          ctx.arc(x, y, 10, 0, Math.PI * 2);
-          ctx.stroke();
-        }
-      }
-    },
-  },
-  {
     id: 'sky',
     label: 'Cloudy Sky',
     note: 'Soft daydream',
-    category: 'cute',
+    category: 'booth',
     className: 'frame-sky',
     dark: false,
     matte: 'rgba(31,29,43,.12)',
     paint: (ctx, w, h) => {
+      // Match CSS: two cloud-blob layers on 120×96 tile
+      // Cloud 1: circle at (30,40) r=16 rgba(255,255,255,.9)
+      // Cloud 2: circle at (52,46) r=12 rgba(255,255,255,.8)
       verticalGradient(ctx, w, h, [
         [0, '#e9fbff'],
         [1, '#cfeef7'],
       ]);
-      ctx.fillStyle = 'rgba(255,255,255,.85)';
-      let n = 0;
-      for (let y = 40; y < h; y += 96) {
-        const x = 40 + (n % 2) * (w / 3);
-        ctx.beginPath();
-        ctx.arc(x, y, 18, 0, Math.PI * 2);
-        ctx.arc(x + 22, y + 4, 14, 0, Math.PI * 2);
-        ctx.arc(x - 20, y + 6, 12, 0, Math.PI * 2);
-        ctx.fill();
-        n += 1;
+      const tW = 120, tH = 96;
+      for (let ty = 0; ty < h + tH; ty += tH) {
+        for (let tx = 0; tx < w + tW; tx += tW) {
+          ctx.beginPath();
+          ctx.arc(tx + 30, ty + 40, 16, 0, Math.PI * 2);
+          ctx.fillStyle = 'rgba(255,255,255,.9)';
+          ctx.fill();
+          ctx.beginPath();
+          ctx.arc(tx + 52, ty + 46, 12, 0, Math.PI * 2);
+          ctx.fillStyle = 'rgba(255,255,255,.8)';
+          ctx.fill();
+        }
       }
     },
   },
@@ -688,16 +580,16 @@ function star(ctx: CanvasRenderingContext2D, cx: number, cy: number, size: numbe
   ctx.fill();
 }
 
-export const FILTER_OPTIONS: { id: FilterType; label: string; className: string }[] = [
-  { id: 'color', label: 'Original', className: 'filter-color' },
-  { id: 'bw', label: 'B&W', className: 'filter-bw' },
-  { id: 'noir', label: 'Noir', className: 'filter-noir' },
-  { id: 'vintage', label: 'Vintage', className: 'filter-vintage' },
-  { id: 'film', label: 'Film', className: 'filter-film' },
-  { id: 'faded', label: 'Faded', className: 'filter-faded' },
-  { id: 'warm', label: 'Warm', className: 'filter-warm' },
-  { id: 'cool', label: 'Cool', className: 'filter-cool' },
-  { id: 'candy', label: 'Candy', className: 'filter-candy' },
+export const FILTER_OPTIONS: { id: FilterType; label: string; className: string; shadeGradient: string }[] = [
+  { id: 'color', label: 'Original', className: 'filter-color', shadeGradient: 'linear-gradient(135deg, #ff9a9e 0%, #fecfef 50%, #a1c4fd 100%)' },
+  { id: 'bw', label: 'B&W', className: 'filter-bw', shadeGradient: 'linear-gradient(135deg, #1a1a1a 0%, #737373 50%, #f5f5f5 100%)' },
+  { id: 'noir', label: 'Noir', className: 'filter-noir', shadeGradient: 'linear-gradient(135deg, #000000 0%, #262626 60%, #ffffff 100%)' },
+  { id: 'vintage', label: 'Vintage', className: 'filter-vintage', shadeGradient: 'linear-gradient(135deg, #5c381e 0%, #b88656 50%, #f2e3c6 100%)' },
+  { id: 'film', label: 'Film', className: 'filter-film', shadeGradient: 'linear-gradient(135deg, #2c3e50 0%, #8d6e63 50%, #e0d4c3 100%)' },
+  { id: 'faded', label: 'Faded', className: 'filter-faded', shadeGradient: 'linear-gradient(135deg, #4a4054 0%, #8e8299 50%, #e2dce6 100%)' },
+  { id: 'warm', label: 'Warm', className: 'filter-warm', shadeGradient: 'linear-gradient(135deg, #b84a1e 0%, #e8864a 50%, #ffe4cc 100%)' },
+  { id: 'cool', label: 'Cool', className: 'filter-cool', shadeGradient: 'linear-gradient(135deg, #1b3a6b 0%, #3a7bd5 50%, #c2e9fb 100%)' },
+  { id: 'candy', label: 'Candy', className: 'filter-candy', shadeGradient: 'linear-gradient(135deg, #f53d89 0%, #9b51e0 50%, #56ccf2 100%)' },
 ];
 
 export const isFrameType = (value: unknown): value is FrameType =>
@@ -725,6 +617,7 @@ export type StripGeometry = {
 };
 
 export function getStripGeometry(layout: 'vertical-4' | 'quad-4' | 'horizontal-3'): StripGeometry {
+  // 4:3 shot aspect ratio, original proportions for natural spacious strip look
   const shotWidth = 640;
   const shotHeight = 480;
   const padding = 58;

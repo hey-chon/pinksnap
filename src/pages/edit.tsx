@@ -22,7 +22,7 @@ import {
   getArtisanTemplate,
   renderArtisanStrip,
 } from '@/lib/customization';
-import { RefreshCw, Download, Share2, Check, Sparkles, SlidersHorizontal, ImageIcon } from 'lucide-react';
+import { RefreshCw, Download, Share2, Check, Sparkles, ImageIcon } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast.tsx';
 import { createGalleryPreview, createMemoryId, dataUrlToBlob, downloadImage } from '@/lib/image-utils';
 
@@ -71,15 +71,17 @@ function ArtisanThumbnailCard({
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const targetHeight = 130;
+    const targetHeight = 150;
     const scale = targetHeight / template.nh;
     const targetWidth = Math.round(template.nw * scale);
     canvas.width = targetWidth;
     canvas.height = targetHeight;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
-    template.paintBg(ctx, targetWidth, targetHeight, scale, Date.now());
-    template.paintFg(ctx, targetWidth, targetHeight, scale, Date.now());
+    const now = Date.now();
+    // Paint template background with empty slots & decorations (no user photos)
+    template.paintBg(ctx, targetWidth, targetHeight, scale, now);
+    template.paintFg(ctx, targetWidth, targetHeight, scale, now);
   }, [template]);
 
   return (
@@ -87,26 +89,28 @@ function ArtisanThumbnailCard({
       onClick={onClick}
       data-testid={`button-artisan-${template.id}`}
       aria-pressed={isSelected}
-      className={`group relative flex flex-col items-center p-2 rounded-2xl transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 active:scale-95 ${
+      className={`group relative flex flex-col items-center justify-between p-2 rounded-xl transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 active:scale-95 ${
         isSelected
-          ? 'bg-primary/10 ring-2 ring-primary shadow-lg shadow-primary/20 scale-[1.02]'
+          ? 'bg-primary/10 ring-2 ring-primary shadow-md shadow-primary/25 scale-[1.02]'
           : 'bg-foreground/[0.03] hover:bg-foreground/[0.06] ring-1 ring-foreground/10 hover:ring-primary/40'
       }`}
     >
-      <div className="rounded-lg overflow-hidden shadow-sm bg-black/5 flex items-center justify-center">
-        <canvas ref={canvasRef} className="block pointer-events-none" />
+      <div className="w-full flex items-center justify-center py-1.5 min-h-[145px]">
+        <div className="rounded-[4px] overflow-hidden shadow-md bg-black/5 flex items-center justify-center border border-black/10">
+          <canvas ref={canvasRef} className="block pointer-events-none w-auto max-h-[145px] object-contain" />
+        </div>
       </div>
-      <div className="mt-2 text-center w-full px-1">
-        <span className={`block text-[11px] font-black truncate leading-tight ${isSelected ? 'text-primary' : 'text-foreground/80'}`}>
+      <div className="mt-1.5 text-center w-full px-0.5">
+        <span className={`block text-[10.5px] font-black truncate leading-tight ${isSelected ? 'text-primary' : 'text-foreground/85'}`}>
           {template.label}
         </span>
-        <span className="block text-[9px] text-foreground/45 truncate leading-tight mt-0.5">
+        <span className="block text-[8.5px] text-foreground/45 truncate leading-tight mt-0.5">
           {template.slots.length} photos
         </span>
       </div>
       {isSelected && (
-        <div className="absolute top-1.5 right-1.5 w-4 h-4 bg-primary rounded-full flex items-center justify-center shadow-md">
-          <Check className="w-2.5 h-2.5 text-white" />
+        <div className="absolute top-1.5 right-1.5 w-4 h-4 bg-primary rounded-full flex items-center justify-center shadow-md ring-2 ring-white z-20">
+          <Check className="w-2.5 h-2.5 text-white stroke-[3]" />
         </div>
       )}
     </button>
@@ -115,116 +119,81 @@ function ArtisanThumbnailCard({
 
 function FrameThumbnailCard({
   option,
-  shots,
+  layout,
   isSelected,
   onClick,
 }: {
   option: FrameOption;
-  shots: string[];
+  layout: 'vertical-4' | 'quad-4' | 'horizontal-3';
   isSelected: boolean;
   onClick: () => void;
 }) {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const matteBorder = option.dark
+    ? 'border border-white/35 bg-white/10 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.15)]'
+    : 'border border-black/20 bg-black/8 shadow-[inset_0_0_0_1px_rgba(0,0,0,0.08)]';
 
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
+  const inkClass = option.dark ? 'strip-ink-light' : 'strip-ink-dark';
 
-    const CW = 130, CH = 260;
-    canvas.width = CW;
-    canvas.height = CH;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+  const slotCount = layout === 'horizontal-3' ? 3 : 4;
 
-    const SIDE = 10, TOP = 8, GAP = 5, N = 3;
-    const sw = CW - SIDE * 2;
-    const sh = Math.floor((CH - TOP - 26 - GAP * (N - 1)) / N);
-    const footerY = TOP + N * sh + (N - 1) * GAP + 4;
+  const miniGridClass = layout === 'vertical-4'
+    ? 'grid-cols-1 w-full max-w-[62px]'
+    : layout === 'quad-4'
+      ? 'grid-cols-2 w-full max-w-[84px]'
+      : 'grid-cols-3 w-full max-w-[102px]';
 
-    const renderFrame = (c: CanvasRenderingContext2D, images: (HTMLImageElement | null)[]) => {
-      drawFrameBackground(c, option.id as FrameType, CW, CH, 100);
-      images.forEach((img, i) => {
-        const sy = TOP + i * (sh + GAP);
-        c.save();
-        roundedRect(c, SIDE, sy, sw, sh, 5);
-        c.clip();
-        if (img) {
-          const ir = img.width / img.height, tr = sw / sh;
-          let sx2 = 0, sy2 = 0, sw2 = img.width, sh2 = img.height;
-          if (ir > tr) { sw2 = img.height * tr; sx2 = (img.width - sw2) / 2; }
-          else { sh2 = img.width / tr; sy2 = (img.height - sh2) / 2; }
-          c.drawImage(img, sx2, sy2, sw2, sh2, SIDE, sy, sw, sh);
-        } else {
-          c.fillStyle = option.dark ? 'rgba(255,255,255,0.14)' : 'rgba(0,0,0,0.09)';
-          c.fillRect(SIDE, sy, sw, sh);
-        }
-        c.restore();
-        c.save();
-        c.strokeStyle = option.dark ? 'rgba(255,255,255,0.18)' : 'rgba(0,0,0,0.09)';
-        c.lineWidth = 1;
-        roundedRect(c, SIDE, sy, sw, sh, 5);
-        c.stroke();
-        c.restore();
-      });
-      c.textAlign = 'center';
-      c.font = `900 8px "Inter", sans-serif`;
-      c.fillStyle = option.dark ? 'rgba(253,247,250,0.9)' : 'rgba(31,29,43,0.75)';
-      c.fillText('PINK', CW / 2, footerY + 7);
-      c.fillStyle = '#ff5fa2';
-      c.fillText('SNAP', CW / 2, footerY + 16);
-    };
-
-    // Instant placeholder render
-    renderFrame(ctx, Array(N).fill(null));
-
-    // Load actual photos
-    if (shots.length === 0) return;
-    let cancelled = false;
-    Promise.all(
-      Array.from({ length: N }, (_, i) => {
-        const src = shots[i] ?? shots[shots.length - 1];
-        return new Promise<HTMLImageElement | null>((resolve) => {
-          const img = new Image();
-          img.onload = () => resolve(img);
-          img.onerror = () => resolve(null);
-          img.src = src;
-          if (img.complete && img.naturalWidth > 0) resolve(img);
-        });
-      })
-    ).then((images) => {
-      if (cancelled || !canvasRef.current) return;
-      const c = canvasRef.current.getContext('2d');
-      if (!c) return;
-      renderFrame(c, images);
-    });
-    return () => { cancelled = true; };
-  }, [option, shots]);
+  const miniShellClass = layout === 'vertical-4'
+    ? 'max-w-[80px]'
+    : layout === 'quad-4'
+      ? 'max-w-[102px]'
+      : 'max-w-[120px]';
 
   return (
     <button
       onClick={onClick}
       data-testid={`button-frame-${option.id}`}
       aria-pressed={isSelected}
-      className={`group relative flex flex-col items-center p-2 rounded-2xl transition-all duration-200 focus:outline-none active:scale-95 ${
+      className={`group relative flex flex-col items-center justify-between p-2 rounded-xl transition-all duration-200 focus:outline-none active:scale-95 ${
         isSelected
-          ? 'bg-primary/10 ring-2 ring-primary shadow-lg shadow-primary/20 scale-[1.02]'
+          ? 'bg-primary/10 ring-2 ring-primary shadow-md shadow-primary/25 scale-[1.02]'
           : 'bg-foreground/[0.03] hover:bg-foreground/[0.06] ring-1 ring-foreground/10 hover:ring-primary/40'
       }`}
     >
-      <div className="rounded-xl overflow-hidden shadow-md w-full">
-        <canvas ref={canvasRef} className="block pointer-events-none w-full h-auto" />
+      <div className="w-full flex items-center justify-center py-1.5 min-h-[145px]">
+        <div className={`relative overflow-hidden w-full p-2 rounded-[6px] ${miniShellClass} shadow-md border border-black/10`}>
+          {/* Theme Background */}
+          <div className={`absolute inset-0 z-0 ${option.className}`} />
+
+          {/* Empty Photo Slots with subtle rounded corners and generous spacing */}
+          <div className={`relative z-10 grid gap-1.5 sm:gap-2 mx-auto ${miniGridClass}`}>
+            {Array.from({ length: slotCount }).map((_, i) => (
+              <div
+                key={i}
+                className={`w-full aspect-[4/3] rounded-[3px] ${matteBorder}`}
+              />
+            ))}
+          </div>
+
+          {/* Strip Footer */}
+          <div className={`relative z-10 pt-2 pb-0.5 text-center font-black ${inkClass}`}>
+            <span className="block text-[7px] leading-tight font-black tracking-tight">PINK</span>
+            <span className="block text-[7px] leading-tight strip-brand-accent font-black tracking-tight">SNAP</span>
+          </div>
+        </div>
       </div>
-      <div className="mt-2 text-center w-full px-1">
-        <span className={`block text-[11px] font-black truncate leading-tight ${isSelected ? 'text-primary' : 'text-foreground/80'}`}>
+
+      <div className="mt-1.5 text-center w-full px-0.5">
+        <span className={`block text-[10.5px] font-black truncate leading-tight ${isSelected ? 'text-primary' : 'text-foreground/85'}`}>
           {option.label}
         </span>
-        <span className="block text-[9px] text-foreground/40 truncate leading-tight mt-0.5">
+        <span className="block text-[8.5px] text-foreground/45 truncate leading-tight mt-0.5">
           {option.note}
         </span>
       </div>
+
       {isSelected && (
-        <div className="absolute top-1.5 right-1.5 w-4 h-4 bg-primary rounded-full flex items-center justify-center shadow-md">
-          <Check className="w-2.5 h-2.5 text-white" />
+        <div className="absolute top-1.5 right-1.5 w-4 h-4 bg-primary rounded-full flex items-center justify-center shadow-md ring-2 ring-white z-20">
+          <Check className="w-2.5 h-2.5 text-white stroke-[3]" />
         </div>
       )}
     </button>
@@ -236,8 +205,9 @@ export default function Edit() {
   const { toast } = useToast();
   const {
     shots, addShot, layout, frame, setFrame, filter, setFilter,
-    frameOpacity, setFrameOpacity, saveMemory, clearShots,
+    saveMemory, clearShots,
   } = useAppContext();
+
 
   const [isSaving, setIsSaving] = useState(false);
   const [category, setCategory] = useState<TabMode>('booth');
@@ -260,7 +230,7 @@ export default function Edit() {
     if (!canvas) return;
 
     const template = getArtisanTemplate(artisanId);
-    const targetHeight = Math.min(620, Math.round(window.innerHeight * 0.68));
+    const targetHeight = Math.min(460, Math.round(window.innerHeight * 0.52));
     const scale = targetHeight / template.nh;
     const targetWidth = Math.round(template.nw * scale);
 
@@ -343,7 +313,7 @@ export default function Edit() {
     const ctx = canvas.getContext('2d');
     if (!ctx) return '';
 
-    drawFrameBackground(ctx, frame, geometry.width, geometry.height, frameOpacity);
+    drawFrameBackground(ctx, frame, geometry.width, geometry.height, 100);
 
     const images = await Promise.all(shots.map((shot) => new Promise<HTMLCanvasElement | null>((resolve) => {
       const img = new Image();
@@ -363,7 +333,7 @@ export default function Edit() {
       ctx.restore();
       ctx.save();
       ctx.strokeStyle = activeFrame.dark ? 'rgba(255,255,255,.32)' : 'rgba(31,29,43,.20)';
-      ctx.lineWidth = 2.5;
+      ctx.lineWidth = 3.5;
       roundedRect(ctx, position.x, position.y, geometry.shotWidth, geometry.shotHeight, geometry.radius);
       ctx.stroke();
       ctx.restore();
@@ -371,9 +341,11 @@ export default function Edit() {
 
     const baseline = geometry.height - geometry.padding;
     ctx.textAlign = 'center';
+
     ctx.font = '900 46px "Inter", ui-sans-serif, system-ui, sans-serif';
     ctx.fillStyle = activeFrame.dark ? '#fdf7fa' : '#1f1d2b';
     ctx.fillText('PINK', geometry.width / 2, baseline - 52);
+
     ctx.fillStyle = activeFrame.dark ? '#ff5fa2' : '#f53d89';
     ctx.fillText('SNAP', geometry.width / 2, baseline - 6);
 
@@ -560,16 +532,16 @@ export default function Edit() {
   }
 
   const gridClass = layout === 'vertical-4'
-    ? 'grid-cols-1 w-full max-w-[168px] sm:max-w-[240px] xl:max-w-[276px]'
+    ? 'grid-cols-1 w-full max-w-[105px] sm:max-w-[135px] xl:max-w-[155px]'
     : layout === 'quad-4'
-      ? 'grid-cols-2 w-full max-w-[248px] sm:max-w-[320px] xl:max-w-[380px]'
-      : 'grid-cols-3 w-full max-w-[280px] sm:max-w-[420px] xl:max-w-[540px]';
+      ? 'grid-cols-2 w-full max-w-[155px] sm:max-w-[200px] xl:max-w-[230px]'
+      : 'grid-cols-3 w-full max-w-[195px] sm:max-w-[250px] xl:max-w-[290px]';
 
   const shellClass = layout === 'vertical-4'
-    ? 'max-w-[200px] sm:max-w-[280px]'
+    ? 'max-w-[130px] sm:max-w-[165px] xl:max-w-[185px]'
     : layout === 'quad-4'
-      ? 'max-w-[280px] sm:max-w-[360px]'
-      : 'max-w-[312px] sm:max-w-[460px]';
+      ? 'max-w-[180px] sm:max-w-[230px] xl:max-w-[260px]'
+      : 'max-w-[220px] sm:max-w-[280px] xl:max-w-[320px]';
 
   const matteClass = activeFrame.dark ? 'strip-matte-light' : 'strip-matte-dark';
   const inkClass = activeFrame.dark ? 'strip-ink-light' : 'strip-ink-dark';
@@ -601,10 +573,10 @@ export default function Edit() {
                 </div>
               </div>
             ) : (
-              <div ref={stripRef} className={`strip-shell relative overflow-hidden w-full xl:max-w-none p-3 sm:p-5 ${shellClass}`}>
-                <div className={`absolute inset-0 z-0 ${activeFrame.className} frame-opacity-${Math.round(frameOpacity / 10) * 10}`} />
+              <div ref={stripRef} className={`strip-shell relative overflow-hidden w-full xl:max-w-none p-3 sm:p-4 ${shellClass}`}>
+                <div className={`absolute inset-0 z-0 ${activeFrame.className}`} />
 
-                <div className={`relative z-10 grid gap-3 sm:gap-3.5 mx-auto ${gridClass}`}>
+                <div className={`relative z-10 grid gap-2.5 sm:gap-3 mx-auto ${gridClass}`}>
                   {shots.map((shot, i) => (
                     <div key={i} className={`strip-photo ${matteClass}`}>
                       <img src={shot} alt={`Shot ${i + 1}`} className={stripFilterClass} />
@@ -612,10 +584,12 @@ export default function Edit() {
                   ))}
                 </div>
 
-                <div className={`strip-footer relative z-10 pt-5 pb-1 text-center font-black ${inkClass}`}>
-                  <span className="block text-[19px] sm:text-[22px]">PINK</span>
-                  <span className="block text-[19px] sm:text-[22px] strip-brand-accent">SNAP</span>
-                  <span className="strip-caption block pt-2">{formatStripDate(sessionDate)}</span>
+                <div className={`strip-footer relative z-10 pt-4 pb-2 text-center font-black ${inkClass}`}>
+                  <span className="block text-[15px] sm:text-[17px] leading-[0.95]">PINK</span>
+                  <span className="block text-[15px] sm:text-[17px] leading-[0.95] strip-brand-accent">SNAP</span>
+                  <span className="strip-caption block pt-1.5 text-[7.5px] sm:text-[8.5px] font-extrabold tracking-[0.24em] uppercase opacity-75">
+                    {formatStripDate(sessionDate)}
+                  </span>
                 </div>
               </div>
             )}
@@ -631,22 +605,21 @@ export default function Edit() {
 
             {/* Segment-style tabs */}
             <div className="ctrl-seg mb-5">
-              {FRAME_CATEGORIES.map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setCategory(tab.id)}
-                  aria-pressed={category === tab.id}
-                  data-testid={`button-category-${tab.id}`}
-                  className={`ctrl-seg-btn ${category === tab.id ? 'ctrl-seg-active' : ''}`}
-                >
-                  {tab.label}
-                </button>
-              ))}
               <button
+                type="button"
+                onClick={() => setCategory('booth')}
+                aria-pressed={category === 'booth'}
+                data-testid="button-category-booth"
+                className={`ctrl-seg-btn ${category === 'booth' ? 'ctrl-seg-active' : ''}`}
+              >
+                PINKSNAP
+              </button>
+              <button
+                type="button"
                 onClick={() => setCategory('artisan')}
-                aria-pressed={isArtisan}
+                aria-pressed={category === 'artisan'}
                 data-testid="button-category-artisan"
-                className={`ctrl-seg-btn flex items-center gap-1 ${isArtisan ? 'ctrl-seg-active' : ''}`}
+                className={`ctrl-seg-btn flex items-center gap-1 ${category === 'artisan' ? 'ctrl-seg-active' : ''}`}
               >
                 <ImageIcon className="w-3 h-3" /> Artisan
               </button>
@@ -655,7 +628,7 @@ export default function Edit() {
             {isArtisan ? (
               /* ── Artisan template picker ── */
               <div className="mb-6">
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-5">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-2.5 mb-5">
                   {ARTISAN_TEMPLATES.map((tpl) => (
                     <ArtisanThumbnailCard
                       key={tpl.id}
@@ -668,20 +641,36 @@ export default function Edit() {
 
                 {/* Film look */}
                 <div className="panel-block">
-                  <h3 className="ctrl-label mb-3">Film look</h3>
-                  <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+                  <div className="flex items-center justify-between mb-2.5">
+                    <h3 className="ctrl-label">Film look</h3>
+                    <span className="text-[10px] font-black uppercase tracking-wider text-primary">
+                      {getFilterOption(filter).label}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-5 sm:grid-cols-9 gap-1.5">
                     {FILTER_OPTIONS.map((option) => (
                       <button
                         key={option.id}
                         onClick={() => setFilter(option.id as FilterType)}
                         data-testid={`button-filter-${option.id}`}
                         aria-pressed={filter === option.id}
-                        className={`filter-choice ${filter === option.id ? 'filter-choice-active' : ''}`}
+                        className={`group relative flex flex-col items-center gap-1 p-1 rounded-xl transition-all duration-150 focus:outline-none active:scale-95 ${
+                          filter === option.id
+                            ? 'bg-primary/10 ring-2 ring-primary shadow-sm scale-[1.03]'
+                            : 'hover:bg-foreground/[0.04] opacity-75 hover:opacity-100'
+                        }`}
                       >
-                        <span className="filter-thumb">
-                          <img src={shots[0]} alt="" className={option.className} />
+                        <span
+                          className="w-7 h-7 sm:w-8 sm:h-8 rounded-full shadow-inner border border-black/10 flex items-center justify-center transition-transform group-hover:scale-105"
+                          style={{ background: option.shadeGradient }}
+                        >
+                          {filter === option.id && (
+                            <Check className="w-3.5 h-3.5 text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] stroke-[3]" />
+                          )}
                         </span>
-                        {option.label}
+                        <span className={`text-[8.5px] sm:text-[9px] font-black truncate max-w-full tracking-tight ${filter === option.id ? 'text-primary' : 'text-foreground/75'}`}>
+                          {option.label}
+                        </span>
                       </button>
                     ))}
                   </div>
@@ -690,12 +679,12 @@ export default function Edit() {
             ) : (
               /* ── Standard theme picker ── */
               <>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 mb-5">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-2.5 mb-5">
                   {visibleFrames.map((option) => (
                     <FrameThumbnailCard
                       key={option.id}
                       option={option}
-                      shots={shots}
+                      layout={layout}
                       isSelected={frame === option.id}
                       onClick={() => setFrame(option.id)}
                     />
@@ -704,41 +693,41 @@ export default function Edit() {
 
                 {/* Film look */}
                 <div className="panel-block mb-4">
-                  <h3 className="ctrl-label mb-3">Film look</h3>
-                  <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+                  <div className="flex items-center justify-between mb-2.5">
+                    <h3 className="ctrl-label">Film look</h3>
+                    <span className="text-[10px] font-black uppercase tracking-wider text-primary">
+                      {getFilterOption(filter).label}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-5 sm:grid-cols-9 gap-1.5">
                     {FILTER_OPTIONS.map((option) => (
                       <button
                         key={option.id}
                         onClick={() => setFilter(option.id as FilterType)}
                         data-testid={`button-filter-${option.id}`}
                         aria-pressed={filter === option.id}
-                        className={`filter-choice ${filter === option.id ? 'filter-choice-active' : ''}`}
+                        className={`group relative flex flex-col items-center gap-1 p-1 rounded-xl transition-all duration-150 focus:outline-none active:scale-95 ${
+                          filter === option.id
+                            ? 'bg-primary/10 ring-2 ring-primary shadow-sm scale-[1.03]'
+                            : 'hover:bg-foreground/[0.04] opacity-75 hover:opacity-100'
+                        }`}
                       >
-                        <span className="filter-thumb">
-                          <img src={shots[0]} alt="" className={option.className} />
+                        <span
+                          className="w-7 h-7 sm:w-8 sm:h-8 rounded-full shadow-inner border border-black/10 flex items-center justify-center transition-transform group-hover:scale-105"
+                          style={{ background: option.shadeGradient }}
+                        >
+                          {filter === option.id && (
+                            <Check className="w-3.5 h-3.5 text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] stroke-[3]" />
+                          )}
                         </span>
-                        {option.label}
+                        <span className={`text-[8.5px] sm:text-[9px] font-black truncate max-w-full tracking-tight ${filter === option.id ? 'text-primary' : 'text-foreground/75'}`}>
+                          {option.label}
+                        </span>
                       </button>
                     ))}
                   </div>
                 </div>
 
-                {/* Theme strength */}
-                <div className="panel-block mb-5">
-                  <label className="flex items-center justify-between ctrl-label mb-3">
-                    <span className="flex items-center gap-1.5"><SlidersHorizontal className="w-3.5 h-3.5 text-primary" /> Strength</span>
-                    <span className="text-primary font-black">{frameOpacity}%</span>
-                  </label>
-                  <input
-                    type="range"
-                    min="20"
-                    max="100"
-                    value={frameOpacity}
-                    onChange={(e) => setFrameOpacity(Number(e.target.value))}
-                    className="range-pink focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                    aria-label="Theme strength"
-                  />
-                </div>
               </>
             )}
 

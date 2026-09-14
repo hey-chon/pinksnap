@@ -19,8 +19,6 @@ interface AppState {
   setFrame: (frame: FrameType) => void;
   filter: FilterType;
   setFilter: (filter: FilterType) => void;
-  frameOpacity: number;
-  setFrameOpacity: (opacity: number) => void;
   shots: string[];
   addShot: (shot: string) => void;
   clearShots: () => void;
@@ -64,7 +62,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [layout, setLayout] = useState<LayoutType>('vertical-4');
   const [frame, setFrame] = useState<FrameType>('classic');
   const [filter, setFilter] = useState<FilterType>('color');
-  const [frameOpacity, setFrameOpacity] = useState<number>(100);
   const [shots, setShots] = useState<string[]>([]);
   const [savedMemories, setSavedMemories] = useState<Memory[]>(readSavedMemories);
 
@@ -102,7 +99,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     layout, setLayout,
     frame, setFrame,
     filter, setFilter,
-    frameOpacity, setFrameOpacity,
     shots, addShot, clearShots,
     savedMemories, saveMemory, deleteMemory
   };
