@@ -10,7 +10,6 @@ import {
   RefreshCw,
   AlertCircle,
   Clock,
-  ArrowDown,
   Radio,
   X,
   Eye,
@@ -59,7 +58,6 @@ export default function CommunityChat() {
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [cooldownSeconds, setCooldownSeconds] = useState(0);
   const [isSending, setIsSending] = useState(false);
-  const [isScrolledUp, setIsScrolledUp] = useState(false);
 
   const listRef = useRef<HTMLDivElement>(null);
   const emojiPickerRef = useRef<HTMLDivElement>(null);
@@ -104,22 +102,12 @@ export default function CommunityChat() {
         top: el.scrollHeight,
         behavior: smooth ? 'smooth' : 'auto',
       });
-      setIsScrolledUp(false);
     }
-  };
-
-  const handleScroll = () => {
-    const el = listRef.current;
-    if (!el) return;
-    const isNearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 80;
-    setIsScrolledUp(!isNearBottom);
   };
 
   useEffect(() => {
-    if (!isScrolledUp) {
-      scrollToBottom(false);
-    }
-  }, [messages, isScrolledUp]);
+    scrollToBottom(false);
+  }, [messages]);
 
   const draftSlurWarning = useMemo(() => {
     if (!draft.trim()) return null;
@@ -261,7 +249,6 @@ export default function CommunityChat() {
 
         <div
           ref={listRef}
-          onScroll={handleScroll}
           className="pixel-log relative"
           role="log"
           aria-live="polite"
@@ -337,15 +324,6 @@ export default function CommunityChat() {
             })
           )}
 
-          {isScrolledUp && (
-            <button
-              type="button"
-              onClick={() => scrollToBottom(true)}
-              className="sticky bottom-2 left-1/2 -translate-x-1/2 px-3 py-1.5 rounded-full bg-primary text-white text-[11px] font-black uppercase tracking-wider shadow-lg flex items-center gap-1.5 hover:bg-primary/90 transition-transform active:scale-95 z-10 cursor-pointer"
-            >
-              <ArrowDown className="w-3.5 h-3.5" /> Latest Messages
-            </button>
-          )}
         </div>
 
         {draftSlurWarning && (
@@ -369,7 +347,7 @@ export default function CommunityChat() {
                   maxLength={280}
                   placeholder={`Message #${currentRoom}...`}
                   aria-label="Message"
-                  className={`pixel-input pixel-input-msg ${draftSlurWarning ? 'border-destructive focus:ring-destructive' : ''}`}
+                  className={`pixel-input pixel-input-msg text-[16px] md:text-sm ${draftSlurWarning ? 'border-destructive focus:ring-destructive' : ''}`}
                   disabled={isSending}
                 />
 

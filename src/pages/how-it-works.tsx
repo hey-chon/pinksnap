@@ -1,20 +1,17 @@
-import { useState } from 'react';
 import { Link, useLocation } from 'wouter';
 import { TopNav, BottomNav } from '@/components/layout';
 import { Camera, LayoutGrid, Wand2, Download, ArrowRight } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
-import { AuthGateModal } from '@/components/auth/auth-gate-modal';
 
 export default function HowItWorks() {
   const [, navigate] = useLocation();
   const { isAuthenticated } = useAuth();
-  const [showAuthGate, setShowAuthGate] = useState(false);
 
   const handleStartSnapping = () => {
     if (isAuthenticated) {
       navigate('/loading');
     } else {
-      setShowAuthGate(true);
+      navigate('/auth');
     }
   };
 
@@ -43,12 +40,6 @@ export default function HowItWorks() {
 
   return (
     <div className="flex flex-col h-[100dvh]">
-      {showAuthGate && (
-        <AuthGateModal
-          onClose={() => setShowAuthGate(false)}
-          onSuccess={() => { setShowAuthGate(false); navigate('/loading'); }}
-        />
-      )}
       <TopNav backTo="/" title="HOW TO USE" />
       <main className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-10 flex flex-col items-center">
         <div className="max-w-2xl w-full py-6 sm:py-8">

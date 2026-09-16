@@ -6,7 +6,6 @@ import { Trash2, Download, Image as ImageIcon, ArrowRight, X, ZoomIn } from 'luc
 import { useToast } from '@/hooks/use-toast.tsx';
 import { downloadImage } from '@/lib/image-utils';
 import { useAuth } from '@/hooks/use-auth';
-import { AuthGateModal } from '@/components/auth/auth-gate-modal';
 import { ARTISAN_TEMPLATES, FRAME_OPTIONS, getArtisanTemplate, getFrameOption } from '@/lib/customization';
 
 const getFrameLabel = (id: string) => {
@@ -18,7 +17,6 @@ const getFrameLabel = (id: string) => {
 export default function Gallery() {
   const [, navigate] = useLocation();
   const { isAuthenticated } = useAuth();
-  const [showAuthGate, setShowAuthGate] = useState(false);
   const [selectedMemory, setSelectedMemory] = useState<{ id: string; url: string; date: number; frame: string } | null>(null);
   const { savedMemories, deleteMemory } = useAppContext();
   const { toast } = useToast();
@@ -27,7 +25,7 @@ export default function Gallery() {
     if (isAuthenticated) {
       navigate('/loading');
     } else {
-      setShowAuthGate(true);
+      navigate('/auth');
     }
   };
 
@@ -56,12 +54,6 @@ export default function Gallery() {
 
   return (
     <div className="flex flex-col h-[100dvh] bg-[#0c0b10] text-white dark-page-bg">
-      {showAuthGate && (
-        <AuthGateModal
-          onClose={() => setShowAuthGate(false)}
-          onSuccess={() => { setShowAuthGate(false); navigate('/loading'); }}
-        />
-      )}
 
       {/* ── Lightbox Full-Screen Modal ────────────────────────────────────── */}
       {selectedMemory && (
@@ -71,7 +63,7 @@ export default function Gallery() {
         >
           <button
             onClick={() => setSelectedMemory(null)}
-            className="absolute top-6 right-6 sm:top-8 sm:right-8 z-[60] w-12 h-12 rounded-full bg-black/40 hover:bg-black/60 flex items-center justify-center text-white transition-colors focus:outline-none ring-1 ring-white/30 backdrop-blur-md"
+            className="hidden sm:flex absolute sm:top-8 sm:right-8 z-[60] w-12 h-12 rounded-full bg-black/40 hover:bg-black/60 items-center justify-center text-white transition-colors focus:outline-none ring-1 ring-white/30 backdrop-blur-md"
             aria-label="Close preview"
           >
             <X className="w-6 h-6" />

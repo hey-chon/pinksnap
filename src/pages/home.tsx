@@ -4,12 +4,10 @@ import { TopNav, BottomNav } from '@/components/layout';
 import { ArrowRight, Camera, Download, LayoutGrid, MessageCircle, Sparkles } from 'lucide-react';
 import Credits from '@/components/credits';
 import { useAuth } from '@/hooks/use-auth';
-import { AuthGateModal } from '@/components/auth/auth-gate-modal';
 
 export default function Home() {
   const [, navigate] = useLocation();
   const { isAuthenticated } = useAuth();
-  const [showAuthGate, setShowAuthGate] = useState(false);
   const mainRef = useRef<HTMLElement>(null);
   const [scrollY, setScrollY] = useState(0);
 
@@ -17,7 +15,7 @@ export default function Home() {
     if (isAuthenticated) {
       navigate('/loading');
     } else {
-      setShowAuthGate(true);
+      navigate('/auth');
     }
   };
 
@@ -27,12 +25,6 @@ export default function Home() {
 
   return (
     <div className="flex flex-col h-[100dvh]">
-      {showAuthGate && (
-        <AuthGateModal
-          onClose={() => setShowAuthGate(false)}
-          onSuccess={() => { setShowAuthGate(false); navigate('/loading'); }}
-        />
-      )}
       <TopNav />
       
       <main 
