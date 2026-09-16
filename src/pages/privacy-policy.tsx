@@ -15,6 +15,7 @@ import {
   Sliders,
   Mail,
   ExternalLink,
+  Facebook
 } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { AuthGateModal } from '@/components/auth/auth-gate-modal';
@@ -302,9 +303,9 @@ export default function PrivacyPolicy() {
                     href="https://chon-vert.vercel.app"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 rounded-xl bg-primary text-white px-4 py-2.5 text-xs font-black tracking-wider uppercase shadow-md shadow-primary/25 hover:bg-primary/90 transition-colors"
+                    className="inline-flex items-center gap-2 rounded-xl bg-primary text-white px-4 py-2.5 text-xs font-black tracking-widershadow-md shadow-primary/25 hover:bg-primary/90 transition-colors"
                   >
-                    Jimson's Portfolio <ExternalLink className="w-3.5 h-3.5" />
+                    chon.dev <ExternalLink className="w-3.5 h-3.5" />
                   </a>
                   <a
                     href="https://www.facebook.com/share/1NrJVrJBDJ/?mibextid=wwXIfr"
@@ -312,7 +313,7 @@ export default function PrivacyPolicy() {
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-2 rounded-xl bg-foreground text-background px-4 py-2.5 text-xs font-black tracking-wider uppercase hover:bg-foreground/90 transition-colors"
                   >
-                    Facebook <ExternalLink className="w-3.5 h-3.5" />
+                    <Facebook className="w-3.5 h-3.5" />
                   </a>
                 </div>
               </div>
@@ -339,7 +340,7 @@ export default function PrivacyPolicy() {
               onClick={handleStartSnapping}
               className="inline-flex items-center gap-2 bg-primary text-white px-6 py-3 rounded-full font-black text-sm uppercase tracking-wider shadow-lg shadow-primary/25 hover:scale-105 active:scale-95 transition-all"
             >
-              <Camera className="w-4 h-4" /> Let's Go <ArrowRight className="w-4 h-4" />
+              Let's Go <ArrowRight className="w-4 h-4" />
             </button>
           </div>
         </div>

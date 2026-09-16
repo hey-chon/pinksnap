@@ -87,7 +87,7 @@ export default function Home() {
             className="home-hero-item group relative inline-flex items-center justify-center px-9 py-4 font-black text-white bg-primary rounded-full overflow-hidden shadow-xl shadow-primary/30 hover:shadow-2xl hover:shadow-primary/40 transition-all hover:scale-105 active:scale-95 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/50 focus-visible:ring-offset-2"
           >
             <span className="relative flex items-center gap-2 text-sm sm:text-base font-black tracking-wider uppercase">
-              GET STARTED <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              GET STARTED
             </span>
           </button>
           

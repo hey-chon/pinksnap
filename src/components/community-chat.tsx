@@ -13,6 +13,8 @@ import {
   ArrowDown,
   Radio,
   X,
+  Eye,
+  UserCheck,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast.tsx';
@@ -205,9 +207,6 @@ export default function CommunityChat() {
         <h1 id="community-chat-title" className="font-display text-[2.5rem] leading-[.95] sm:text-6xl mt-2">
           COMMUNITY <span className="text-primary">CHAT</span>
         </h1>
-        <p className="mt-2.5 text-xs sm:text-sm text-foreground/65 font-medium max-w-lg mx-auto">
-          Thanks to my friend Vien for helping me integrate this community chat! This space was built to collect user feedback, share experiences, and feel free to give your ideas for future improvements.
-        </p>
       </div>
 
       <div className="pixel-panel shadow-2xl relative w-full">
@@ -457,7 +456,7 @@ export default function CommunityChat() {
               onClick={() => setShowAuthModal(true)}
               className="py-2 px-4 bg-primary text-white font-black text-xs uppercase tracking-widest rounded-lg shadow-md hover:bg-primary/90 active:scale-95 transition-all flex items-center gap-1.5 shrink-0 cursor-pointer"
             >
-              <Sparkles className="w-3.5 h-3.5" /> Sign In / Join
+              <UserCheck className="w-3.5 h-3.5" /> Sign In / Join
             </button>
           </div>
         )}

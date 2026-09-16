@@ -129,7 +129,7 @@ export function AuthModal({
       <div className="text-center mb-6">
         <h2 className="font-display text-3xl sm:text-4xl text-foreground tracking-wide">
           {mode === 'signin' && (
-            <>ENTER THE <span className="text-primary">BOOTH</span></>
+            <>WELCOME <span className="text-primary">BACK!</span></>
           )}
           {mode === 'signup' && (
             <>JOIN <span className="text-primary">PINKSNAP</span></>
@@ -139,8 +139,8 @@ export function AuthModal({
           )}
         </h2>
         <p className="text-xs sm:text-sm text-foreground/60 mt-1 font-medium">
-          {mode === 'signin' && 'Sign in to access your saved cloud strips and settings.'}
-          {mode === 'signup' && 'Create your account to save and customize your prints.'}
+          {mode === 'signin' && 'Sign in to access PinkSnap.'}
+          {mode === 'signup' && 'Create your account to use PinkSnap.'}
           {mode === 'reset' && 'Enter your email to receive recovery instructions.'}
         </p>
       </div>
@@ -199,7 +199,7 @@ export function AuthModal({
                 type="text"
                 value={displayName}
                 onChange={e => setDisplayName(e.target.value)}
-                placeholder="e.g. Jimson Ilog"
+                placeholder="e.g. Chon"
                 className="w-full pl-10 pr-4 py-2.5 bg-white/80 border border-black/10 focus:border-primary focus:ring-2 focus:ring-primary/20 rounded-xl text-xs sm:text-sm transition-all outline-none"
               />
             </div>
@@ -271,18 +271,16 @@ export function AuthModal({
             <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
           ) : mode === 'signin' ? (
             <>
-              <span>SIGN IN TO BOOTH</span>
+              <span>SIGN IN</span>
               <ArrowRight className="w-4 h-4" />
             </>
           ) : mode === 'signup' ? (
             <>
               <span>CREATE FREE ACCOUNT</span>
-              <Sparkles className="w-4 h-4" />
             </>
           ) : (
             <>
               <span>SEND RESET LINK</span>
-              <KeyRound className="w-4 h-4" />
             </>
           )}
         </button>
@@ -320,7 +318,7 @@ export function AuthModal({
               onClick={() => { setMode('signup'); setAuthError(null); }}
               className="text-primary font-bold hover:underline"
             >
-              Sign up free
+              Sign Up
             </button>
           </span>
         ) : (

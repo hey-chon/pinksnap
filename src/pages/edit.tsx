@@ -387,7 +387,7 @@ export default function Edit() {
         url: galleryUrl,
         date: Date.now(),
         layout,
-        frame,
+        frame: isArtisan ? artisanId : frame,
         mimeType: 'image/jpeg',
       });
       return true;
@@ -564,11 +564,14 @@ export default function Edit() {
         <div className="flex flex-col xl:flex-row gap-6 sm:gap-8 xl:gap-10 w-full max-w-7xl items-center xl:items-start justify-center pb-14">
 
           {/* ── LEFT: Preview ───────────────────────────────────────────── */}
-          <div className="edit-card w-full flex justify-center shrink-0 xl:w-auto xl:sticky xl:top-6">
+          <div 
+            className="edit-card w-full flex justify-center shrink-0 xl:w-auto xl:sticky xl:top-6"
+            onContextMenu={(e) => e.preventDefault()}
+          >
 
             {isArtisan ? (
               <div className="flex flex-col items-center justify-center p-1">
-                <div className="rounded-2xl overflow-hidden shadow-2xl border border-white/60 bg-black/5">
+                <div className="rounded-sm overflow-hidden shadow-2xl border border-white/60 bg-black/5">
                   <canvas ref={artisanCanvasRef} className="block pointer-events-none" />
                 </div>
               </div>

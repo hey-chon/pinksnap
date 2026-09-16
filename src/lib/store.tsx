@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { isSafeImageDataUrl } from '@/lib/image-utils';
-import { FrameType, FilterType, isFrameType } from '@/lib/customization';
+import { FrameType, FilterType, isFrameType, ARTISAN_TEMPLATES } from '@/lib/customization';
 
 export type LayoutType = 'vertical-4' | 'quad-4' | 'horizontal-3';
 export interface Memory {
@@ -43,7 +43,7 @@ const isMemory = (value: unknown): value is Memory => {
     && typeof memory.date === 'number'
     && Number.isFinite(memory.date)
     && isLayoutType(memory.layout)
-    && isFrameType(memory.frame)
+    && (isFrameType(memory.frame) || ARTISAN_TEMPLATES.some(t => t.id === memory.frame))
     && (memory.mimeType === undefined || memory.mimeType === 'image/jpeg' || memory.mimeType === 'image/png');
 };
 

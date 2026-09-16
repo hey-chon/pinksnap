@@ -814,10 +814,10 @@ function aBarcode(
 // ══════════════════════════════════════════════════════════════════════════
 
 const THEATER_SLOTS: ArtisanSlot[] = [
-  { x: 40, y: 214, w: 520, h: 262, r: 2 },
-  { x: 40, y: 490, w: 520, h: 262, r: 2 },
-  { x: 40, y: 766, w: 520, h: 262, r: 2 },
-  { x: 40, y: 1042, w: 520, h: 262, r: 2 },
+  { x: 40, y: 226, w: 520, h: 306, r: 2 },
+  { x: 40, y: 558, w: 520, h: 306, r: 2 },
+  { x: 40, y: 890, w: 520, h: 306, r: 2 },
+  { x: 40, y: 1222, w: 520, h: 306, r: 2 },
 ];
 
 function theaterBg(ctx: CanvasRenderingContext2D, w: number, h: number, s: number, date: number) {
@@ -887,7 +887,7 @@ function theaterBg(ctx: CanvasRenderingContext2D, w: number, h: number, s: numbe
   THEATER_SLOTS.forEach(sl => aBox(ctx, sl.x * s, sl.y * s, sl.w * s, sl.h * s, sl.r * s, '#171010'));
 
   // Footer text
-  aTxt(ctx, 'SAVE THE BEST MOMENT  ★  SAVE THE BEST MOMENT', w / 2, Math.round(1348 * s),
+  aTxt(ctx, 'SAVE THE BEST MOMENT  ★  SAVE THE BEST MOMENT', w / 2, Math.round(1570 * s),
     `${Math.round(11 * s)}px "Inter", sans-serif`, maroon);
 }
 
@@ -896,7 +896,7 @@ function theaterFg(ctx: CanvasRenderingContext2D, w: number, h: number, s: numbe
   // Slot outlines over photos
   THEATER_SLOTS.forEach(sl => aBox(ctx, sl.x * s, sl.y * s, sl.w * s, sl.h * s, sl.r * s, undefined, maroon, Math.round(1.5 * s)));
   // Brand at bottom in italic script style
-  aTxt(ctx, 'pinksnap.', w / 2, Math.round(1462 * s),
+  aTxt(ctx, 'pinksnap.', w / 2, Math.round(1650 * s),
     `italic bold ${Math.round(46 * s)}px Georgia, "Times New Roman", serif`, maroon);
 }
 

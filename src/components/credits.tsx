@@ -134,7 +134,7 @@ export default function Credits() {
               </a>
             ))}
             <a href="https://chon-vert.vercel.app/" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-full bg-white text-[#201b2c] px-3.5 py-1.5 text-xs font-black hover:bg-white/90 hover:scale-105 transition-all shadow-sm active:scale-95">
-              Portfolio <ExternalLink className="w-3.5 h-3.5" />
+              chon.dev <ExternalLink className="w-3.5 h-3.5" />
             </a>
           </div>
         </div>

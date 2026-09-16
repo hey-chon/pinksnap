@@ -118,7 +118,7 @@ export function UserMenu() {
               className="flex items-center gap-2.5 px-4 py-2 text-xs font-bold text-foreground/80 hover:text-primary hover:bg-primary/5 transition-colors"
             >
               <User className="w-4 h-4 text-primary" />
-              <span>My Profile & Settings</span>
+              <span>Profile</span>
             </Link>
 
             <Link
@@ -127,7 +127,7 @@ export function UserMenu() {
               className="flex items-center gap-2.5 px-4 py-2 text-xs font-bold text-foreground/80 hover:text-primary hover:bg-primary/5 transition-colors"
             >
               <Images className="w-4 h-4 text-primary" />
-              <span>Saved Photo Strips</span>
+              <span>Gallery</span>
             </Link>
 
             {isAdmin && (
@@ -150,7 +150,7 @@ export function UserMenu() {
               className="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-bold text-destructive hover:bg-destructive/10 transition-colors text-left"
             >
               <LogOut className="w-4 h-4" />
-              <span>Sign Out</span>
+              <span>Log Out</span>
             </button>
           </div>
         </div>

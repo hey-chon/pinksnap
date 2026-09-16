@@ -47,20 +47,7 @@ export default function StudioLoading() {
         }} />
       </div>
 
-      {/* Film sprocket dots left */}
-      <div className="absolute left-0 top-0 bottom-0 w-8 flex flex-col justify-evenly items-center py-8 pointer-events-none"
-        style={{ opacity: 0.18 }}>
-        {Array.from({ length: 11 }).map((_, i) => (
-          <div key={i} style={{ width: '13px', height: '18px', borderRadius: '3px', background: 'rgba(255,255,255,.7)' }} />
-        ))}
-      </div>
-      {/* Film sprocket dots right */}
-      <div className="absolute right-0 top-0 bottom-0 w-8 flex flex-col justify-evenly items-center py-8 pointer-events-none"
-        style={{ opacity: 0.18 }}>
-        {Array.from({ length: 11 }).map((_, i) => (
-          <div key={i} style={{ width: '13px', height: '18px', borderRadius: '3px', background: 'rgba(255,255,255,.7)' }} />
-        ))}
-      </div>
+
 
       <main className="relative z-10 w-full max-w-sm text-center">
 
@@ -97,66 +84,7 @@ export default function StudioLoading() {
           warming up the booth...
         </p>
 
-        {/* Step list card */}
-        <div
-          className="reveal-pop p-5 space-y-3"
-          style={{
-            borderRadius: '1.4rem',
-            background: 'rgba(255,255,255,.04)',
-            border: '1px solid rgba(255,255,255,.09)',
-            boxShadow: '0 24px 48px -20px rgba(0,0,0,.7)',
-            backdropFilter: 'blur(20px)',
-          }}
-        >
-          {messages.map(({ label, icon: Icon }, index) => (
-            <div
-              key={label}
-              className="flex items-center gap-3 text-sm font-bold transition-all duration-300"
-              style={{ color: index <= step ? 'rgba(255,255,255,.9)' : 'rgba(255,255,255,.22)' }}
-            >
-              <span
-                className="w-7 h-7 rounded-full flex items-center justify-center shrink-0 transition-all duration-300"
-                style={{
-                  background: index < step
-                    ? 'linear-gradient(135deg, #f53d89, #c42d6a)'
-                    : index === step
-                      ? 'rgba(245,61,137,.15)'
-                      : 'rgba(255,255,255,.05)',
-                  boxShadow: index < step ? '0 4px 12px rgba(245,61,137,.4)' : 'none',
-                }}
-              >
-                {index < step
-                  ? <Check className="w-4 h-4 text-white" />
-                  : <Icon
-                      className={`w-3.5 h-3.5 ${index === step ? 'loading-dot' : ''}`}
-                      style={{ color: index === step ? '#f53d89' : 'rgba(255,255,255,.2)' }}
-                    />}
-              </span>
 
-              <span className="flex-1 text-left">{label}</span>
-
-              {index === step && (
-                <span className="flex gap-1">
-                  <i className="loading-bounce" style={{ background: '#f53d89' }} />
-                  <i className="loading-bounce" style={{ background: '#f53d89', animationDelay: '120ms' }} />
-                  <i className="loading-bounce" style={{ background: '#f53d89', animationDelay: '240ms' }} />
-                </span>
-              )}
-            </div>
-          ))}
-
-          {/* Progress bar */}
-          <div className="mt-5 h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,.07)' }}>
-            <div
-              className="h-full rounded-full transition-all duration-500 ease-out"
-              style={{
-                width: `${progress}%`,
-                background: 'linear-gradient(90deg, #c42d6a, #f53d89, #ff8ab8)',
-                boxShadow: '0 0 10px rgba(245,61,137,.55)',
-              }}
-            />
-          </div>
-        </div>
 
         
       </main>

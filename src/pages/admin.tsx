@@ -146,13 +146,14 @@ export default function AdminPage() {
     setIsSavingEdit(true);
 
     const updatedName = editName.trim() || editingUser.name;
+    const updatedRole = editingUser.isCurrentUser ? editingUser.role : editRole;
 
     try {
       const { error } = await supabase
         .from('profiles')
         .update({
           display_name: updatedName,
-          role: editRole,
+          role: updatedRole,
           updated_at: new Date().toISOString(),
         })
         .eq('id', editingUser.id);
@@ -162,7 +163,7 @@ export default function AdminPage() {
       setUsersList(prev =>
         prev.map(u =>
           u.id === editingUser.id
-            ? { ...u, name: updatedName, role: editRole }
+            ? { ...u, name: updatedName, role: updatedRole }
             : u
         )
       );
@@ -481,12 +482,14 @@ export default function AdminPage() {
                     <button
                       key={r}
                       type="button"
+                      disabled={editingUser.isCurrentUser}
                       onClick={() => setEditRole(r)}
+                      title={editingUser.isCurrentUser ? "You cannot modify your own role" : `Change role to ${r}`}
                       className={`py-2 px-3 rounded-xl text-xs font-black uppercase tracking-wider border transition-all ${
                         editRole === r
                           ? 'bg-purple-600 text-white border-purple-600 shadow-sm'
                           : 'bg-white text-foreground/70 border-black/10 hover:bg-black/5'
-                      }`}
+                      } ${editingUser.isCurrentUser ? 'opacity-50 cursor-not-allowed' : ''}`}
                     >
                       {r === 'admin' ? 'Administrator' : 'Member'}
                     </button>

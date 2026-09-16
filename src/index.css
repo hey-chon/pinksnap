@@ -306,7 +306,7 @@ img { max-width: 100%; }
 
 /* strip shell */
 .strip-shell {
-  border-radius: 1.15rem;
+  border-radius: 0.25rem;
   box-shadow: 0 26px 60px -22px rgba(31, 29, 43, .45);
   isolation: isolate;
 }

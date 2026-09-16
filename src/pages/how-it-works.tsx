@@ -80,7 +80,7 @@ export default function HowItWorks() {
                data-testid="link-setup-bottom"
                className="inline-flex items-center justify-center gap-2 bg-primary text-white px-6 py-4 sm:px-8 sm:py-5 rounded-full font-black text-base sm:text-lg shadow-xl shadow-primary/30 hover:scale-105 active:scale-95 transition-all focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/50 focus-visible:ring-offset-2"
              >
-               START SNAPPING <ArrowRight className="w-6 h-6" />
+               GET STARTED 
              </button>
           </div>
 

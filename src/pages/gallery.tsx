@@ -7,6 +7,13 @@ import { useToast } from '@/hooks/use-toast.tsx';
 import { downloadImage } from '@/lib/image-utils';
 import { useAuth } from '@/hooks/use-auth';
 import { AuthGateModal } from '@/components/auth/auth-gate-modal';
+import { ARTISAN_TEMPLATES, FRAME_OPTIONS, getArtisanTemplate, getFrameOption } from '@/lib/customization';
+
+const getFrameLabel = (id: string) => {
+  if (ARTISAN_TEMPLATES.some(t => t.id === id)) return 'ARTISAN';
+  if (FRAME_OPTIONS.some(f => f.id === id)) return getFrameOption(id as any).label;
+  return id;
+};
 
 export default function Gallery() {
   const [, navigate] = useLocation();
@@ -62,46 +69,35 @@ export default function Gallery() {
           className="fixed inset-0 z-50 bg-black/92 backdrop-blur-xl flex flex-col items-center justify-between p-4 sm:p-6 animate-in fade-in duration-200"
           onClick={() => setSelectedMemory(null)}
         >
-          <div className="w-full flex justify-between items-center max-w-4xl pt-2">
-            <div className="text-sm font-black tracking-wider text-white/80 uppercase">
-              {selectedMemory.frame} · {new Date(selectedMemory.date).toLocaleDateString()}
+          <button
+            onClick={() => setSelectedMemory(null)}
+            className="absolute top-6 right-6 sm:top-8 sm:right-8 z-[60] w-12 h-12 rounded-full bg-black/40 hover:bg-black/60 flex items-center justify-center text-white transition-colors focus:outline-none ring-1 ring-white/30 backdrop-blur-md"
+            aria-label="Close preview"
+          >
+            <X className="w-6 h-6" />
+          </button>
+
+          <div 
+            className="flex-1 flex flex-col items-center justify-center py-4 w-full overflow-hidden"
+          >
+            <div className="relative flex flex-col items-center" onClick={(e) => e.stopPropagation()}>
+              <img
+                src={selectedMemory.url}
+                alt="Full size photostrip"
+                onContextMenu={(e) => e.preventDefault()}
+                draggable={false}
+                className="max-h-[55vh] sm:max-h-[65vh] w-auto object-contain drop-shadow-[0_20px_50px_rgba(0,0,0,0.8)] rounded-xl select-none"
+              />
+              <div className="mt-6 flex flex-col items-center text-center">
+                <div className="font-black text-2xl tracking-tight leading-none mb-1.5">
+                  <span className="text-white">PINK</span>
+                  <span className="text-primary">SNAP</span>
+                </div>
+                <div className="text-[10px] sm:text-xs font-bold text-white/60 tracking-[0.2em] uppercase">
+                  {getFrameLabel(selectedMemory.frame)} · {new Date(selectedMemory.date).toLocaleDateString()}
+                </div>
+              </div>
             </div>
-            <button
-              onClick={() => setSelectedMemory(null)}
-              className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors focus:outline-none ring-1 ring-white/20"
-              aria-label="Close preview"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
-
-          <div 
-            className="flex-1 flex items-center justify-center py-4 w-full overflow-hidden"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <img
-              src={selectedMemory.url}
-              alt="Full size photostrip"
-              className="max-h-[78vh] w-auto object-contain drop-shadow-[0_20px_50px_rgba(0,0,0,0.8)] rounded-xl"
-            />
-          </div>
-
-          <div 
-            className="flex items-center gap-4 pb-4"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              onClick={() => handleDownload(selectedMemory.url, selectedMemory.date)}
-              className="px-6 py-3 bg-primary text-white font-black rounded-full shadow-lg shadow-primary/30 hover:scale-105 active:scale-95 transition-transform flex items-center gap-2 text-sm tracking-wider"
-            >
-              <Download className="w-4 h-4" /> SAVE STRIP
-            </button>
-            <button
-              onClick={() => handleDelete(selectedMemory.id)}
-              className="px-5 py-3 bg-white/10 hover:bg-destructive/20 hover:text-destructive text-white/80 font-black rounded-full transition-colors flex items-center gap-2 text-sm tracking-wider ring-1 ring-white/15"
-            >
-              <Trash2 className="w-4 h-4" /> DELETE
-            </button>
           </div>
         </div>
       )}
@@ -140,7 +136,7 @@ export default function Gallery() {
                       {new Date(memory.date).toLocaleDateString()}
                     </div>
                     <div className="text-[10px] font-black bg-primary/10 px-2.5 py-1 rounded-full uppercase tracking-widest text-primary">
-                      {memory.frame}
+                      {getFrameLabel(memory.frame)}
                     </div>
                   </div>
 
@@ -152,9 +148,11 @@ export default function Gallery() {
                       src={memory.url} 
                       data-testid={`gallery-memory-${memory.id}`}
                       alt={`PinkSnap photo strip from ${new Date(memory.date).toLocaleDateString()}`}
-                      className="max-w-full max-h-full object-contain drop-shadow-md rounded-sm group-hover:scale-[1.02] transition-transform"
+                      onContextMenu={(e) => e.preventDefault()}
+                      draggable={false}
+                      className="max-w-full max-h-full object-contain drop-shadow-md rounded-sm group-hover:scale-[1.02] transition-transform select-none"
                     />
-                    <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 text-white font-black text-xs tracking-wider rounded-2xl">
+                    <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 text-white font-black text-xs tracking-wider rounded-2xl pointer-events-none">
                       <ZoomIn className="w-4 h-4" /> VIEW FULL STRIP
                     </div>
                   </div>
