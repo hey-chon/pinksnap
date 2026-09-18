@@ -1270,7 +1270,7 @@ html, body { overflow-x: hidden; }
 .pixel-input {
   min-width: 0;
   padding: .6rem .65rem;
-  font-size: .78rem;
+  font-size: 16px;
   font-weight: 700;
   color: var(--pixel-ink);
   background: #fff;
@@ -1308,7 +1308,7 @@ html, body { overflow-x: hidden; }
 @media (max-width: 640px) {
   .pixel-log { min-height: 220px; max-height: 320px; padding: .75rem .6rem; }
   .pixel-bubble { max-width: 82%; min-width: 100px; }
-  .pixel-input-msg { font-size: .75rem; }
+  .pixel-input-msg { font-size: 16px; }
   .pixel-titlebar { font-size: .45rem; padding: .6rem .65rem; }
   .pixel-composer { padding: .55rem .6rem .4rem; }
   .pixel-send { min-width: 3.4rem; height: 2.35rem; }

@@ -57,6 +57,9 @@ export function createMemoryId(): string {
   return `memory-${Date.now()}-${randomPart}`;
 }
 
+const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+  (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
 export async function downloadImage(dataUrl: string, filename: string) {
   if (!isSafeImageDataUrl(dataUrl)) {
     throw new Error('Unsupported image data');
@@ -64,6 +67,38 @@ export async function downloadImage(dataUrl: string, filename: string) {
 
   const blob = dataUrlToBlob(dataUrl);
   const objectUrl = URL.createObjectURL(blob);
+
+  // On iOS, the `<a download>` click is unreliable — Safari silently ignores
+  // it or opens the image in the same tab.  Prefer the Web Share API which
+  // surfaces the native share sheet (users can "Save Image" from there).
+  if (IS_IOS) {
+    try {
+      const file = new File([blob], filename, { type: blob.type });
+      if (navigator.canShare?.({ files: [file] })) {
+        await navigator.share({ files: [file], title: filename });
+        URL.revokeObjectURL(objectUrl);
+        return;
+      }
+    } catch (err) {
+      // If the user cancelled the share sheet (AbortError), still treat it as
+      // handled — they can always tap "Save & Exit" again.
+      if (err instanceof DOMException && err.name === 'AbortError') {
+        URL.revokeObjectURL(objectUrl);
+        return;
+      }
+      // For any other error fall through to the tab fallback below.
+    }
+
+    // Fallback: open in a new tab so the user can long-press → Save Image.
+    const opened = window.open(objectUrl, '_blank');
+    if (!opened) {
+      window.location.href = objectUrl;
+    }
+    window.setTimeout(() => URL.revokeObjectURL(objectUrl), 10_000);
+    return;
+  }
+
+  // Non-iOS path — the standard <a download> approach works reliably.
   const link = document.createElement('a');
   const supportsDownload = 'download' in link;
 
@@ -79,8 +114,7 @@ export async function downloadImage(dataUrl: string, filename: string) {
     return;
   }
 
-  // Older iOS Safari ignores the download attribute, so hand the file to the
-  // share sheet when we can and fall back to opening it in a new tab.
+  // Legacy fallback for very old browsers that lack the download attribute.
   try {
     const file = new File([blob], filename, { type: blob.type });
     if (navigator.canShare?.({ files: [file] })) {

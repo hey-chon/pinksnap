@@ -434,18 +434,8 @@ export default function Edit() {
     }
   };
 
-  const executeDownload = async (dataUrl: string, addToGallery = false) => {
+  const executeDownload = async (dataUrl: string) => {
     await downloadImage(dataUrl, `pinksnap-${Date.now()}.png`);
-    if (addToGallery) {
-      await saveToGallery(dataUrl);
-    }
-    toast({
-      title: 'Strip saved!',
-      description: 'Your photo strip has been downloaded and added to your gallery.',
-    });
-    setTimeout(() => {
-      setLocation('/gallery');
-    }, 1000);
   };
 
   const handleSave = async (skipDownload = false) => {
@@ -456,24 +446,36 @@ export default function Edit() {
       const dataUrl = await getOutputImage();
       if (!dataUrl) throw new Error('empty strip');
 
+      // Save to the in-app gallery FIRST, before triggering any download or
+      // navigation.  This prevents the race condition where the 'Save & Exit'
+      // navigates away before the async gallery-preview generation finishes
+      // (especially on slower iOS devices).
+      const stored = await saveToGallery(dataUrl);
+
       if (!skipDownload) {
         await executeDownload(dataUrl);
       }
 
-      const stored = await saveToGallery(dataUrl);
+      toast({
+        title: 'Strip saved!',
+        description: stored
+          ? 'Your photo strip has been downloaded and added to your gallery.'
+          : 'The strip was downloaded, but this device could not keep a gallery copy.',
+      });
 
-      if (!stored) {
+      // Navigate to gallery after everything is done — no blind timeout.
+      setLocation('/gallery');
+    } catch (err) {
+      // If the user dismissed the iOS share sheet, don't treat it as an error.
+      if (err instanceof DOMException && err.name === 'AbortError') {
+        // silently allow them to retry
+      } else {
         toast({
-          title: 'Downloaded successfully',
-          description: 'The strip was downloaded, but this device could not keep a gallery copy.',
+          title: 'Download failed',
+          description: 'We could not save the strip. Try again in a moment.',
+          variant: 'destructive',
         });
       }
-    } catch {
-      toast({
-        title: 'Download failed',
-        description: 'We could not save the strip. Try again in a moment.',
-        variant: 'destructive',
-      });
     } finally {
       setIsSaving(false);
     }
@@ -486,6 +488,9 @@ export default function Edit() {
     try {
       const dataUrl = await getOutputImage();
 
+      // Always save to gallery first
+      await saveToGallery(dataUrl);
+
       if (navigator.share && navigator.canShare) {
         const blob = dataUrlToBlob(dataUrl);
         const file = new File([blob], `pinksnap-${Date.now()}.png`, { type: 'image/png' });
@@ -496,7 +501,6 @@ export default function Edit() {
             text: 'Check out my photobooth strip from PinkSnap!',
             files: [file],
           });
-          await saveToGallery(dataUrl);
           return;
         }
       }
@@ -505,7 +509,7 @@ export default function Edit() {
         title: 'Sharing unavailable',
         description: 'Image will be saved to your device instead.',
       });
-      await executeDownload(dataUrl, true);
+      await executeDownload(dataUrl);
     } catch (e) {
       if (e instanceof DOMException && e.name === 'AbortError') {
         toast({
@@ -518,7 +522,7 @@ export default function Edit() {
           description: 'Your strip will be downloaded instead.',
         });
         const dataUrl = await getOutputImage();
-        if (dataUrl) await executeDownload(dataUrl, true);
+        if (dataUrl) await executeDownload(dataUrl);
       }
     } finally {
       setIsSaving(false);

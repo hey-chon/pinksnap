@@ -200,7 +200,7 @@ export function AuthModal({
                 value={displayName}
                 onChange={e => setDisplayName(e.target.value)}
                 placeholder="e.g. Chon"
-                className="w-full pl-10 pr-4 py-2.5 bg-white/80 border border-black/10 focus:border-primary focus:ring-2 focus:ring-primary/20 rounded-xl text-xs sm:text-sm transition-all outline-none"
+                className="w-full pl-10 pr-4 py-2.5 bg-white/80 border border-black/10 focus:border-primary focus:ring-2 focus:ring-primary/20 rounded-xl text-[16px] sm:text-sm transition-all outline-none"
               />
             </div>
           </div>
@@ -218,7 +218,7 @@ export function AuthModal({
               value={email}
               onChange={e => setEmail(e.target.value)}
               placeholder="you@domain.com"
-              className="w-full pl-10 pr-4 py-2.5 bg-white/80 border border-black/10 focus:border-primary focus:ring-2 focus:ring-primary/20 rounded-xl text-xs sm:text-sm transition-all outline-none"
+              className="w-full pl-10 pr-4 py-2.5 bg-white/80 border border-black/10 focus:border-primary focus:ring-2 focus:ring-primary/20 rounded-xl text-[16px] sm:text-sm transition-all outline-none"
             />
           </div>
         </div>
@@ -247,7 +247,7 @@ export function AuthModal({
                 value={password}
                 onChange={e => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full pl-10 pr-10 py-2.5 bg-white/80 border border-black/10 focus:border-primary focus:ring-2 focus:ring-primary/20 rounded-xl text-xs sm:text-sm transition-all outline-none"
+                className="w-full pl-10 pr-10 py-2.5 bg-white/80 border border-black/10 focus:border-primary focus:ring-2 focus:ring-primary/20 rounded-xl text-[16px] sm:text-sm transition-all outline-none"
               />
               <button
                 type="button"
