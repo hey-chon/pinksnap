@@ -79,9 +79,25 @@ function ArtisanThumbnailCard({
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
     const now = Date.now();
-    // Paint template background with empty slots & decorations (no user photos)
-    template.paintBg(ctx, targetWidth, targetHeight, scale, now);
-    template.paintFg(ctx, targetWidth, targetHeight, scale, now);
+
+    let cancelled = false;
+    const render = async () => {
+      // Background
+      if (template.paintBgAsync) {
+        await template.paintBgAsync(ctx, targetWidth, targetHeight, scale, now);
+      } else {
+        template.paintBg(ctx, targetWidth, targetHeight, scale, now);
+      }
+      if (cancelled) return;
+      // Foreground
+      if (template.paintFgAsync) {
+        await template.paintFgAsync(ctx, targetWidth, targetHeight, scale, now);
+      } else {
+        template.paintFg(ctx, targetWidth, targetHeight, scale, now);
+      }
+    };
+    render();
+    return () => { cancelled = true; };
   }, [template]);
 
   return (
@@ -239,32 +255,48 @@ export default function Edit() {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // 1. Instant background + placeholder render
-    template.paintBg(ctx, targetWidth, targetHeight, scale, sessionDate);
-    template.paintFg(ctx, targetWidth, targetHeight, scale, sessionDate);
+    const render = async () => {
+      // 1. Instant background + placeholder render
+      if (template.paintBgAsync) {
+        await template.paintBgAsync(ctx, targetWidth, targetHeight, scale, sessionDate);
+      } else {
+        template.paintBg(ctx, targetWidth, targetHeight, scale, sessionDate);
+      }
+      if (isCancelled) return;
+      if (template.paintFgAsync) {
+        await template.paintFgAsync(ctx, targetWidth, targetHeight, scale, sessionDate);
+      } else {
+        template.paintFg(ctx, targetWidth, targetHeight, scale, sessionDate);
+      }
+      if (isCancelled) return;
 
-    // 2. Load and composite photos
-    const loadPhoto = (src: string): Promise<HTMLImageElement | null> =>
-      new Promise((resolve) => {
-        const img = new Image();
-        img.crossOrigin = 'anonymous';
-        const done = () => resolve(img);
-        img.onload = done;
-        img.onerror = () => resolve(null);
-        img.src = src;
-        if (img.complete && img.naturalWidth > 0) done();
-      });
+      // 2. Load and composite photos
+      const loadPhoto = (src: string): Promise<HTMLImageElement | null> =>
+        new Promise((resolve) => {
+          const img = new Image();
+          img.crossOrigin = 'anonymous';
+          const done = () => resolve(img);
+          img.onload = done;
+          img.onerror = () => resolve(null);
+          img.src = src;
+          if (img.complete && img.naturalWidth > 0) done();
+        });
 
-    Promise.all(
-      template.slots.map((_, i) => loadPhoto(shots[i] ?? shots[shots.length - 1]))
-    ).then((images) => {
+      const images = await Promise.all(
+        template.slots.map((_, i) => loadPhoto(shots[i] ?? shots[shots.length - 1]))
+      );
+
       if (isCancelled || !artisanCanvasRef.current) return;
       const c = artisanCanvasRef.current;
       const cctx = c.getContext('2d');
       if (!cctx) return;
 
       // Redraw background
-      template.paintBg(cctx, targetWidth, targetHeight, scale, sessionDate);
+      if (template.paintBgAsync) {
+        await template.paintBgAsync(cctx, targetWidth, targetHeight, scale, sessionDate);
+      } else {
+        template.paintBg(cctx, targetWidth, targetHeight, scale, sessionDate);
+      }
 
       // Draw each photo in slot
       template.slots.forEach((slot, i) => {
@@ -289,8 +321,14 @@ export default function Edit() {
       });
 
       // Foreground overlays
-      template.paintFg(cctx, targetWidth, targetHeight, scale, sessionDate);
-    });
+      if (template.paintFgAsync) {
+        await template.paintFgAsync(cctx, targetWidth, targetHeight, scale, sessionDate);
+      } else {
+        template.paintFg(cctx, targetWidth, targetHeight, scale, sessionDate);
+      }
+    };
+
+    render();
 
     return () => {
       isCancelled = true;

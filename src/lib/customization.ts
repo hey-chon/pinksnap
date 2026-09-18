@@ -726,7 +726,12 @@ export function drawFrameBackground(
 
 export type ArtisanTemplateId =
   | 'theater-show'
-  | 'every-moment-up';
+  | 'every-moment-up'
+  | 'retro-tv'
+  | 'the-1975'
+  | 'director-cut'
+  | 'love-stamp'
+  | 'newspaper';
 
 export interface ArtisanSlot {
   /** Absolute pixel position at 1× scale */
@@ -756,6 +761,10 @@ export interface ArtisanTemplate {
    * Paint everything AFTER photos (borders, text overlays on top of photos).
    */
   paintFg(ctx: CanvasRenderingContext2D, w: number, h: number, s: number, date: number): void;
+  /** Optional async background painter (for image-based templates). Overrides paintBg. */
+  paintBgAsync?: (ctx: CanvasRenderingContext2D, w: number, h: number, s: number, date: number) => Promise<void>;
+  /** Optional async foreground painter (for image-based templates). Overrides paintFg. */
+  paintFgAsync?: (ctx: CanvasRenderingContext2D, w: number, h: number, s: number, date: number) => Promise<void>;
 }
 
 // ── Drawing utilities ──────────────────────────────────────────────────────
@@ -807,6 +816,142 @@ function aBarcode(
     if (i % 2 === 0) ctx.fillRect(x, y, u * uw - 0.5, bh);
     x += u * uw;
   });
+}
+
+// ── Image cache helper for image-based templates ──────────────────────────
+
+const _imgCache = new Map<string, Promise<HTMLImageElement>>();
+function loadImg(src: string): Promise<HTMLImageElement> {
+  if (_imgCache.has(src)) return _imgCache.get(src)!;
+  const p = new Promise<HTMLImageElement>((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = reject;
+    img.src = src;
+  });
+  _imgCache.set(src, p);
+  return p;
+}
+
+// Inline rounded rect path that does NOT call beginPath (safe to chain paths)
+function addRoundedRectPath(
+  ctx: CanvasRenderingContext2D,
+  x: number, y: number, w: number, h: number, r: number,
+) {
+  const rad = Math.min(r, w / 2, h / 2);
+  ctx.moveTo(x + rad, y);
+  ctx.arcTo(x + w, y, x + w, y + h, rad);
+  ctx.arcTo(x + w, y + h, x, y + h, rad);
+  ctx.arcTo(x, y + h, x, y, rad);
+  ctx.arcTo(x, y, x + w, y, rad);
+  ctx.closePath();
+}
+
+function makeImageTemplate(
+  src: string,
+  templateSlots: ArtisanSlot[],
+  tolerance: number = 45
+): Pick<ArtisanTemplate, 'paintBg' | 'paintFg' | 'paintBgAsync' | 'paintFgAsync'> {
+  return {
+    paintBg(ctx, w, h) { ctx.fillStyle = '#e0e0e0'; ctx.fillRect(0, 0, w, h); },
+    paintFg() { /* no-op */ },
+
+    // Background pass draws the base image so it's visible behind photos
+    async paintBgAsync(ctx, w, h) {
+      try {
+        const img = await loadImg(src);
+        ctx.drawImage(img, 0, 0, w, h);
+      } catch {
+        ctx.fillStyle = '#e0e0e0';
+        ctx.fillRect(0, 0, w, h);
+      }
+    },
+
+    // Foreground pass uses chroma-keying to make the placeholder screens transparent.
+    // This perfectly wraps the photo in the natural curved bezel of the TV/frames,
+    // and keeps all text/decorations visible since we draw the whole image on top.
+    async paintFgAsync(ctx, w, h, s) {
+      try {
+        const img = await loadImg(src);
+        const cw = Math.round(w), ch = Math.round(h);
+        
+        const off = document.createElement('canvas');
+        off.width = cw; off.height = ch;
+        const offCtx = off.getContext('2d', { willReadFrequently: true });
+        if (!offCtx) return;
+        
+        offCtx.drawImage(img, 0, 0, cw, ch);
+        const imgData = offCtx.getImageData(0, 0, cw, ch);
+        const data = imgData.data;
+
+        templateSlots.forEach(slot => {
+          // Scale slot coordinates
+          const sx = Math.round(slot.x * s);
+          const sy = Math.round(slot.y * s);
+          const sw = Math.round(slot.w * s);
+          const sh = Math.round(slot.h * s);
+          
+          // Sample the placeholder color from the dead center of the slot
+          const cx = Math.floor(sx + sw / 2);
+          const cy = Math.floor(sy + sh / 2);
+          const cIndex = (cy * cw + cx) * 4;
+          const tr = data[cIndex], tg = data[cIndex + 1], tb = data[cIndex + 2];
+
+          // Use the configurable tolerance. 
+          // If tolerance < 0, use an advanced edge-detecting FloodFill algorithm (e.g., for heavy CRT gradients).
+          // If tolerance > 0, use Euclidean chroma-keying (for flat placeholders).
+          if (tolerance < 0) {
+            const threshold = Math.abs(tolerance);
+            const stack = [[cx, cy]];
+            const visited = new Uint8Array(cw * ch);
+            visited[cy * cw + cx] = 1;
+
+            while (stack.length > 0) {
+              const [px, py] = stack.pop()!;
+              const i = (py * cw + px) * 4;
+              const r = data[i], g = data[i+1], b = data[i+2];
+              
+              // Flood fill until we hit a dark bezel
+              if (r + g + b > threshold) {
+                data[i + 3] = 0; // erase
+                
+                // neighbors bounded by the slightly expanded slot rect to prevent runaway
+                const ex = Math.round(15 * s);
+                const minX = Math.max(0, sx - ex), maxX = Math.min(cw - 1, sx + sw + ex);
+                const minY = Math.max(0, sy - ex), maxY = Math.min(ch - 1, sy + sh + ex);
+
+                if (px > minX && !visited[py * cw + px - 1]) { visited[py * cw + px - 1] = 1; stack.push([px - 1, py]); }
+                if (px < maxX && !visited[py * cw + px + 1]) { visited[py * cw + px + 1] = 1; stack.push([px + 1, py]); }
+                if (py > minY && !visited[(py - 1) * cw + px]) { visited[(py - 1) * cw + px] = 1; stack.push([px, py - 1]); }
+                if (py < maxY && !visited[(py + 1) * cw + px]) { visited[(py + 1) * cw + px] = 1; stack.push([px, py + 1]); }
+              }
+            }
+          } else {
+            const tolSq = tolerance * tolerance;
+            const expand = Math.round(15 * s);
+            const startX = Math.max(0, sx - expand), endX = Math.min(cw, sx + sw + expand);
+            const startY = Math.max(0, sy - expand), endY = Math.min(ch, sy + sh + expand);
+
+            for (let y = startY; y < endY; y++) {
+              for (let x = startX; x < endX; x++) {
+                const i = (y * cw + x) * 4;
+                const r = data[i], g = data[i+1], b = data[i+2];
+                const distSq = (r-tr)*(r-tr) + (g-tg)*(g-tg) + (b-tb)*(b-tb);
+                if (distSq <= tolSq * 3) {
+                  data[i + 3] = 0; 
+                }
+              }
+            }
+          }
+        });
+
+        offCtx.putImageData(imgData, 0, 0);
+        ctx.drawImage(off, 0, 0);
+      } catch (err) {
+        console.error('paintFgAsync error:', err);
+      }
+    },
+  };
 }
 
 // ══════════════════════════════════════════════════════════════════════════
@@ -1082,8 +1227,101 @@ export const ARTISAN_TEMPLATES: ArtisanTemplate[] = [
     paintBg: (ctx, w, h, s, date) => everyBg(ctx, w, h, s, date, 'up'),
     paintFg: (ctx, w, h, s, date) => everyFg(ctx, w, h, s, date, 'up'),
   },
-
+  // ── Image-based templates ──────────────────────────────────────────────
+  {
+    id: 'retro-tv',
+    label: 'Retro TV',
+    note: 'Vintage television · 4 shots',
+    nw: 463, nh: 1346,
+    // Expanded by ~15px on all sides so the photo draws slightly larger.
+    // The chroma-key will clear the placeholder screen exactly to the curved bezel,
+    // and the TV template will cleanly cover the edges of this expanded photo!
+    slots: [
+      { x: 43, y: 85,  w: 296, h: 232, r: 22 },
+      { x: 40, y: 405, w: 297, h: 232, r: 22 },
+      { x: 41, y: 731, w: 297, h: 230, r: 22 },
+      { x: 43, y: 1055, w: 294, h: 227, r: 22 },
+    ],
+    ...makeImageTemplate('/templates/retro-tv.jpg', [
+      { x: 43, y: 85,  w: 296, h: 232, r: 22 },
+      { x: 40, y: 405, w: 297, h: 232, r: 22 },
+      { x: 41, y: 731, w: 297, h: 230, r: 22 },
+      { x: 43, y: 1055, w: 294, h: 227, r: 22 },
+    ], -100), // Negative tolerance triggers FloodFill with brightness threshold 100
+  },
+  {
+    id: 'the-1975',
+    label: 'The 1975',
+    note: 'Magazine cut-out · 4 shots',
+    nw: 352, nh: 1133,
+    slots: [
+      { x: 35, y: 63,  w: 281, h: 183, r: 2 },
+      { x: 35, y: 290, w: 282, h: 191, r: 2 },
+      { x: 35, y: 524, w: 283, h: 189, r: 2 },
+      { x: 35, y: 757, w: 280, h: 201, r: 2 },
+    ],
+    ...makeImageTemplate('/templates/the-1975.jpg', [
+      { x: 35, y: 63,  w: 281, h: 183, r: 2 },
+      { x: 35, y: 290, w: 282, h: 191, r: 2 },
+      { x: 35, y: 524, w: 283, h: 189, r: 2 },
+      { x: 35, y: 757, w: 280, h: 201, r: 2 },
+    ], 18), // low tolerance 18 to protect the text
+  },
+  {
+    id: 'director-cut',
+    label: "Director's Cut",
+    note: 'Film strip · 3 shots',
+    nw: 305, nh: 929,
+    slots: [
+      { x: 25, y: 27,  w: 255, h: 221, r: 0 },
+      { x: 25, y: 268, w: 255, h: 218, r: 0 },
+      { x: 25, y: 506, w: 255, h: 217, r: 0 },
+    ],
+    ...makeImageTemplate('/templates/director-cut.jpg', [
+      { x: 25, y: 27,  w: 255, h: 221, r: 0 },
+      { x: 25, y: 268, w: 255, h: 218, r: 0 },
+      { x: 25, y: 506, w: 255, h: 217, r: 0 },
+    ], 20),
+  },
+  {
+    id: 'love-stamp',
+    label: 'Love Stamp',
+    note: 'Romantic stamp · 4 shots',
+    nw: 576, nh: 1776,
+    slots: [
+      { x: 75, y: 141,  w: 427, h: 335, r: 10 },
+      { x: 75, y: 530,  w: 427, h: 334, r: 10 },
+      { x: 75, y: 917,  w: 427, h: 334, r: 10 },
+      { x: 75, y: 1305, w: 427, h: 330, r: 10 },
+    ],
+    ...makeImageTemplate('/templates/love-stamp.jpg', [
+      { x: 75, y: 141,  w: 427, h: 335, r: 10 },
+      { x: 75, y: 530,  w: 427, h: 334, r: 10 },
+      { x: 75, y: 917,  w: 427, h: 334, r: 10 },
+      { x: 75, y: 1305, w: 427, h: 330, r: 10 },
+    ], 20),
+  },
+  {
+    id: 'newspaper',
+    label: 'Newspaper',
+    note: 'Momenkú editorial · 3 shots',
+    nw: 405, nh: 1189,
+    slots: [
+      { x: 24, y: 219, w: 358, h: 226, r: 8 },
+      { x: 24, y: 460, w: 358, h: 227, r: 8 },
+      { x: 24, y: 762, w: 358, h: 225, r: 8 },
+    ],
+    ...makeImageTemplate('/templates/newspaper.jpg', [
+      { x: 24, y: 219, w: 358, h: 226, r: 8 },
+      { x: 24, y: 460, w: 358, h: 227, r: 8 },
+      { x: 24, y: 762, w: 358, h: 225, r: 8 },
+    ], 15), // very low tolerance 15 to completely prevent erasing the disco balls
+  },
 ];
+
+
+
+
 
 export function getArtisanTemplate(id: ArtisanTemplateId): ArtisanTemplate {
   return ARTISAN_TEMPLATES.find((t) => t.id === id) ?? ARTISAN_TEMPLATES[0];
@@ -1111,8 +1349,12 @@ export async function renderArtisanStrip(
   const ctx = canvas.getContext('2d');
   if (!ctx) return '';
 
-  // 1. Background + frame decoration (slot placeholders drawn here)
-  template.paintBg(ctx, W, H, s, date);
+  // 1. Background (async if available)
+  if (template.paintBgAsync) {
+    await template.paintBgAsync(ctx, W, H, s, date);
+  } else {
+    template.paintBg(ctx, W, H, s, date);
+  }
 
   // 2. Composite user photos into slots
   template.slots.forEach((slot, i) => {
@@ -1136,9 +1378,12 @@ export async function renderArtisanStrip(
     ctx.restore();
   });
 
-  // 3. Foreground — borders and overlays on top of photos
-  template.paintFg(ctx, W, H, s, date);
+  // 3. Foreground — borders and overlays on top of photos (async if available)
+  if (template.paintFgAsync) {
+    await template.paintFgAsync(ctx, W, H, s, date);
+  } else {
+    template.paintFg(ctx, W, H, s, date);
+  }
 
   return canvas.toDataURL('image/png', 1.0);
 }
-

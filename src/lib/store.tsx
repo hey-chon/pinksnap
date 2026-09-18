@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { isSafeImageDataUrl } from '@/lib/image-utils';
-import { FrameType, FilterType, isFrameType, ARTISAN_TEMPLATES } from '@/lib/customization';
+import { FrameType, FilterType, ArtisanTemplateId, isFrameType, ARTISAN_TEMPLATES } from '@/lib/customization';
 
 export type LayoutType = 'vertical-4' | 'quad-4' | 'horizontal-3';
 export interface Memory {
@@ -8,7 +8,7 @@ export interface Memory {
   url: string;
   date: number;
   layout: LayoutType;
-  frame: FrameType;
+  frame: FrameType | ArtisanTemplateId;
   mimeType?: string;
 }
 

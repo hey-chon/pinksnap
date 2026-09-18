@@ -1025,7 +1025,7 @@ img { max-width: 100%; }
 .ticket::before { left: -8px; }
 .ticket::after { right: -8px; }
 
-.ticket:hover { transform: translateY(-3px); border-color: rgba(245, 61, 137, .4); }
+
 
 .ticket-active {
   border-color: #f53d89;
