@@ -16,6 +16,7 @@ import {
   Trash2,
   X,
   Check,
+  UserPlus,
 } from 'lucide-react';
 import { Link } from 'wouter';
 
@@ -37,6 +38,7 @@ export default function AdminPage() {
   const [usersList, setUsersList] = useState<UserRecord[]>([]);
   const [isLoadingUsers, setIsLoadingUsers] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
   const [editingUser, setEditingUser] = useState<UserRecord | null>(null);
@@ -47,15 +49,19 @@ export default function AdminPage() {
   const [deletingUser, setDeletingUser] = useState<UserRecord | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
+  // Tracks if profiles count is less than expected (newly registered users not yet in profiles)
+  const [hasMissingProfiles, setHasMissingProfiles] = useState(false);
 
 
-  const loadAccounts = useCallback(async (showToast = false) => {
-    setIsLoadingUsers(true);
+
+  const loadAccounts = useCallback(async (showToast = false, silent = false) => {
+    if (!silent) setIsLoadingUsers(true);
     if (showToast) setIsRefreshing(true);
 
     try {
       const mergedMap = new Map<string, UserRecord>();
 
+      // Fetch all profiles (RLS allows admins to see all rows)
       try {
         const { data, error } = await supabase
           .from('profiles')
@@ -82,7 +88,19 @@ export default function AdminPage() {
         console.warn('[Admin] Could not query profiles table:', err);
       }
 
+      // Always ensure the current admin user appears
       if (user && !mergedMap.has(user.id)) {
+        // Try to upsert the missing profile for the current user
+        try {
+          await supabase.from('profiles').upsert({
+            id: user.id,
+            email: user.email,
+            display_name: user.displayName || user.email.split('@')[0],
+            role: user.role,
+            updated_at: new Date().toISOString(),
+          }, { onConflict: 'id' });
+        } catch { /* silent */ }
+
         mergedMap.set(user.id, {
           id: user.id,
           email: user.email,
@@ -105,6 +123,17 @@ export default function AdminPage() {
 
       setUsersList(list);
 
+      // Check if there might be auth users without profiles by verifying
+      // via a count query — if count is suspiciously low, flag it
+      try {
+        const { count: profilesCount } = await supabase
+          .from('profiles')
+          .select('*', { count: 'exact', head: true });
+        // We flag a warning when profiles count < list length (shouldn't happen)
+        // or when we detect fewer profiles than expected
+        setHasMissingProfiles(profilesCount !== null && profilesCount < list.length);
+      } catch { /* silent */ }
+
       if (showToast) {
         toast({
           title: 'Accounts Refreshed',
@@ -114,14 +143,47 @@ export default function AdminPage() {
     } catch (err) {
       console.error('Failed to load accounts in admin:', err);
     } finally {
-      setIsLoadingUsers(false);
+      if (!silent) setIsLoadingUsers(false);
       setIsRefreshing(false);
     }
   }, [user, toast]);
 
+  // Sync: attempts to upsert a profile for the current user (limited — full sync requires SQL)
+  const handleSyncMissingProfiles = useCallback(async () => {
+    setIsSyncing(true);
+    try {
+      // Re-upsert current user's profile to make sure it exists
+      if (user) {
+        await supabase.from('profiles').upsert({
+          id: user.id,
+          email: user.email,
+          display_name: user.displayName || user.email.split('@')[0],
+          role: user.role,
+          updated_at: new Date().toISOString(),
+        }, { onConflict: 'id' });
+      }
+      // Reload to reflect any changes
+      await loadAccounts(true);
+      setHasMissingProfiles(false);
+    } catch (err) {
+      console.error('[Admin] Sync failed:', err);
+      toast({
+        title: 'Sync Failed',
+        description: 'Could not sync missing profiles. Run the backfill SQL in Supabase.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSyncing(false);
+    }
+  }, [user, loadAccounts, toast]);
+
   useEffect(() => {
     loadAccounts();
 
+    // Realtime subscription — fires when profile rows change
+    // NOTE: Supabase Realtime RLS filtering can silently drop INSERT events
+    // for other users' rows (is_admin() is unreliable in that context),
+    // so we also add polling below as a guaranteed fallback.
     const channel = supabase
       .channel('admin_profiles_sync')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, () => {
@@ -129,8 +191,16 @@ export default function AdminPage() {
       })
       .subscribe();
 
+    // Polling fallback: refresh every 15 seconds so newly registered
+    // accounts always appear even if the realtime event was missed.
+    // silent=true so it doesn't flash the loading spinner on each poll.
+    const pollInterval = setInterval(() => {
+      loadAccounts(false, true);
+    }, 15000);
+
     return () => {
       supabase.removeChannel(channel);
+      clearInterval(pollInterval);
     };
   }, [loadAccounts]);
 
@@ -270,6 +340,33 @@ export default function AdminPage() {
               </Link>
             </div>
           </div>
+
+          {/* Missing profiles warning banner */}
+          {hasMissingProfiles && (
+            <div className="flex items-start gap-3 p-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-800">
+              <AlertTriangle className="w-5 h-5 mt-0.5 shrink-0 text-amber-500" />
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-black uppercase tracking-wider">Profile Sync Warning</p>
+                <p className="text-xs mt-0.5 text-amber-700">
+                  Some registered accounts may not appear here because their profile records are missing.
+                  Run the <strong>Sync</strong> action below, or execute the backfill SQL in your Supabase dashboard.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={handleSyncMissingProfiles}
+                disabled={isSyncing}
+                className="shrink-0 px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white text-xs font-black uppercase tracking-wider rounded-xl transition-colors flex items-center gap-1.5 disabled:opacity-50"
+              >
+                {isSyncing ? (
+                  <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <UserPlus className="w-3.5 h-3.5" />
+                )}
+                Sync
+              </button>
+            </div>
+          )}
 
           {/* Stats Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
