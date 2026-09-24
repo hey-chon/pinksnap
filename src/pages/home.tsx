@@ -87,26 +87,10 @@ export default function Home() {
         <div className="absolute top-1/4 left-10 md:left-32 w-64 h-64 bg-primary/20 rounded-full blur-3xl -z-10 mix-blend-multiply pointer-events-none" />
         <div className="absolute bottom-1/4 right-10 md:right-32 w-80 h-80 bg-blue-300/20 rounded-full blur-3xl -z-10 mix-blend-multiply pointer-events-none" />
 
-        {/* Floating strip decoration */}
-        <div
-          className="hidden lg:block absolute right-[6%] md:right-[8%] top-[25%] z-0 pointer-events-none transition-transform duration-100 ease-out will-change-transform"
-          style={{ transform: `translateY(${scrollY * 0.7}px) rotate(6deg)` }}
-          aria-hidden="true"
-        >
-          <div className="bg-white p-3 rounded-lg shadow-xl border border-pink-100/80 flex flex-col gap-2.5 w-28 md:w-32 opacity-85">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="w-full h-20 bg-pink-50/70 rounded flex items-center justify-center border border-pink-100/60">
-                <Camera className="w-5 h-5 text-pink-300/80" />
-              </div>
-            ))}
-            <div className="pt-1.5 flex flex-col items-center justify-center border-t border-pink-100/60 text-center">
-              <span className="font-display text-[10px] tracking-widest text-primary/70">PINKSNAP</span>
-            </div>
-          </div>
-        </div>
+
 
         {/* ── Hero ── */}
-        <div className="text-center z-10 max-w-3xl mx-auto min-h-[min(740px,calc(100svh-4rem))] flex flex-col items-center justify-center pt-9 sm:pt-14 pb-16">
+        <div className="text-center z-10 max-w-3xl mx-auto min-h-[calc(100svh-4rem)] flex flex-col items-center justify-center pt-9 sm:pt-14 pb-16">
           <div className="home-hero-item inline-flex items-center gap-2 rounded-full bg-white/60 border border-white/80 px-4 py-2 text-[11px] font-black tracking-[.18em] text-primary uppercase shadow-sm">
             <Sparkles className="w-3.5 h-3.5" /> Your pocket photo booth
           </div>
@@ -120,16 +104,18 @@ export default function Home() {
             YOUR VIRTUAL PHOTOBOOTH.
           </p>
 
-          <button
-            type="button"
-            onClick={handleGetStarted}
-            data-testid="link-setup"
-            className="home-hero-item group relative inline-flex items-center justify-center px-9 py-4 font-black text-white bg-primary rounded-full overflow-hidden shadow-xl shadow-primary/30 hover:shadow-2xl hover:shadow-primary/40 transition-all hover:scale-105 active:scale-95 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/50 focus-visible:ring-offset-2"
-          >
-            <span className="relative flex items-center gap-2 text-sm sm:text-base font-black tracking-wider uppercase">
-              GET STARTED
-            </span>
-          </button>
+          <div className="relative inline-block mt-4 mb-4">
+            <button
+              type="button"
+              onClick={handleGetStarted}
+              data-testid="link-setup"
+              className="home-hero-item group relative inline-flex items-center justify-center px-9 py-4 font-black text-white bg-primary rounded-full overflow-hidden shadow-xl shadow-primary/30 hover:shadow-2xl hover:shadow-primary/40 transition-all hover:scale-105 active:scale-95 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/50 focus-visible:ring-offset-2 z-10"
+            >
+              <span className="relative flex items-center gap-2 text-sm sm:text-base font-black tracking-wider uppercase">
+                GET STARTED
+              </span>
+            </button>
+          </div>
 
           <button
             type="button"
@@ -237,62 +223,23 @@ export default function Home() {
             </div>
           </div>
 
-          {/* ── All-steps strip ── */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            {STEPS.map((s, i) => (
-              <button
-                key={i}
-                type="button"
-                onClick={() => setActiveStep(i)}
-                className={`guide-card ticket p-0 overflow-hidden text-left group transition-all hover:shadow-lg ${activeStep === i ? 'ring-2 ring-primary ring-offset-1' : ''}`}
-              >
-                {/* Screenshot thumbnail */}
-                <div className="relative bg-gradient-to-br from-pink-50 to-white h-32 sm:h-36 overflow-hidden">
-                  <img
-                    src={s.img}
-                    alt={s.imgAlt}
-                    className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-300"
-                    loading="lazy"
-                    draggable="false"
-                    onError={(e) => {
-                      const parent = (e.target as HTMLElement).parentElement!;
-                      parent.innerHTML = `<div class="w-full h-full flex items-center justify-center text-primary/30"><svg xmlns='http://www.w3.org/2000/svg' class='w-8 h-8' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.5'><rect x='3' y='3' width='18' height='18' rx='2'/><circle cx='8.5' cy='8.5' r='1.5'/><polyline points='21 15 16 10 5 21'/></svg></div>`;
-                    }}
-                  />
-                  {/* Number badge */}
-                  <div className="absolute top-2 left-2 w-6 h-6 rounded-full bg-primary text-white text-[11px] font-black flex items-center justify-center shadow">{s.num}</div>
-                </div>
-                {/* Label */}
-                <div className="px-3 py-2.5">
-                  <p className="text-[10px] font-black uppercase tracking-wider text-foreground/80 truncate">{s.label}</p>
-                </div>
-              </button>
-            ))}
+          {/* ── Tutorial Diagram ── */}
+          <div className="mt-8 mb-4">
+            <img 
+              src="/tutorial-diagram.jpg" 
+              alt="Tutorial Diagram" 
+              className="w-full rounded-2xl shadow-sm"
+            />
           </div>
 
-          {/* ── CTA ── */}
-          <div className="mt-5 flex flex-col sm:flex-row items-center justify-between gap-4 ticket p-4 sm:p-5">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                <Sparkles className="w-5 h-5" />
-              </div>
-              <div>
-                <p className="text-xs font-black uppercase tracking-wider text-foreground">Ready to snap?</p>
-                <p className="text-[11px] text-foreground/55 font-medium">Takes less than 30 seconds to start!</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3 flex-wrap justify-center sm:justify-end">
-              <Link href="/chat" className="inline-flex items-center gap-1.5 text-xs font-black text-foreground/55 hover:text-primary uppercase tracking-wider transition-colors">
-                <MessageCircle className="w-3.5 h-3.5" /> Community Chat
-              </Link>
-              <button
-                type="button"
-                onClick={handleGetStarted}
-                className="inline-flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-full font-black text-xs uppercase tracking-wider shadow-lg shadow-primary/25 hover:scale-105 active:scale-95 transition-all"
-              >
-                Start Now <ArrowRight className="w-3.5 h-3.5" />
-              </button>
-            </div>
+          {/* ── Feedback CTA ── */}
+          <div className="mt-6 mb-8 flex flex-col items-center justify-center text-center gap-1.5">
+            <p className="text-foreground/70 font-medium text-xs sm:text-sm">
+              Want to give some feedback? Join the community chat
+            </p>
+            <Link href="/chat" className="inline-flex items-center gap-1.5 text-[10px] sm:text-xs font-black text-primary hover:text-primary/80 uppercase tracking-wider transition-colors">
+              OPEN COMMUNITY CHAT <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
           </div>
 
         </section>
