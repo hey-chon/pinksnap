@@ -226,6 +226,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signOut = useCallback(async (): Promise<void> => {
     setIsLoading(true);
     try {
+      if (typeof window !== 'undefined') {
+        sessionStorage.removeItem('ps_welcome_gate_done');
+        sessionStorage.removeItem('ps_auth_splash_done');
+      }
       await supabase.auth.signOut();
       setUser(null);
       setSession(null);

@@ -43,14 +43,24 @@ export function UserMenu() {
 
   if (!isAuthenticated || !user) {
     return (
-      <Link
-        href="/auth"
-        data-testid="button-signin-nav"
-        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary hover:bg-primary/90 text-white text-xs font-black tracking-wider uppercase shadow-md shadow-primary/30 transition-all hover:scale-105 active:scale-95 border border-white/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary shrink-0"
-      >
-        <LogIn className="w-3.5 h-3.5" />
-        <span>SIGN IN</span>
-      </Link>
+      <div className="flex items-center gap-1.5 shrink-0">
+        <Link
+          href="/auth?mode=signup"
+          data-testid="button-signup-nav"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary hover:bg-primary/90 text-white text-xs font-black tracking-wider uppercase shadow-md shadow-primary/30 transition-all hover:scale-105 active:scale-95 border border-white/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+        >
+          <Sparkles className="w-3.5 h-3.5" />
+          <span>SIGN UP</span>
+        </Link>
+        <Link
+          href="/auth"
+          data-testid="button-login-nav"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/15 hover:bg-white/25 text-white text-xs font-black tracking-wider uppercase border border-white/30 transition-all hover:scale-105 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+        >
+          <LogIn className="w-3.5 h-3.5" />
+          <span>LOGIN</span>
+        </Link>
+      </div>
     );
   }
 

@@ -138,7 +138,7 @@ export default function Home() {
               <h2 id="home-guide-title" className="font-display text-4xl sm:text-5xl">HOW TO USE</h2>
             </div>
             <Link href="/how-it-works" className="inline-flex items-center gap-1 text-xs font-black text-foreground/55 hover:text-primary uppercase tracking-wider">
-              SEE FULL GUIDE <ArrowRight className="w-3.5 h-3.5" />
+              SEE THE DIAGRAM <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
 
@@ -223,14 +223,7 @@ export default function Home() {
             </div>
           </div>
 
-          {/* ── Tutorial Diagram ── */}
-          <div className="mt-8 mb-4">
-            <img 
-              src="/tutorial-diagram.jpg" 
-              alt="Tutorial Diagram" 
-              className="w-full rounded-2xl shadow-sm"
-            />
-          </div>
+
 
           {/* ── Feedback CTA ── */}
           <div className="mt-6 mb-8 flex flex-col items-center justify-center text-center gap-1.5">
@@ -243,6 +236,8 @@ export default function Home() {
           </div>
 
         </section>
+
+
 
         <Credits />
       </main>

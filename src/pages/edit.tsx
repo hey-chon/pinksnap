@@ -105,9 +105,9 @@ function ArtisanThumbnailCard({
       onClick={onClick}
       data-testid={`button-artisan-${template.id}`}
       aria-pressed={isSelected}
-      className={`group relative flex flex-col items-center justify-between p-2 rounded-xl transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 active:scale-95 ${
+      className={`group relative flex flex-col items-center justify-between p-2 rounded-xl transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 ${
         isSelected
-          ? 'bg-primary/10 ring-2 ring-primary shadow-md shadow-primary/25 scale-[1.02]'
+          ? 'bg-primary/10 ring-2 ring-primary shadow-md shadow-primary/25'
           : 'bg-foreground/[0.03] hover:bg-foreground/[0.06] ring-1 ring-foreground/10 hover:ring-primary/40'
       }`}
     >
@@ -169,9 +169,9 @@ function FrameThumbnailCard({
       onClick={onClick}
       data-testid={`button-frame-${option.id}`}
       aria-pressed={isSelected}
-      className={`group relative flex flex-col items-center justify-between p-2 rounded-xl transition-all duration-200 focus:outline-none active:scale-95 ${
+      className={`group relative flex flex-col items-center justify-between p-2 rounded-xl transition-all duration-200 focus:outline-none ${
         isSelected
-          ? 'bg-primary/10 ring-2 ring-primary shadow-md shadow-primary/25 scale-[1.02]'
+          ? 'bg-primary/10 ring-2 ring-primary shadow-md shadow-primary/25'
           : 'bg-foreground/[0.03] hover:bg-foreground/[0.06] ring-1 ring-foreground/10 hover:ring-primary/40'
       }`}
     >
@@ -246,7 +246,7 @@ export default function Edit() {
     if (!canvas) return;
 
     const template = getArtisanTemplate(artisanId);
-    const targetHeight = Math.min(460, Math.round(window.innerHeight * 0.52));
+    const targetHeight = 1200; // High res, CSS scales it
     const scale = targetHeight / template.nh;
     const targetWidth = Math.round(template.nw * scale);
 
@@ -574,16 +574,16 @@ export default function Edit() {
   }
 
   const gridClass = layout === 'vertical-4'
-    ? 'grid-cols-1 w-full max-w-[105px] sm:max-w-[135px] xl:max-w-[155px]'
+    ? 'grid-cols-1 w-full max-w-[100px] sm:max-w-[130px] xl:max-w-[148px]'
     : layout === 'quad-4'
-      ? 'grid-cols-2 w-full max-w-[155px] sm:max-w-[200px] xl:max-w-[230px]'
-      : 'grid-cols-3 w-full max-w-[195px] sm:max-w-[250px] xl:max-w-[290px]';
+      ? 'grid-cols-2 w-full max-w-[148px] sm:max-w-[190px] xl:max-w-[218px]'
+      : 'grid-cols-3 w-full max-w-[180px] sm:max-w-[235px] xl:max-w-[272px]';
 
   const shellClass = layout === 'vertical-4'
-    ? 'max-w-[130px] sm:max-w-[165px] xl:max-w-[185px]'
+    ? 'max-w-[125px] sm:max-w-[158px] xl:max-w-[175px]'
     : layout === 'quad-4'
-      ? 'max-w-[180px] sm:max-w-[230px] xl:max-w-[260px]'
-      : 'max-w-[220px] sm:max-w-[280px] xl:max-w-[320px]';
+      ? 'max-w-[170px] sm:max-w-[218px] xl:max-w-[248px]'
+      : 'max-w-[208px] sm:max-w-[265px] xl:max-w-[302px]';
 
   const matteClass = activeFrame.dark ? 'strip-matte-light' : 'strip-matte-dark';
   const inkClass = activeFrame.dark ? 'strip-ink-light' : 'strip-ink-dark';
@@ -612,9 +612,9 @@ export default function Edit() {
           >
 
             {isArtisan ? (
-              <div className="flex flex-col items-center justify-center p-1">
-                <div className="rounded-sm overflow-hidden shadow-2xl border border-white/60 bg-black/5">
-                  <canvas ref={artisanCanvasRef} className="block pointer-events-none" />
+              <div className={`strip-shell relative overflow-hidden w-full p-3 sm:p-4 flex flex-col items-center justify-center ${shellClass}`}>
+                <div className="rounded-sm overflow-hidden shadow-2xl border border-white/60 bg-black/5 w-full">
+                  <canvas ref={artisanCanvasRef} className="block pointer-events-none w-full h-auto" />
                 </div>
               </div>
             ) : (
@@ -673,7 +673,7 @@ export default function Edit() {
             {isArtisan ? (
               /* ── Artisan template picker ── */
               <div className="mb-6">
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-2.5 mb-5">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-2.5 mb-5" onContextMenu={(e) => e.preventDefault()}>
                   {ARTISAN_TEMPLATES.map((tpl) => (
                     <ArtisanThumbnailCard
                       key={tpl.id}
@@ -724,7 +724,7 @@ export default function Edit() {
             ) : (
               /* ── Standard theme picker ── */
               <>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-2.5 mb-5">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-2.5 mb-5" onContextMenu={(e) => e.preventDefault()}>
                   {visibleFrames.map((option) => (
                     <FrameThumbnailCard
                       key={option.id}

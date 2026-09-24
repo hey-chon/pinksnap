@@ -212,109 +212,100 @@ export const FRAME_OPTIONS: FrameOption[] = [
   },
   {
     id: 'rubynoir',
-    label: 'Ruby Red',
-    note: 'Velvet ruby jewel',
+    label: 'Hot Pink',
+    note: 'Vibrant neon pink',
     category: 'booth',
     className: 'frame-rubynoir',
     dark: true,
-    matte: 'rgba(255,255,255,.22)',
+    matte: 'rgba(255,255,255,.3)',
     paint: (ctx, w, h) => {
-      // Deep ruby red base
+      // Fully opaque hot pink base
+      fill(ctx, '#e91e8c', w, h);
+      // Gradient overlay for depth
       verticalGradient(ctx, w, h, [
-        [0, '#6b0a18'],
-        [0.45, '#8b0d1e'],
-        [1, '#5a0812'],
+        [0, '#ff2d9b'],
+        [0.5, '#d4187a'],
+        [1, '#a80f60'],
       ]);
-      // Soft radial shimmer
-      const glow = ctx.createRadialGradient(w * 0.5, h * 0.15, 0, w * 0.5, h * 0.15, w * 0.7);
-      glow.addColorStop(0, 'rgba(255,80,80,.18)');
-      glow.addColorStop(1, 'rgba(0,0,0,0)');
-      ctx.fillStyle = glow;
-      ctx.fillRect(0, 0, w, h);
-      // Fine fabric grain
-      speckle(ctx, w, h, 'rgba(255,120,120,.12)', 32, 1.5);
-      // Gold inlay border
-      ctx.strokeStyle = 'rgba(226,183,106,.45)';
+      speckle(ctx, w, h, 'rgba(255,255,255,.12)', 36, 1.6);
+      ctx.strokeStyle = 'rgba(255,255,255,.35)';
       ctx.lineWidth = 1;
       ctx.strokeRect(14, 14, w - 28, h - 28);
     },
   },
   {
     id: 'crimson',
-    label: 'Crimson Luxe',
-    note: 'Scarlet to crimson',
+    label: 'Coral Blush',
+    note: 'Warm coral pink',
     category: 'booth',
     className: 'frame-crimson',
     dark: true,
-    matte: 'rgba(255,255,255,.22)',
+    matte: 'rgba(255,255,255,.25)',
     paint: (ctx, w, h) => {
-      // Bright scarlet at top, deeper crimson at bottom
+      // Fully opaque warm coral base
+      fill(ctx, '#e8636b', w, h);
       verticalGradient(ctx, w, h, [
-        [0, '#9b1020'],
-        [0.4, '#7a0d18'],
-        [1, '#5c0810'],
+        [0, '#f07178'],
+        [0.4, '#d94f57'],
+        [1, '#c0333d'],
       ]);
-      // Satin sheen overlay
-      const sheen = ctx.createLinearGradient(0, 0, w, 0);
-      sheen.addColorStop(0, 'rgba(255,255,255,.06)');
-      sheen.addColorStop(0.45, 'rgba(255,255,255,.14)');
-      sheen.addColorStop(1, 'rgba(0,0,0,.1)');
-      ctx.fillStyle = sheen;
-      ctx.fillRect(0, 0, w, h);
-      speckle(ctx, w, h, 'rgba(255,160,160,.10)', 38, 1.6);
-      ctx.strokeStyle = 'rgba(255,180,180,.28)';
+      speckle(ctx, w, h, 'rgba(255,200,200,.14)', 40, 1.6);
+      ctx.strokeStyle = 'rgba(255,180,180,.35)';
       ctx.lineWidth = 1;
       ctx.strokeRect(18, 18, w - 36, h - 36);
     },
   },
   {
     id: 'vampire',
-    label: 'Blood Velvet',
-    note: 'Gothic blood red',
+    label: 'Royal Purple',
+    note: 'Deep regal purple',
     category: 'booth',
     className: 'frame-vampire',
     dark: true,
-    matte: 'rgba(255,255,255,.22)',
+    matte: 'rgba(255,255,255,.25)',
     paint: (ctx, w, h) => {
-      // Dark blood red base
-      fill(ctx, '#7a0000', w, h);
-      // Deep center vignette
-      const vignette = ctx.createRadialGradient(w/2, h/2, h*0.1, w/2, h/2, h*0.75);
-      vignette.addColorStop(0, 'rgba(0,0,0,0)');
-      vignette.addColorStop(1, 'rgba(0,0,0,.45)');
+      // Fully opaque deep purple base
+      fill(ctx, '#4a1a6b', w, h);
+      verticalGradient(ctx, w, h, [
+        [0, '#5c2d91'],
+        [0.5, '#3d1a6e'],
+        [1, '#2a0e4a'],
+      ]);
+      const vignette = ctx.createRadialGradient(w/2, h*0.3, 0, w/2, h*0.3, w*0.6);
+      vignette.addColorStop(0, 'rgba(160,100,220,.2)');
+      vignette.addColorStop(1, 'rgba(0,0,0,0)');
       ctx.fillStyle = vignette;
       ctx.fillRect(0, 0, w, h);
-      // Blood drip texture dots
-      speckle(ctx, w, h, 'rgba(200,0,0,.22)', 52, 2);
-      ctx.strokeStyle = 'rgba(255,60,60,.3)';
+      speckle(ctx, w, h, 'rgba(180,140,220,.15)', 48, 2);
+      ctx.strokeStyle = 'rgba(180,140,220,.35)';
       ctx.lineWidth = 1;
       ctx.strokeRect(14, 14, w - 28, h - 28);
     },
   },
   {
     id: 'velvet',
-    label: 'Wine Velvet',
-    note: 'Rich burgundy wine',
+    label: 'Plum Wine',
+    note: 'Rich plum burgundy',
     category: 'booth',
     className: 'frame-velvet',
     dark: true,
-    matte: 'rgba(255,255,255,.22)',
+    matte: 'rgba(255,255,255,.25)',
     paint: (ctx, w, h) => {
-      // Warm burgundy wine
+      // Fully opaque plum base
+      fill(ctx, '#6b1848', w, h);
       verticalGradient(ctx, w, h, [
-        [0, '#72183a'],
-        [0.5, '#5c1230'],
-        [1, '#440d24'],
+        [0, '#7d1f55'],
+        [0.5, '#581542'],
+        [1, '#3e0e2e'],
       ]);
-      // Velvet nap shimmer
       const velvetSheen = ctx.createLinearGradient(0, 0, w * 0.6, h);
-      velvetSheen.addColorStop(0, 'rgba(255,180,200,.08)');
-      velvetSheen.addColorStop(0.5, 'rgba(255,255,255,.05)');
-      velvetSheen.addColorStop(1, 'rgba(0,0,0,.06)');
+      velvetSheen.addColorStop(0, 'rgba(255,180,210,.10)');
+      velvetSheen.addColorStop(0.5, 'rgba(255,255,255,.04)');
+      velvetSheen.addColorStop(1, 'rgba(0,0,0,.12)');
       ctx.fillStyle = velvetSheen;
       ctx.fillRect(0, 0, w, h);
-      speckle(ctx, w, h, 'rgba(255,120,160,.12)', 44, 1.8);
-      ctx.strokeStyle = 'rgba(255,160,190,.28)';
+      speckle(ctx, w, h, 'rgba(255,140,180,.10)', 44, 1.8);
+      ctx.strokeStyle = 'rgba(255,160,200,.25)';
       ctx.lineWidth = 1;
       ctx.strokeRect(18, 18, w - 36, h - 36);
     },
@@ -1029,7 +1020,7 @@ function theaterBg(ctx: CanvasRenderingContext2D, w: number, h: number, s: numbe
   aLine(ctx, ins + Math.round(8 * s), Math.round(206 * s), w - ins - Math.round(8 * s), Math.round(206 * s), maroon, Math.round(s));
 
   // Dark slot placeholders (photos composite here)
-  THEATER_SLOTS.forEach(sl => aBox(ctx, sl.x * s, sl.y * s, sl.w * s, sl.h * s, sl.r * s, '#171010'));
+  THEATER_SLOTS.forEach(sl => aBox(ctx, sl.x * s, sl.y * s, sl.w * s, sl.h * s, sl.r * s, 'rgba(120, 20, 30, 0.1)'));
 
   // Footer text
   aTxt(ctx, 'SAVE THE BEST MOMENT  ★  SAVE THE BEST MOMENT', w / 2, Math.round(1570 * s),
@@ -1209,46 +1200,7 @@ function everyFg(
 // ── Template registry ──────────────────────────────────────────────────────
 
 export const ARTISAN_TEMPLATES: ArtisanTemplate[] = [
-  {
-    id: 'theater-show',
-    label: 'Theater Show',
-    note: 'Vintage ticket · 4 shots',
-    nw: 600, nh: 1700,
-    slots: THEATER_SLOTS,
-    paintBg: theaterBg,
-    paintFg: theaterFg,
-  },
-  {
-    id: 'every-moment-up',
-    label: 'Every Moment Matters',
-    note: 'Bold blue · header top · 3 shots',
-    nw: 520, nh: 1430,
-    slots: EVERY_UP_SLOTS,
-    paintBg: (ctx, w, h, s, date) => everyBg(ctx, w, h, s, date, 'up'),
-    paintFg: (ctx, w, h, s, date) => everyFg(ctx, w, h, s, date, 'up'),
-  },
-  // ── Image-based templates ──────────────────────────────────────────────
-  {
-    id: 'retro-tv',
-    label: 'Retro TV',
-    note: 'Vintage television · 4 shots',
-    nw: 463, nh: 1346,
-    // Expanded by ~15px on all sides so the photo draws slightly larger.
-    // The chroma-key will clear the placeholder screen exactly to the curved bezel,
-    // and the TV template will cleanly cover the edges of this expanded photo!
-    slots: [
-      { x: 43, y: 85,  w: 296, h: 232, r: 22 },
-      { x: 40, y: 405, w: 297, h: 232, r: 22 },
-      { x: 41, y: 731, w: 297, h: 230, r: 22 },
-      { x: 43, y: 1055, w: 294, h: 227, r: 22 },
-    ],
-    ...makeImageTemplate('/templates/retro-tv.jpg', [
-      { x: 43, y: 85,  w: 296, h: 232, r: 22 },
-      { x: 40, y: 405, w: 297, h: 232, r: 22 },
-      { x: 41, y: 731, w: 297, h: 230, r: 22 },
-      { x: 43, y: 1055, w: 294, h: 227, r: 22 },
-    ], -100), // Negative tolerance triggers FloodFill with brightness threshold 100
-  },
+  // LINE 1
   {
     id: 'the-1975',
     label: 'The 1975',
@@ -1265,23 +1217,45 @@ export const ARTISAN_TEMPLATES: ArtisanTemplate[] = [
       { x: 35, y: 290, w: 282, h: 191, r: 2 },
       { x: 35, y: 524, w: 283, h: 189, r: 2 },
       { x: 35, y: 757, w: 280, h: 201, r: 2 },
-    ], 18), // low tolerance 18 to protect the text
+    ], 18),
   },
   {
-    id: 'director-cut',
-    label: "Director's Cut",
-    note: 'Film strip · 3 shots',
-    nw: 305, nh: 929,
+    id: 'theater-show',
+    label: 'Theater Show',
+    note: 'Vintage ticket · 4 shots',
+    nw: 600, nh: 1700,
+    slots: THEATER_SLOTS,
+    paintBg: theaterBg,
+    paintFg: theaterFg,
+  },
+  {
+    id: 'retro-tv',
+    label: 'Retro TV',
+    note: 'Vintage television · 4 shots',
+    nw: 463, nh: 1346,
     slots: [
-      { x: 25, y: 27,  w: 255, h: 221, r: 0 },
-      { x: 25, y: 268, w: 255, h: 218, r: 0 },
-      { x: 25, y: 506, w: 255, h: 217, r: 0 },
+      { x: 43, y: 85,  w: 296, h: 232, r: 22 },
+      { x: 40, y: 405, w: 297, h: 232, r: 22 },
+      { x: 41, y: 731, w: 297, h: 230, r: 22 },
+      { x: 43, y: 1055, w: 294, h: 227, r: 22 },
     ],
-    ...makeImageTemplate('/templates/director-cut.jpg', [
-      { x: 25, y: 27,  w: 255, h: 221, r: 0 },
-      { x: 25, y: 268, w: 255, h: 218, r: 0 },
-      { x: 25, y: 506, w: 255, h: 217, r: 0 },
-    ], 20),
+    ...(function() {
+      const base = makeImageTemplate('/templates/retro-tv.jpg', [
+        { x: 43, y: 85,  w: 296, h: 232, r: 22 },
+        { x: 40, y: 405, w: 297, h: 232, r: 22 },
+        { x: 41, y: 731, w: 297, h: 230, r: 22 },
+        { x: 43, y: 1055, w: 294, h: 227, r: 22 },
+      ], -100);
+      const orig = base.paintFgAsync;
+      base.paintFgAsync = async (ctx, w, h, s, date) => {
+        if (orig) await orig(ctx, w, h, s, date);
+        // Draw PINKSNAP badge over OURBOX
+        // Made much wider (240) and taller (65) starting higher (y=8) to fully cover "OURBOX"
+        aBox(ctx, (w - Math.round(240 * s)) / 2, Math.round(8 * s), Math.round(240 * s), Math.round(65 * s), Math.round(18 * s), '#111');
+        aTxt(ctx, 'PINKSNAP', w / 2, Math.round(48 * s), `900 ${Math.round(22 * s)}px "Inter", sans-serif`, '#ff69b4');
+      };
+      return base;
+    })(),
   },
   {
     id: 'love-stamp',
@@ -1301,6 +1275,32 @@ export const ARTISAN_TEMPLATES: ArtisanTemplate[] = [
       { x: 75, y: 1305, w: 427, h: 330, r: 10 },
     ], 20),
   },
+  // LINE 2
+  {
+    id: 'director-cut',
+    label: "Director's Cut",
+    note: 'Film strip · 3 shots',
+    nw: 305, nh: 929,
+    slots: [
+      { x: 25, y: 27,  w: 255, h: 221, r: 0 },
+      { x: 25, y: 268, w: 255, h: 218, r: 0 },
+      { x: 25, y: 506, w: 255, h: 217, r: 0 },
+    ],
+    ...makeImageTemplate('/templates/director-cut.jpg', [
+      { x: 25, y: 27,  w: 255, h: 221, r: 0 },
+      { x: 25, y: 268, w: 255, h: 218, r: 0 },
+      { x: 25, y: 506, w: 255, h: 217, r: 0 },
+    ], 20),
+  },
+  {
+    id: 'every-moment-up',
+    label: 'Every Moment Matters',
+    note: 'Bold blue · header top · 3 shots',
+    nw: 520, nh: 1430,
+    slots: EVERY_UP_SLOTS,
+    paintBg: (ctx, w, h, s, date) => everyBg(ctx, w, h, s, date, 'up'),
+    paintFg: (ctx, w, h, s, date) => everyFg(ctx, w, h, s, date, 'up'),
+  },
   {
     id: 'newspaper',
     label: 'Newspaper',
@@ -1315,7 +1315,7 @@ export const ARTISAN_TEMPLATES: ArtisanTemplate[] = [
       { x: 24, y: 219, w: 358, h: 226, r: 8 },
       { x: 24, y: 460, w: 358, h: 227, r: 8 },
       { x: 24, y: 762, w: 358, h: 225, r: 8 },
-    ], 15), // very low tolerance 15 to completely prevent erasing the disco balls
+    ], 15),
   },
 ];
 
