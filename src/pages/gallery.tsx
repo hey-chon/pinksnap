@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useLocation } from 'wouter';
 import { TopNav, BottomNav } from '@/components/layout';
 import { useAppContext } from '@/lib/store';
-import { Trash2, Download, Image as ImageIcon, ArrowRight, X, ZoomIn } from 'lucide-react';
+import { Trash2, Download, Image as ImageIcon, ArrowRight, X, ZoomIn, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast.tsx';
 import { downloadImage } from '@/lib/image-utils';
 import { useAuth } from '@/hooks/use-auth';
@@ -14,11 +14,56 @@ const getFrameLabel = (id: string) => {
   return id;
 };
 
+/**
+ * Download an image from a URL (cloud or data-URL).
+ * For cloud URLs, fetch the blob first. For data-URLs, use the existing helper.
+ */
+async function downloadCloudImage(url: string, filename: string) {
+  if (url.startsWith('data:')) {
+    return downloadImage(url, filename);
+  }
+
+  // Cloud URL — fetch and download as blob
+  const response = await fetch(url);
+  if (!response.ok) throw new Error('Download failed');
+  const blob = await response.blob();
+  const objectUrl = URL.createObjectURL(blob);
+
+  const link = document.createElement('a');
+  if ('download' in link) {
+    link.href = objectUrl;
+    link.download = filename;
+    link.rel = 'noopener';
+    link.style.display = 'none';
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(objectUrl), 4000);
+    return;
+  }
+
+  // Fallback: try Web Share API
+  try {
+    const file = new File([blob], filename, { type: blob.type });
+    if (navigator.canShare?.({ files: [file] })) {
+      await navigator.share({ files: [file], title: filename });
+      URL.revokeObjectURL(objectUrl);
+      return;
+    }
+  } catch {
+    // ignore
+  }
+
+  const opened = window.open(objectUrl, '_blank');
+  if (!opened) window.location.href = objectUrl;
+  setTimeout(() => URL.revokeObjectURL(objectUrl), 10_000);
+}
+
 export default function Gallery() {
   const [, navigate] = useLocation();
   const { isAuthenticated } = useAuth();
   const [selectedMemory, setSelectedMemory] = useState<{ id: string; url: string; date: number; frame: string } | null>(null);
-  const { savedMemories, deleteMemory } = useAppContext();
+  const { savedMemories, deleteMemory, isLoadingMemories } = useAppContext();
   const { toast } = useToast();
 
   const handleStartSession = () => {
@@ -31,7 +76,7 @@ export default function Gallery() {
 
   const handleDownload = async (url: string, date: number) => {
     try {
-      await downloadImage(url, `pinksnap-gallery-${date}.png`);
+      await downloadCloudImage(url, `pinksnap-gallery-${date}.png`);
       toast({
         title: 'Downloading...',
         description: 'Your memory is downloading.',
@@ -103,7 +148,15 @@ export default function Gallery() {
             <h1 className="font-display text-[2.6rem] leading-[.95] sm:text-6xl mt-4 text-white">THE <span className="text-primary">GALLERY.</span></h1>
           </div>
           
-          {savedMemories.length === 0 ? (
+          {isLoadingMemories ? (
+            <div className="flex flex-col items-center justify-center py-20 text-center">
+              <div className="w-24 h-24 bg-white/10 rounded-full flex items-center justify-center mb-6 shadow-inner border border-white/20">
+                <Loader2 className="w-10 h-10 text-primary animate-spin" />
+              </div>
+              <h2 className="font-display text-[2rem] sm:text-4xl text-white/90 mb-3">LOADING MEMORIES</h2>
+              <p className="text-white/50 text-sm max-w-xs">Fetching your photo strips from the cloud...</p>
+            </div>
+          ) : savedMemories.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 text-center">
               <div className="w-24 h-24 bg-white/10 rounded-full flex items-center justify-center mb-6 shadow-inner border border-white/20">
                 <ImageIcon className="w-10 h-10 text-white/60" />

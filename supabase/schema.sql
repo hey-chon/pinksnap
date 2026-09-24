@@ -189,6 +189,46 @@ FROM public.profiles;
 -- Grant read access to the view
 GRANT SELECT ON public.profiles_public TO anon, authenticated;
 
+-- [CLOUD] Strips storage bucket — stores photo strip images per user (replaces localStorage)
+INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+VALUES (
+  'strips',
+  'strips',
+  true,
+  5242880,  -- 5 MB per strip image
+  ARRAY['image/jpeg', 'image/png', 'image/webp']
+)
+ON CONFLICT (id) DO UPDATE
+SET
+  public = EXCLUDED.public,
+  file_size_limit = EXCLUDED.file_size_limit,
+  allowed_mime_types = EXCLUDED.allowed_mime_types;
+
+DROP POLICY IF EXISTS "Public can view strip objects" ON storage.objects;
+DROP POLICY IF EXISTS "Authenticated users can upload own strip objects" ON storage.objects;
+DROP POLICY IF EXISTS "Authenticated users can delete own strip objects" ON storage.objects;
+
+CREATE POLICY "Public can view strip objects"
+  ON storage.objects FOR SELECT
+  TO public
+  USING (bucket_id = 'strips');
+
+CREATE POLICY "Authenticated users can upload own strip objects"
+  ON storage.objects FOR INSERT
+  TO authenticated
+  WITH CHECK (
+    bucket_id = 'strips'
+    AND split_part(name, '/', 1) = auth.uid()::text
+  );
+
+CREATE POLICY "Authenticated users can delete own strip objects"
+  ON storage.objects FOR DELETE
+  TO authenticated
+  USING (
+    bucket_id = 'strips'
+    AND split_part(name, '/', 1) = auth.uid()::text
+  );
+
 -- 4. Create memories (photo strips) table linked to auth.users
 CREATE TABLE IF NOT EXISTS public.memories (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,

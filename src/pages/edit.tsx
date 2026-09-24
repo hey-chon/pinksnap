@@ -420,7 +420,7 @@ export default function Edit() {
     try {
       const galleryUrl = await createGalleryPreview(dataUrl);
       if (!galleryUrl) return false;
-      saveMemory({
+      const saved = await saveMemory({
         id: createMemoryId(),
         url: galleryUrl,
         date: Date.now(),
@@ -428,7 +428,7 @@ export default function Edit() {
         frame: isArtisan ? artisanId : frame,
         mimeType: 'image/jpeg',
       });
-      return true;
+      return saved;
     } catch {
       return false;
     }

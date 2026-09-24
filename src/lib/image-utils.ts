@@ -15,7 +15,7 @@ export async function createGalleryPreview(dataUrl: string): Promise<string> {
     const image = new Image();
     image.onload = () => {
       // Gallery copies are intentionally smaller than the exported download.
-      // This keeps localStorage usable on phones while preserving a sharp preview.
+      // This keeps cloud storage efficient while preserving a sharp preview.
       const maxWidth = 560;
       const scale = Math.min(1, maxWidth / image.width);
       const canvas = document.createElement('canvas');

@@ -76,12 +76,12 @@ export default function PrivacyPolicy() {
                 <div className="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-3">
                   <Database className="w-5 h-5" />
                 </div>
-                <h2 className="font-display text-lg tracking-wide text-foreground mb-1">LOCAL STORAGE</h2>
+                <h2 className="font-display text-lg tracking-wide text-foreground mb-1">CLOUD STORAGE</h2>
                 <p className="text-xs text-foreground/70 font-medium leading-relaxed">
-                  Strips and style preferences are saved in your browser's localStorage for instant access and privacy.
+                  Your photo strips are securely stored in the cloud, tied to your account. Access your memories from any device by signing in.
                 </p>
               </div>
-              <span className="text-[10px] font-black uppercase text-primary mt-3 inline-block">On-Device Only</span>
+              <span className="text-[10px] font-black uppercase text-primary mt-3 inline-block">Per-Account Cloud</span>
             </div>
 
             <div className="ticket p-4 flex flex-col justify-between">
@@ -198,10 +198,10 @@ export default function PrivacyPolicy() {
 
                   <div className="p-3.5 rounded-2xl bg-white/50 border border-black/5">
                     <h3 className="font-bold text-foreground text-sm flex items-center gap-2">
-                      <Database className="w-4 h-4 text-primary" /> Local Storage Data
+                      <Database className="w-4 h-4 text-primary" /> Cloud & Local Storage Data
                     </h3>
                     <p className="text-xs text-foreground/70 mt-1">
-                      PinkSnap utilizes browser <code className="bg-primary/10 text-primary px-1.5 py-0.5 rounded font-mono text-[11px]">localStorage</code> to remember your selected booth layouts, template styling, sound effects toggle, recent gallery strip previews, and cookie preferences.
+                      Your photo strips are stored securely in the cloud via Supabase, linked to your authenticated account. Browser <code className="bg-primary/10 text-primary px-1.5 py-0.5 rounded font-mono text-[11px]">localStorage</code> is used only for cookie preferences and minor UI state.
                     </p>
                   </div>
                 </div>
@@ -311,9 +311,9 @@ export default function PrivacyPolicy() {
                     href="https://www.facebook.com/share/1NrJVrJBDJ/?mibextid=wwXIfr"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 rounded-xl bg-foreground text-background px-4 py-2.5 text-xs font-black tracking-wider uppercase hover:bg-foreground/90 transition-colors"
+                    className="inline-flex items-center gap-2 rounded-xl bg-foreground text-background px-4 py-2.5 text-xs font-black tracking-wider hover:bg-foreground/90 transition-colors"
                   >
-                    <Facebook className="w-3.5 h-3.5" />
+                    Jimson Ilog <Facebook className="w-3.5 h-3.5" />
                   </a>
                 </div>
               </div>
