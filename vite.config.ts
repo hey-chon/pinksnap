@@ -42,6 +42,9 @@ export default defineConfig({
     fs: {
       strict: true,
     },
+    watch: {
+      ignored: ['**/PINKSNAP CATS/**'],
+    },
   },
   preview: {
     port,

@@ -158,8 +158,8 @@ export default function Gallery() {
             </div>
           ) : savedMemories.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 text-center">
-              <div className="w-24 h-24 bg-white/10 rounded-full flex items-center justify-center mb-6 shadow-inner border border-white/20">
-                <ImageIcon className="w-10 h-10 text-white/60" />
+              <div className="w-32 h-32 mb-6 drop-shadow-lg">
+                <img src="/meme_cat_transparent.jpg" alt="No prints yet cat" className="w-full h-full object-contain" />
               </div>
               <h2 data-testid="gallery-empty-state" className="font-display text-[2.2rem] sm:text-5xl text-white/90 mb-3">NO PRINTS YET</h2>
               <button
