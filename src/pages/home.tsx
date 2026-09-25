@@ -87,8 +87,23 @@ export default function Home() {
         <div className="absolute top-1/4 left-10 md:left-32 w-64 h-64 bg-primary/20 rounded-full blur-3xl -z-10 mix-blend-multiply pointer-events-none" />
         <div className="absolute bottom-1/4 right-10 md:right-32 w-80 h-80 bg-blue-300/20 rounded-full blur-3xl -z-10 mix-blend-multiply pointer-events-none" />
 
-
-
+        {/* Floating strip decoration */}
+        <div
+          className="hidden lg:block absolute right-[6%] md:right-[8%] top-[25%] z-0 pointer-events-none transition-transform duration-100 ease-out will-change-transform"
+          style={{ transform: `translateY(${scrollY * 0.7}px) rotate(6deg)` }}
+          aria-hidden="true"
+        >
+          <div className="bg-white p-3 rounded-lg shadow-xl border border-pink-100/80 flex flex-col gap-2.5 w-28 md:w-32 opacity-85">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="w-full h-20 bg-pink-50/70 rounded flex items-center justify-center border border-pink-100/60">
+                <Camera className="w-5 h-5 text-pink-300/80" />
+              </div>
+            ))}
+            <div className="pt-1.5 flex flex-col items-center justify-center border-t border-pink-100/60 text-center">
+              <span className="font-display text-[10px] tracking-widest text-primary/70">PINKSNAP</span>
+            </div>
+          </div>
+        </div>
         {/* ── Hero ── */}
         <div className="text-center z-10 max-w-3xl mx-auto min-h-[calc(100svh-4rem)] flex flex-col items-center justify-center pt-9 sm:pt-14 pb-16">
           <div className="home-hero-item inline-flex items-center gap-2 rounded-full bg-white/60 border border-white/80 px-4 py-2 text-[11px] font-black tracking-[.18em] text-primary uppercase shadow-sm">

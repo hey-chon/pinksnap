@@ -15,16 +15,17 @@ export function TopNav({ backTo, title }: { backTo?: string, title?: string }) {
     <header className="booth-marquee w-full flex min-h-[68px] sm:min-h-[76px] items-center justify-between gap-2 px-3 py-2.5 sm:px-4 sm:py-3 md:px-6 shrink-0 relative z-50 pt-[calc(.75rem+env(safe-area-inset-top))]">
       <div className="flex items-center gap-2 sm:gap-4 min-w-0">
         {backTo && (
-          <Link
-            href={backTo}
+          <button
+            type="button"
+            onClick={() => window.history.back()}
             data-testid="button-back"
-            className="p-2 sm:p-2.5 bg-white/10 hover:bg-white/20 rounded-full transition-all border border-white/15 backdrop-blur-sm active:scale-95"
+            className="p-2 sm:p-2.5 bg-white/10 hover:bg-white/20 rounded-full transition-all border border-white/15 backdrop-blur-sm active:scale-95 cursor-pointer"
             aria-label="Go back"
           >
             <ChevronLeft className="w-5 h-5 text-white" />
-          </Link>
+          </button>
         )}
-        <Link href="/" data-testid="link-brand" aria-label="PinkSnap home" className="flex items-center gap-2 sm:gap-2.5 group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-xl">
+        <div data-testid="link-brand" aria-label="PinkSnap home" className="flex items-center gap-2 sm:gap-2.5 group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-xl cursor-default">
           <div className="bg-primary text-primary-foreground p-2 sm:p-2.5 rounded-[13px] group-hover:rotate-[-4deg] group-hover:scale-105 transition-transform shadow-[0_7px_20px_rgba(245,61,137,.5)]">
             <Camera className="w-5 h-5 sm:w-6 sm:h-6 stroke-[2.5]" />
           </div>
@@ -32,7 +33,7 @@ export function TopNav({ backTo, title }: { backTo?: string, title?: string }) {
             <span className="font-display text-[22px] sm:text-[26px] text-white">PINK</span>
             <span className="font-display text-[22px] sm:text-[26px] text-primary">SNAP</span>
           </div>
-        </Link>
+        </div>
         <span className="hidden sm:block"><Bulbs count={5} /></span>
       </div>
 

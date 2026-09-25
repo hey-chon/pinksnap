@@ -106,9 +106,9 @@ html {
 
 body {
   background:
-    radial-gradient(circle at 12% 46%, rgba(174, 231, 247, 0.68), transparent 32%),
-    radial-gradient(circle at 86% 56%, rgba(239, 204, 255, 0.7), transparent 36%),
-    linear-gradient(120deg, #eaf8f6 0%, #edf3ff 49%, #f8eafe 100%) !important;
+    radial-gradient(circle at 12% 46%, rgba(255, 182, 193, 0.68), transparent 32%),
+    radial-gradient(circle at 86% 56%, rgba(255, 105, 180, 0.4), transparent 36%),
+    linear-gradient(120deg, #fff0f5 0%, #ffe4e1 49%, #ffb6c1 100%) !important;
 }
 
 button, a { -webkit-tap-highlight-color: transparent; }

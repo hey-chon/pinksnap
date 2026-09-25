@@ -98,7 +98,7 @@ export default function Gallery() {
   };
 
   return (
-    <div className="flex flex-col h-[100dvh] bg-[#0c0b10] text-white dark-page-bg">
+    <div className="flex flex-col h-[100dvh]">
 
       {/* ── Lightbox Full-Screen Modal ────────────────────────────────────── */}
       {selectedMemory && (
@@ -141,11 +141,15 @@ export default function Gallery() {
 
       <TopNav backTo="/" title="GALLERY" />
       
-      <main className="flex-1 overflow-y-auto flex flex-col items-center px-4 py-7 sm:px-6 sm:py-9">
-        <div className="w-full max-w-6xl pb-14">
+      <main className="flex-1 overflow-y-auto flex flex-col items-center px-4 py-7 sm:px-6 sm:py-9 relative scroll-smooth">
+        {/* Background glows */}
+        <div className="absolute top-1/4 left-10 md:left-32 w-64 h-64 bg-primary/20 rounded-full blur-3xl -z-10 mix-blend-multiply pointer-events-none" />
+        <div className="absolute bottom-1/4 right-10 md:right-32 w-80 h-80 bg-blue-300/20 rounded-full blur-3xl -z-10 mix-blend-multiply pointer-events-none" />
+
+        <div className="w-full max-w-6xl pb-14 z-10">
           <div className="text-center mb-8">
             <span className="booth-heading-kicker mb-3">print archive</span>
-            <h1 className="font-display text-[2.6rem] leading-[.95] sm:text-6xl mt-4 text-white">THE <span className="text-primary">GALLERY.</span></h1>
+            <h1 className="font-display text-[2.6rem] leading-[.95] sm:text-6xl mt-4 text-foreground">THE <span className="text-primary">GALLERY.</span></h1>
           </div>
           
           {isLoadingMemories ? (
@@ -153,15 +157,15 @@ export default function Gallery() {
               <div className="w-24 h-24 bg-white/10 rounded-full flex items-center justify-center mb-6 shadow-inner border border-white/20">
                 <Loader2 className="w-10 h-10 text-primary animate-spin" />
               </div>
-              <h2 className="font-display text-[2rem] sm:text-4xl text-white/90 mb-3">LOADING MEMORIES</h2>
-              <p className="text-white/50 text-sm max-w-xs">Fetching your photo strips from the cloud...</p>
+              <h2 className="font-display text-[2rem] sm:text-4xl text-foreground mb-3">LOADING MEMORIES</h2>
+              <p className="text-foreground/50 text-sm max-w-xs">Fetching your photo strips from the cloud...</p>
             </div>
           ) : savedMemories.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 text-center">
               <div className="w-32 h-32 mb-6 drop-shadow-lg">
                 <img src="/meme_cat_transparent.jpg" alt="No prints yet cat" className="w-full h-full object-contain" />
               </div>
-              <h2 data-testid="gallery-empty-state" className="font-display text-[2.2rem] sm:text-5xl text-white/90 mb-3">NO PRINTS YET</h2>
+              <h2 data-testid="gallery-empty-state" className="font-display text-[2.2rem] sm:text-5xl text-foreground mb-3">NO PRINTS YET</h2>
               <button
                 type="button"
                 onClick={handleStartSession}

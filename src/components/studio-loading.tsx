@@ -17,7 +17,7 @@ export default function StudioLoading() {
     const interval = window.setInterval(() => {
       setStep((current) => Math.min(current + 1, messages.length - 1));
     }, 650);
-    const timeout = window.setTimeout(() => setLocation('/setup'), 3100);
+    const timeout = window.setTimeout(() => setLocation('/setup', { replace: true }), 3100);
     return () => {
       window.clearInterval(interval);
       window.clearTimeout(timeout);
