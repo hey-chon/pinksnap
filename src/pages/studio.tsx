@@ -156,7 +156,7 @@ export default function Studio() {
         <div className="flex flex-col lg:flex-row gap-6 lg:gap-10 w-full max-w-5xl items-center lg:items-start justify-center pb-12">
 
           {/* Main Camera View */}
-          <div className="studio-panel w-full max-w-3xl flex flex-col items-center gap-4">
+          <div className="studio-panel w-full max-w-2xl flex flex-col items-center gap-4">
             <div className="booth-cabinet w-full">
               <div className="flex items-center justify-between gap-2 px-1 sm:px-2 pb-3">
                 <span className="bulb-row" aria-hidden="true">{Array.from({ length: 4 }).map((_, i) => <i key={i} />)}</span>

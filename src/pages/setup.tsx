@@ -7,9 +7,52 @@ export default function Setup() {
   const { layout, setLayout, clearShots } = useAppContext();
 
   const layouts: { id: LayoutType; icon: React.ReactNode; label: string; shots: string; note: string }[] = [
-    { id: 'vertical-4', icon: <Rows3 className="w-9 h-9 rotate-90" />, label: 'Classic Strip', shots: '4 shots', note: 'The tall booth strip' },
-    { id: 'quad-4', icon: <LayoutGrid className="w-9 h-9" />, label: 'Quad Grid', shots: '4 shots', note: 'Square photo card' },
-    { id: 'horizontal-3', icon: <Rows3 className="w-9 h-9" />, label: 'Wide Three', shots: '3 shots', note: 'Landscape banner' },
+    { 
+      id: 'vertical-4', 
+      icon: (
+        <div className="w-[38px] h-[90px] bg-white rounded-[3px] p-1 flex flex-col gap-[3px] shadow-[0_4px_12px_rgba(0,0,0,0.08)] border border-black/5 -rotate-2 group-hover:rotate-0 group-hover:scale-105 transition-all">
+          <div className="w-full flex-1 bg-black/15 rounded-[1px]" />
+          <div className="w-full flex-1 bg-black/15 rounded-[1px]" />
+          <div className="w-full flex-1 bg-black/15 rounded-[1px]" />
+          <div className="w-full flex-1 bg-black/15 rounded-[1px]" />
+          <div className="w-full h-[8px]" />
+        </div>
+      ), 
+      label: 'Classic Strip', 
+      shots: '4 shots', 
+      note: 'The tall booth strip' 
+    },
+    { 
+      id: 'quad-4', 
+      icon: (
+        <div className="w-[70px] h-[84px] bg-white rounded-[3px] p-[5px] flex flex-col shadow-[0_4px_12px_rgba(0,0,0,0.08)] border border-black/5 rotate-2 group-hover:rotate-0 group-hover:scale-105 transition-all">
+          <div className="grid grid-cols-2 gap-[4px] flex-1">
+            <div className="w-full h-full bg-black/15 rounded-[2px]" />
+            <div className="w-full h-full bg-black/15 rounded-[2px]" />
+            <div className="w-full h-full bg-black/15 rounded-[2px]" />
+            <div className="w-full h-full bg-black/15 rounded-[2px]" />
+          </div>
+          <div className="w-full h-[12px]" />
+        </div>
+      ), 
+      label: 'Quad Grid', 
+      shots: '4 shots', 
+      note: 'Square photo card' 
+    },
+    { 
+      id: 'horizontal-3', 
+      icon: (
+        <div className="w-[96px] h-[44px] bg-white rounded-[3px] p-[4px] flex gap-[4px] shadow-[0_4px_12px_rgba(0,0,0,0.08)] border border-black/5 -rotate-1 group-hover:rotate-0 group-hover:scale-105 transition-all">
+          <div className="w-full h-full bg-black/15 rounded-[2px]" />
+          <div className="w-full h-full bg-black/15 rounded-[2px]" />
+          <div className="w-full h-full bg-black/15 rounded-[2px]" />
+          <div className="w-[12px] h-full shrink-0" />
+        </div>
+      ), 
+      label: 'Wide Three', 
+      shots: '3 shots', 
+      note: 'Landscape banner' 
+    },
   ];
 
   return (
@@ -41,9 +84,9 @@ export default function Setup() {
                 onClick={() => setLayout(l.id)}
                 data-testid={`button-layout-${l.id}`}
                 aria-pressed={layout === l.id}
-                className={`ticket p-4 sm:p-5 text-left focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/40 ${layout === l.id ? 'ticket-active' : ''}`}
+                className={`ticket group p-4 sm:p-5 text-left focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/40 ${layout === l.id ? 'ticket-active' : ''}`}
               >
-                <div className={`mb-3 sm:mb-4 transition-colors ${layout === l.id ? 'text-primary' : 'text-foreground/40'}`}>
+                <div className="mb-6 h-[96px] flex items-end transition-colors">
                   {l.icon}
                 </div>
                 <span className="font-display text-xl sm:text-2xl block text-foreground">{l.label}</span>
