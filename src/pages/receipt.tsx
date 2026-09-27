@@ -273,7 +273,7 @@ export default function Receipt() {
                 PINKSNAP
               </h1>
               <p className="font-mono text-[9px] text-black/40 tracking-[0.3em] uppercase">
-                Digital Photo Booth
+                Virtual Photo Booth
               </p>
             </div>
 
@@ -438,7 +438,7 @@ export default function Receipt() {
               <span className="font-mono text-[9px] font-black text-black/50 tracking-[0.25em] uppercase">Printing</span>
             </div>
             <p className="font-mono text-[10px] text-black/55 leading-[1.7] tracking-wide">
-              If you have a printer (<span className="font-bold text-black/70">Epson</span>, <span className="font-bold text-black/70">Canon</span>, <span className="font-bold text-black/70">HP</span>, or other brands), you can print this receipt directly. You can also print your photo strip from your gallery or downloads.
+              If you have a printer (<span className="font-bold text-black/70">Epson</span>, <span className="font-bold text-black/70">Canon</span>, <span className="font-bold text-black/70">HP</span>, or other brands), you can print this receipt directly. You can also print your photo strip from your gallery or downloads with printer.
             </p>
           </div>
         </div>
