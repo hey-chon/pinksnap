@@ -20,6 +20,8 @@ import ProfilePage from '@/pages/profile';
 import AdminPage from '@/pages/admin';
 import PrivacyPolicy from '@/pages/privacy-policy';
 import TermsOfService from '@/pages/terms-of-service';
+import Printing from '@/pages/printing';
+import Receipt from '@/pages/receipt';
 import { CookieNotice } from '@/components/cookie-notice';
 import { ProtectedRoute } from '@/components/auth/protected-route';
 
@@ -102,7 +104,7 @@ function WelcomeGate({ children }: { children: React.ReactNode }) {
             <span className="absolute -bottom-1 -left-2 text-lg gate-sparkle2 select-none">🌸</span>
           </div>
 
-          <span className="booth-heading-kicker mb-2 text-primary">Authenticated</span>
+          <span className="booth-heading-kicker mb-2 text-primary">Authenticating</span>
           <h1 className="font-display text-4xl sm:text-5xl text-black tracking-wide mb-1">
             WELCOME <span className="text-primary">BACK!</span>
           </h1>
@@ -153,6 +155,10 @@ function Router() {
       <Route path="/edit">
         {() => <ProtectedRoute component={Edit} />}
       </Route>
+      <Route path="/printing">
+        {() => <ProtectedRoute component={Printing} />}
+      </Route>
+      <Route path="/receipt" component={Receipt} />
       <Route path="/gallery" component={Gallery} />
       <Route path="/how-it-works" component={HowItWorks} />
       <Route path="/chat" component={Chat} />

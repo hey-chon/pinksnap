@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useLocation } from 'wouter';
 import { TopNav, BottomNav } from '@/components/layout';
 import { useAppContext } from '@/lib/store';
-import { Trash2, Download, Image as ImageIcon, ArrowRight, X, ZoomIn, Loader2 } from 'lucide-react';
+import { Trash2, Download, Image as ImageIcon, ArrowRight, X, ZoomIn, Loader2, Eraser } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast.tsx';
 import { downloadImage } from '@/lib/image-utils';
 import { useAuth } from '@/hooks/use-auth';
@@ -14,55 +14,15 @@ const getFrameLabel = (id: string) => {
   return id;
 };
 
-/**
- * Download an image from a URL (cloud or data-URL).
- * For cloud URLs, fetch the blob first. For data-URLs, use the existing helper.
- */
 async function downloadCloudImage(url: string, filename: string) {
-  if (url.startsWith('data:')) {
-    return downloadImage(url, filename);
-  }
-
-  // Cloud URL — fetch and download as blob
-  const response = await fetch(url);
-  if (!response.ok) throw new Error('Download failed');
-  const blob = await response.blob();
-  const objectUrl = URL.createObjectURL(blob);
-
-  const link = document.createElement('a');
-  if ('download' in link) {
-    link.href = objectUrl;
-    link.download = filename;
-    link.rel = 'noopener';
-    link.style.display = 'none';
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-    setTimeout(() => URL.revokeObjectURL(objectUrl), 4000);
-    return;
-  }
-
-  // Fallback: try Web Share API
-  try {
-    const file = new File([blob], filename, { type: blob.type });
-    if (navigator.canShare?.({ files: [file] })) {
-      await navigator.share({ files: [file], title: filename });
-      URL.revokeObjectURL(objectUrl);
-      return;
-    }
-  } catch {
-    // ignore
-  }
-
-  const opened = window.open(objectUrl, '_blank');
-  if (!opened) window.location.href = objectUrl;
-  setTimeout(() => URL.revokeObjectURL(objectUrl), 10_000);
+  return downloadImage(url, filename);
 }
 
 export default function Gallery() {
   const [, navigate] = useLocation();
   const { isAuthenticated } = useAuth();
   const [selectedMemory, setSelectedMemory] = useState<{ id: string; url: string; date: number; frame: string } | null>(null);
+  const [isDeletingAll, setIsDeletingAll] = useState(false);
   const { savedMemories, deleteMemory, isLoadingMemories } = useAppContext();
   const { toast } = useToast();
 
@@ -95,6 +55,22 @@ export default function Gallery() {
         description: 'Memory has been removed from your gallery.',
       });
     }
+  };
+
+  const handleDeleteAll = async () => {
+    if (savedMemories.length === 0) return;
+    if (!confirm(`Are you sure you want to delete ALL ${savedMemories.length} photo strips? This cannot be undone.`)) return;
+    setIsDeletingAll(true);
+    const ids = savedMemories.map(m => m.id);
+    for (const id of ids) {
+      deleteMemory(id);
+    }
+    setSelectedMemory(null);
+    setIsDeletingAll(false);
+    toast({
+      title: 'Gallery Cleared',
+      description: `All ${ids.length} photo strips have been deleted.`,
+    });
   };
 
   return (
@@ -150,6 +126,24 @@ export default function Gallery() {
           <div className="text-center mb-8">
             <span className="booth-heading-kicker mb-3">print archive</span>
             <h1 className="font-display text-[2.6rem] leading-[.95] sm:text-6xl mt-4 text-foreground">THE <span className="text-primary">GALLERY.</span></h1>
+            {savedMemories.length > 0 && !isLoadingMemories && (
+              <div className="mt-5 flex justify-center">
+                <button
+                  type="button"
+                  onClick={handleDeleteAll}
+                  disabled={isDeletingAll}
+                  data-testid="button-delete-all"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-destructive/10 hover:bg-destructive/20 border border-destructive/30 text-destructive font-black text-xs uppercase tracking-widest rounded-full transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-destructive"
+                >
+                  {isDeletingAll ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  ) : (
+                    <Eraser className="w-3.5 h-3.5" />
+                  )}
+                  Delete All ({savedMemories.length})
+                </button>
+              </div>
+            )}
           </div>
           
           {isLoadingMemories ? (

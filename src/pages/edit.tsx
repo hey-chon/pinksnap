@@ -435,7 +435,7 @@ export default function Edit() {
   };
 
   const executeDownload = async (dataUrl: string) => {
-    await downloadImage(dataUrl, `pinksnap-${Date.now()}.png`);
+    await downloadImage(dataUrl, `pinksnap-${Date.now()}.png`, { silent: true });
   };
 
   const handleSave = async (skipDownload = false) => {
@@ -453,18 +453,29 @@ export default function Edit() {
       const stored = await saveToGallery(dataUrl);
 
       if (!skipDownload) {
-        await executeDownload(dataUrl);
+        try {
+          sessionStorage.setItem('ps_strip_autodownloaded', 'started');
+        } catch {
+          // ignore quota / private-mode failures
+        }
+        void executeDownload(dataUrl)
+          .then(() => {
+            try { sessionStorage.setItem('ps_strip_autodownloaded', 'done'); } catch { /* ignore */ }
+          })
+          .catch(() => {
+            try { sessionStorage.removeItem('ps_strip_autodownloaded'); } catch { /* ignore */ }
+          });
       }
 
       toast({
         title: 'Strip saved!',
         description: stored
-          ? 'Your photo strip has been downloaded and added to your gallery.'
-          : 'The strip was downloaded, but this device could not keep a gallery copy.',
+          ? 'Your photo strip is downloading and was added to your gallery.'
+          : 'The strip is downloading, but this device could not keep a gallery copy.',
       });
 
-      // Navigate to gallery after everything is done — no blind timeout.
-      setLocation('/gallery');
+      // Navigate to printing loading screen - user can't go back
+      setLocation('/printing', { replace: true });
     } catch (err) {
       // If the user dismissed the iOS share sheet, don't treat it as an error.
       if (err instanceof DOMException && err.name === 'AbortError') {

@@ -10,12 +10,40 @@ export default function Setup() {
     { 
       id: 'vertical-4', 
       icon: (
-        <div className="w-[38px] h-[90px] bg-white rounded-[3px] p-1 flex flex-col gap-[3px] shadow-[0_4px_12px_rgba(0,0,0,0.08)] border border-black/5 -rotate-2 group-hover:rotate-0 group-hover:scale-105 transition-all">
-          <div className="w-full flex-1 bg-black/15 rounded-[1px]" />
-          <div className="w-full flex-1 bg-black/15 rounded-[1px]" />
-          <div className="w-full flex-1 bg-black/15 rounded-[1px]" />
-          <div className="w-full flex-1 bg-black/15 rounded-[1px]" />
-          <div className="w-full h-[8px]" />
+        /* Classic vertical strip — realistic photobooth proportions */
+        <div className="-rotate-2 group-hover:rotate-0 group-hover:scale-105 transition-all duration-300 drop-shadow-[0_6px_18px_rgba(0,0,0,0.18)]">
+          {/* Strip outer shell */}
+          <div className="relative w-[52px] bg-white rounded-[4px] border border-black/10 overflow-hidden flex flex-col" style={{height: '118px'}}>
+            {/* Top pink brand bar */}
+            <div className="w-full bg-gradient-to-r from-pink-400 to-rose-400 flex items-center justify-center shrink-0" style={{height: '12px'}}>
+              <span className="text-white font-black leading-none tracking-wider" style={{fontSize:'4px'}}>PINKSNAP</span>
+            </div>
+            {/* Film strip body */}
+            <div className="flex flex-1 min-h-0">
+              {/* Left perforations */}
+              <div className="flex flex-col justify-around py-[3px] px-[2px] bg-[#f0f0f0] shrink-0 gap-[4px]" style={{width:'6px'}}>
+                {[0,1,2,3,4,5].map(i=><div key={i} className="w-[3px] h-[3px] rounded-full bg-black/20 mx-auto"/>)}
+              </div>
+              {/* Photos */}
+              <div className="flex flex-col flex-1 gap-[2px] py-[3px] px-[2px]">
+                {[0,1,2,3].map(i=>(
+                  <div key={i} className="flex-1 rounded-[2px] overflow-hidden relative" style={{background:'linear-gradient(135deg,#fce4ec 0%,#e3f2fd 100%)'}}>
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="w-[8px] h-[8px] rounded-full bg-black/10"/>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              {/* Right perforations */}
+              <div className="flex flex-col justify-around py-[3px] px-[2px] bg-[#f0f0f0] shrink-0 gap-[4px]" style={{width:'6px'}}>
+                {[0,1,2,3,4,5].map(i=><div key={i} className="w-[3px] h-[3px] rounded-full bg-black/20 mx-auto"/>)}
+              </div>
+            </div>
+            {/* Bottom brand footer */}
+            <div className="w-full bg-gradient-to-r from-pink-400 to-rose-400 flex items-center justify-center shrink-0" style={{height:'10px'}}>
+              <span className="text-white/80 font-bold leading-none tracking-widest" style={{fontSize:'3px'}}>♥ 4 PHOTOS ♥</span>
+            </div>
+          </div>
         </div>
       ), 
       label: 'Classic Strip', 
@@ -25,14 +53,28 @@ export default function Setup() {
     { 
       id: 'quad-4', 
       icon: (
-        <div className="w-[70px] h-[84px] bg-white rounded-[3px] p-[5px] flex flex-col shadow-[0_4px_12px_rgba(0,0,0,0.08)] border border-black/5 rotate-2 group-hover:rotate-0 group-hover:scale-105 transition-all">
-          <div className="grid grid-cols-2 gap-[4px] flex-1">
-            <div className="w-full h-full bg-black/15 rounded-[2px]" />
-            <div className="w-full h-full bg-black/15 rounded-[2px]" />
-            <div className="w-full h-full bg-black/15 rounded-[2px]" />
-            <div className="w-full h-full bg-black/15 rounded-[2px]" />
+        /* Quad grid — square card with 2×2 photo grid */
+        <div className="rotate-2 group-hover:rotate-0 group-hover:scale-105 transition-all duration-300 drop-shadow-[0_6px_18px_rgba(0,0,0,0.18)]">
+          <div className="relative bg-white rounded-[4px] border border-black/10 overflow-hidden flex flex-col" style={{width:'90px', height:'100px'}}>
+            {/* Top pink brand bar */}
+            <div className="w-full bg-gradient-to-r from-pink-400 to-rose-400 flex items-center justify-center shrink-0" style={{height:'12px'}}>
+              <span className="text-white font-black leading-none tracking-wider" style={{fontSize:'4px'}}>PINKSNAP</span>
+            </div>
+            {/* 2×2 photo grid */}
+            <div className="flex-1 grid grid-cols-2 gap-[3px] p-[4px]">
+              {[0,1,2,3].map(i=>(
+                <div key={i} className="rounded-[2px] overflow-hidden relative" style={{background:'linear-gradient(135deg,#fce4ec 0%,#e3f2fd 100%)'}}>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="w-[8px] h-[8px] rounded-full bg-black/10"/>
+                  </div>
+                </div>
+              ))}
+            </div>
+            {/* Bottom brand footer */}
+            <div className="w-full bg-gradient-to-r from-pink-400 to-rose-400 flex items-center justify-center shrink-0" style={{height:'10px'}}>
+              <span className="text-white/80 font-bold leading-none tracking-widest" style={{fontSize:'3px'}}>♥ 4 PHOTOS ♥</span>
+            </div>
           </div>
-          <div className="w-full h-[12px]" />
         </div>
       ), 
       label: 'Quad Grid', 
@@ -42,16 +84,33 @@ export default function Setup() {
     { 
       id: 'horizontal-3', 
       icon: (
-        <div className="w-[96px] h-[44px] bg-white rounded-[3px] p-[4px] flex gap-[4px] shadow-[0_4px_12px_rgba(0,0,0,0.08)] border border-black/5 -rotate-1 group-hover:rotate-0 group-hover:scale-105 transition-all">
-          <div className="w-full h-full bg-black/15 rounded-[2px]" />
-          <div className="w-full h-full bg-black/15 rounded-[2px]" />
-          <div className="w-full h-full bg-black/15 rounded-[2px]" />
-          <div className="w-[12px] h-full shrink-0" />
+        /* Wide horizontal strip — landscape 3-photo banner */
+        <div className="-rotate-1 group-hover:rotate-0 group-hover:scale-105 transition-all duration-300 drop-shadow-[0_6px_18px_rgba(0,0,0,0.18)]">
+          <div className="relative bg-white rounded-[4px] border border-black/10 overflow-hidden flex flex-col" style={{width:'108px', height:'72px'}}>
+            {/* Top pink brand bar */}
+            <div className="w-full bg-gradient-to-r from-pink-400 to-rose-400 flex items-center justify-center shrink-0" style={{height:'11px'}}>
+              <span className="text-white font-black leading-none tracking-wider" style={{fontSize:'4px'}}>PINKSNAP</span>
+            </div>
+            {/* 3 horizontal photos */}
+            <div className="flex flex-1 gap-[3px] px-[4px] py-[3px]">
+              {[0,1,2].map(i=>(
+                <div key={i} className="flex-1 rounded-[2px] overflow-hidden relative" style={{background:'linear-gradient(135deg,#fce4ec 0%,#e3f2fd 100%)'}}>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="w-[8px] h-[8px] rounded-full bg-black/10"/>
+                  </div>
+                </div>
+              ))}
+            </div>
+            {/* Bottom brand footer */}
+            <div className="w-full bg-gradient-to-r from-pink-400 to-rose-400 flex items-center justify-center shrink-0" style={{height:'9px'}}>
+              <span className="text-white/80 font-bold leading-none tracking-widest" style={{fontSize:'3px'}}>♥ 3 PHOTOS ♥</span>
+            </div>
+          </div>
         </div>
       ), 
       label: 'Wide Three', 
       shots: '3 shots', 
-      note: 'Landscape banner' 
+      note: 'Horizontal strip card' 
     },
   ];
 
@@ -65,7 +124,7 @@ export default function Setup() {
           <h1 className="font-display text-[2.6rem] leading-[.95] sm:text-6xl md:text-7xl text-foreground mt-4 mb-3">
             CHOOSE YOUR <span className="text-primary">LAYOUT.</span>
           </h1>
-          <p className="text-[11px] sm:text-sm font-bold text-foreground/55 uppercase tracking-[.16em] sm:tracking-[.2em] leading-relaxed">
+          <p className="text-[11px] sm:text-sm font-bold text-foreground/55 tracking-[.16em] sm:tracking-[.2em] leading-relaxed">
             Every layout prints a different keepsake.
           </p>
         </div>
@@ -86,7 +145,7 @@ export default function Setup() {
                 aria-pressed={layout === l.id}
                 className={`ticket group p-4 sm:p-5 text-left focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/40 ${layout === l.id ? 'ticket-active' : ''}`}
               >
-                <div className="mb-6 h-[96px] flex items-end transition-colors">
+                <div className="mb-6 h-[132px] flex items-end justify-center transition-colors">
                   {l.icon}
                 </div>
                 <span className="font-display text-xl sm:text-2xl block text-foreground">{l.label}</span>

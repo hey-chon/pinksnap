@@ -1249,10 +1249,6 @@ export const ARTISAN_TEMPLATES: ArtisanTemplate[] = [
       const orig = base.paintFgAsync;
       base.paintFgAsync = async (ctx, w, h, s, date) => {
         if (orig) await orig(ctx, w, h, s, date);
-        // Draw PINKSNAP badge over OURBOX
-        // Made much wider (240) and taller (65) starting higher (y=8) to fully cover "OURBOX"
-        aBox(ctx, (w - Math.round(240 * s)) / 2, Math.round(8 * s), Math.round(240 * s), Math.round(65 * s), Math.round(18 * s), '#111');
-        aTxt(ctx, 'PINKSNAP', w / 2, Math.round(48 * s), `900 ${Math.round(22 * s)}px "Inter", sans-serif`, '#ff69b4');
       };
       return base;
     })(),

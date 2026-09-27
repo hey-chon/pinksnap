@@ -60,75 +60,80 @@ export function createMemoryId(): string {
 const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
   (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
-export async function downloadImage(dataUrl: string, filename: string) {
-  if (!isSafeImageDataUrl(dataUrl)) {
-    throw new Error('Unsupported image data');
-  }
+function triggerAnchorDownload(objectUrl: string, filename: string) {
+  const link = document.createElement('a');
+  link.href = objectUrl;
+  link.download = filename;
+  link.rel = 'noopener';
+  link.style.display = 'none';
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+}
 
-  const blob = dataUrlToBlob(dataUrl);
+async function blobFromSource(source: string): Promise<Blob> {
+  if (source.startsWith('data:')) {
+    if (!isSafeImageDataUrl(source)) {
+      throw new Error('Unsupported image data');
+    }
+    return dataUrlToBlob(source);
+  }
+  const response = await fetch(source);
+  if (!response.ok) throw new Error('Failed to fetch image');
+  return response.blob();
+}
+
+export async function downloadImage(
+  source: string,
+  filename: string,
+  options?: { silent?: boolean },
+) {
+  const silent = options?.silent === true;
+  const blob = await blobFromSource(source);
   const objectUrl = URL.createObjectURL(blob);
 
-  // On iOS, the `<a download>` click is unreliable — Safari silently ignores
-  // it or opens the image in the same tab.  Prefer the Web Share API which
-  // surfaces the native share sheet (users can "Save Image" from there).
-  if (IS_IOS) {
+  // Silent auto-downloads skip the iOS share sheet so printing/receipt
+  // navigation is not interrupted. Anchor download still works on Android
+  // and desktop; iOS may ignore it, in which case Share remains available.
+  if (!silent && IS_IOS) {
     try {
-      const file = new File([blob], filename, { type: blob.type });
+      const file = new File([blob], filename, { type: blob.type || 'image/png' });
       if (navigator.canShare?.({ files: [file] })) {
         await navigator.share({ files: [file], title: filename });
         URL.revokeObjectURL(objectUrl);
         return;
       }
     } catch (err) {
-      // If the user cancelled the share sheet (AbortError), still treat it as
-      // handled — they can always tap "Save & Exit" again.
       if (err instanceof DOMException && err.name === 'AbortError') {
         URL.revokeObjectURL(objectUrl);
         return;
       }
-      // For any other error fall through to the tab fallback below.
     }
-
-    // Fallback: open in a new tab so the user can long-press → Save Image.
-    const opened = window.open(objectUrl, '_blank');
-    if (!opened) {
-      window.location.href = objectUrl;
-    }
-    window.setTimeout(() => URL.revokeObjectURL(objectUrl), 10_000);
-    return;
   }
 
-  // Non-iOS path — the standard <a download> approach works reliably.
-  const link = document.createElement('a');
-  const supportsDownload = 'download' in link;
-
-  if (supportsDownload) {
-    link.href = objectUrl;
-    link.download = filename;
-    link.rel = 'noopener';
-    link.style.display = 'none';
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
+  if ('download' in document.createElement('a')) {
+    triggerAnchorDownload(objectUrl, filename);
     window.setTimeout(() => URL.revokeObjectURL(objectUrl), 4000);
     return;
   }
 
-  // Legacy fallback for very old browsers that lack the download attribute.
-  try {
-    const file = new File([blob], filename, { type: blob.type });
-    if (navigator.canShare?.({ files: [file] })) {
-      await navigator.share({ files: [file], title: filename });
-      URL.revokeObjectURL(objectUrl);
-      return;
+  if (!silent) {
+    try {
+      const file = new File([blob], filename, { type: blob.type || 'image/png' });
+      if (navigator.canShare?.({ files: [file] })) {
+        await navigator.share({ files: [file], title: filename });
+        URL.revokeObjectURL(objectUrl);
+        return;
+      }
+    } catch {
+      // fall through
     }
-  } catch {
-    // ignore and fall through to the tab fallback
+
+    const opened = window.open(objectUrl, '_blank');
+    if (!opened && !silent) {
+      window.location.href = objectUrl;
+    }
   }
 
-  const opened = window.open(objectUrl, '_blank');
-  if (!opened) {
-    window.location.href = objectUrl;
-  }
-  window.setTimeout(() => URL.revokeObjectURL(objectUrl), 10000);
+  window.setTimeout(() => URL.revokeObjectURL(objectUrl), 10_000);
 }
