@@ -1,4 +1,4 @@
-import { Route, Switch, Router as WouterRouter } from 'wouter';
+import { Route, Switch, Router as WouterRouter, useLocation } from 'wouter';
 import { useEffect, useRef, useState } from 'react';
 
 import { AppProvider } from '@/lib/store';
@@ -24,6 +24,31 @@ import Printing from '@/pages/printing';
 import Receipt from '@/pages/receipt';
 import { CookieNotice } from '@/components/cookie-notice';
 import { ProtectedRoute } from '@/components/auth/protected-route';
+
+// ── Flow Guard ──────────────────────────────────────────────────────────────
+// Prevents direct URL shortcuts to flow pages by requiring users to start at /
+let hasEnteredApp = false;
+
+export function resetAppFlow() {
+  hasEnteredApp = false;
+}
+
+function FlowGuard({ children }: { children: React.ReactNode }) {
+  const [location, setLocation] = useLocation();
+  
+  useEffect(() => {
+    if (location === '/') {
+      hasEnteredApp = true;
+    } else if (!hasEnteredApp) {
+      const flowPages = ['/setup', '/styles', '/studio', '/edit', '/printing', '/receipt', '/loading', '/admin'];
+      if (flowPages.includes(location)) {
+        setLocation('/', { replace: true });
+      }
+    }
+  }, [location, setLocation]);
+
+  return <>{children}</>;
+}
 
 // ── Welcome Gate ────────────────────────────────────────────────────────────
 // Shows a dot-loading splash for 8 s after authentication is detected for the
@@ -186,9 +211,11 @@ function App() {
       <AppProvider>
         <ToastProvider>
           <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}>
-            <WelcomeGate>
-              <Router />
-            </WelcomeGate>
+            <FlowGuard>
+              <WelcomeGate>
+                <Router />
+              </WelcomeGate>
+            </FlowGuard>
             <CookieNotice />
           </WouterRouter>
         </ToastProvider>

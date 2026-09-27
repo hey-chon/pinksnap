@@ -1,6 +1,7 @@
 import { Link, useLocation } from 'wouter';
-import { Camera, ChevronLeft, HelpCircle, Images, MessageCircle, UserRound } from 'lucide-react';
+import { Camera, ChevronLeft, HelpCircle, Images, MessageCircle, UserRound, Home } from 'lucide-react';
 import { UserMenu } from '@/components/auth/user-menu';
+import { resetAppFlow } from '@/App';
 
 function Bulbs({ count = 10 }: { count?: number }) {
   return (
@@ -11,6 +12,9 @@ function Bulbs({ count = 10 }: { count?: number }) {
 }
 
 export function TopNav({ backTo, title }: { backTo?: string, title?: string }) {
+  const [location] = useLocation();
+  const isHome = location === '/';
+
   return (
     <header className="booth-marquee w-full flex min-h-[68px] sm:min-h-[76px] items-center justify-between gap-2 px-3 py-2.5 sm:px-4 sm:py-3 md:px-6 shrink-0 relative z-50 pt-[calc(.75rem+env(safe-area-inset-top))]">
       <div className="flex items-center gap-2 sm:gap-4 min-w-0">
@@ -25,15 +29,28 @@ export function TopNav({ backTo, title }: { backTo?: string, title?: string }) {
             <ChevronLeft className="w-5 h-5 text-white" />
           </button>
         )}
-        <div data-testid="link-brand" aria-label="PinkSnap home" className="flex items-center gap-2 sm:gap-2.5 group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-xl cursor-default">
-          <div className="bg-primary text-primary-foreground p-2 sm:p-2.5 rounded-[13px] group-hover:rotate-[-4deg] group-hover:scale-105 transition-transform shadow-[0_7px_20px_rgba(245,61,137,.5)]">
-            <Camera className="w-5 h-5 sm:w-6 sm:h-6 stroke-[2.5]" />
+        
+        {isHome ? (
+          <div data-testid="link-brand" aria-label="PinkSnap home" className="flex items-center gap-2 sm:gap-2.5 group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-xl cursor-default">
+            <div className="bg-primary text-primary-foreground p-2 sm:p-2.5 rounded-[13px] group-hover:rotate-[-4deg] group-hover:scale-105 transition-transform shadow-[0_7px_20px_rgba(245,61,137,.5)]">
+              <Camera className="w-5 h-5 sm:w-6 sm:h-6 stroke-[2.5]" />
+            </div>
+            <div className="flex flex-col leading-[.78]">
+              <span className="font-display text-[22px] sm:text-[26px] text-white">PINK</span>
+              <span className="font-display text-[22px] sm:text-[26px] text-primary">SNAP</span>
+            </div>
           </div>
-          <div className="flex flex-col leading-[.78]">
-            <span className="font-display text-[22px] sm:text-[26px] text-white">PINK</span>
-            <span className="font-display text-[22px] sm:text-[26px] text-primary">SNAP</span>
-          </div>
-        </div>
+        ) : (
+          <Link href="/" onClick={resetAppFlow} data-testid="link-brand" aria-label="PinkSnap home" className="flex items-center gap-2 sm:gap-2.5 group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-xl cursor-pointer">
+            <div className="bg-primary text-primary-foreground p-2 sm:p-2.5 rounded-[13px] group-hover:rotate-[-4deg] group-hover:scale-105 transition-transform shadow-[0_7px_20px_rgba(245,61,137,.5)]">
+              <Home className="w-5 h-5 sm:w-6 sm:h-6 stroke-[2.5]" />
+            </div>
+            <div className="flex flex-col leading-[.78]">
+              <span className="font-display text-[22px] sm:text-[26px] text-white">PINK</span>
+              <span className="font-display text-[22px] sm:text-[26px] text-primary">SNAP</span>
+            </div>
+          </Link>
+        )}
         <span className="hidden sm:block"><Bulbs count={5} /></span>
       </div>
 
@@ -63,6 +80,7 @@ export function BottomNav() {
       scrollToCreator();
       return;
     }
+    resetAppFlow();
     setLocation('/');
     window.setTimeout(scrollToCreator, 120);
   };

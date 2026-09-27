@@ -3,6 +3,7 @@ import { toPng } from 'html-to-image';
 import { useLocation } from 'wouter';
 import { useAppContext, LayoutType } from '@/lib/store';
 import { getFrameOption, getFilterOption, FrameType, ARTISAN_TEMPLATES } from '@/lib/customization';
+import { resetAppFlow } from '@/App';
 import { Download, Share2, Image as ImageIcon, Home, Printer } from 'lucide-react';
 import { downloadImage, dataUrlToBlob } from '@/lib/image-utils';
 import { useToast } from '@/hooks/use-toast.tsx';
@@ -242,38 +243,6 @@ export default function Receipt() {
         <img src={latestMemory.url} alt="Strip" className="strip-print hidden print:block" />
       )}
 
-      {askPrint && (
-        <div className="print-modal fixed inset-0 z-[80] flex items-end sm:items-center justify-center bg-black/40 px-4 pb-[max(1rem,env(safe-area-inset-bottom))] sm:pb-4 print:hidden">
-          <div className="w-full max-w-sm bg-white rounded-t-2xl sm:rounded-2xl p-6 shadow-2xl">
-            <p className="font-mono text-[9px] text-black/40 tracking-[0.28em] uppercase mb-2">
-              Optional
-            </p>
-            <h2 className="font-display text-2xl text-black leading-none mb-2">
-              PRINT THIS RECEIPT?
-            </h2>
-            <p className="text-sm text-black/55 mb-6">
-              Your strip is already saving to this device. Print the receipt only if you want a paper copy.
-            </p>
-            <div className="grid grid-cols-2 gap-3">
-              <button
-                type="button"
-                onClick={() => setAskPrint(false)}
-                className="min-h-[44px] px-4 py-3 bg-white border border-black/10 text-black/70 font-black text-xs tracking-wider rounded-xl"
-              >
-                NO
-              </button>
-              <button
-                type="button"
-                onClick={handlePrintReceipt}
-                className="min-h-[44px] px-4 py-3 bg-[#f53d89] text-white font-black text-xs tracking-wider rounded-xl shadow-lg shadow-[#f53d89]/25"
-              >
-                YES, PRINT
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
       <div
         ref={contentRef}
         className="receipt-container flex flex-row items-center justify-center gap-6 md:gap-8"
@@ -442,7 +411,10 @@ export default function Receipt() {
           </button>
           <button
             type="button"
-            onClick={() => setLocation('/', { replace: true })}
+            onClick={() => {
+              resetAppFlow();
+              setLocation('/', { replace: true });
+            }}
             className="flex items-center justify-center gap-2 min-h-[48px] px-4 py-4 bg-[#f53d89] text-white font-black text-sm tracking-wider rounded-xl shadow-lg shadow-[#f53d89]/25 hover:shadow-xl hover:shadow-[#f53d89]/30 active:scale-[0.97] transition-all"
           >
             <Home className="w-4 h-4" /> BACK TO HOME
