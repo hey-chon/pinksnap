@@ -445,7 +445,7 @@ export default function Receipt() {
       </div>
 
       <p className={`mt-6 font-mono text-[9px] text-black/20 tracking-[0.3em] print:hidden ${revealed ? 'receipt-fade-late' : 'opacity-0'}`}>
-        PINKSNAP.APP
+        PINKSNAP.PICS
       </p>
     </div>
   );
