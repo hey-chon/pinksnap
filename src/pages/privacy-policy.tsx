@@ -247,7 +247,7 @@ export default function PrivacyPolicy() {
                   5
                 </div>
                 <h2 className="font-display text-2xl text-foreground tracking-wide">
-                  THIRD-PARTY SERVICES & SUBPROCESSORS
+                  THIRD-PARTY SERVICES & Backend as a Service (BaaS)
                 </h2>
               </div>
               <div className="space-y-3 text-sm text-foreground/80 leading-relaxed font-medium">
