@@ -83,13 +83,18 @@ export default function Receipt() {
     : Math.random().toString(36).slice(2, 10).toUpperCase();
 
   useEffect(() => {
+    if (sessionStorage.getItem('receipt_completed') === 'true') {
+      setLocation('/', { replace: true });
+      return;
+    }
+
     window.history.pushState(null, '', window.location.href);
     const blockBack = () => {
       window.history.pushState(null, '', window.location.href);
     };
     window.addEventListener('popstate', blockBack);
     return () => window.removeEventListener('popstate', blockBack);
-  }, []);
+  }, [setLocation]);
 
   useEffect(() => {
     const timer = setTimeout(() => setRevealed(true), 200);
@@ -412,6 +417,7 @@ export default function Receipt() {
           <button
             type="button"
             onClick={() => {
+              sessionStorage.setItem('receipt_completed', 'true');
               resetAppFlow();
               setLocation('/', { replace: true });
             }}

@@ -590,11 +590,22 @@ export default function Edit() {
       ? 'grid-cols-2 w-full max-w-[148px] sm:max-w-[190px] xl:max-w-[218px]'
       : 'grid-cols-3 w-full max-w-[180px] sm:max-w-[235px] xl:max-w-[272px]';
 
-  const shellClass = layout === 'vertical-4'
+  let shellClass = layout === 'vertical-4'
     ? 'max-w-[125px] sm:max-w-[158px] xl:max-w-[175px]'
     : layout === 'quad-4'
       ? 'max-w-[170px] sm:max-w-[218px] xl:max-w-[248px]'
       : 'max-w-[208px] sm:max-w-[265px] xl:max-w-[302px]';
+
+  if (isArtisan && activeArtisan) {
+    const aspect = activeArtisan.nw / activeArtisan.nh;
+    if (aspect < 0.6) {
+      shellClass = 'max-w-[125px] sm:max-w-[158px] xl:max-w-[175px]';
+    } else if (aspect < 1.0) {
+      shellClass = 'max-w-[170px] sm:max-w-[218px] xl:max-w-[248px]';
+    } else {
+      shellClass = 'max-w-[208px] sm:max-w-[265px] xl:max-w-[302px]';
+    }
+  }
 
   const matteClass = activeFrame.dark ? 'strip-matte-light' : 'strip-matte-dark';
   const inkClass = activeFrame.dark ? 'strip-ink-light' : 'strip-ink-dark';

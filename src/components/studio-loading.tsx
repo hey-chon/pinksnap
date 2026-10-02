@@ -6,6 +6,7 @@ export default function StudioLoading() {
   const [, setLocation] = useLocation();
 
   useEffect(() => {
+    sessionStorage.removeItem('receipt_completed');
     const duration = 3100;
     const timeout = window.setTimeout(() => setLocation('/setup', { replace: true }), duration);
     return () => {
