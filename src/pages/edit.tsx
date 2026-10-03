@@ -226,20 +226,39 @@ export default function Edit() {
 
 
   const [isSaving, setIsSaving] = useState(false);
-  const [category, setCategory] = useState<TabMode>('booth');
-  const [artisanId, setArtisanId] = useState<ArtisanTemplateId>('theater-show');
+  const [category, setCategory] = useState<TabMode>(() => (sessionStorage.getItem('ps_edit_category') as TabMode) || 'booth');
+  const [artisanId, setArtisanId] = useState<ArtisanTemplateId>(() => (sessionStorage.getItem('ps_edit_artisan') as ArtisanTemplateId) || 'theater-show');
+  const [showArtisanWarning, setShowArtisanWarning] = useState(false);
+  const [excludedShotIndex, setExcludedShotIndex] = useState<number>(() => {
+    const s = sessionStorage.getItem('ps_edit_excluded');
+    return s ? parseInt(s, 10) : 3;
+  });
+  const [hasPickedExclusion, setHasPickedExclusion] = useState(() => sessionStorage.getItem('ps_edit_picked') === 'true');
+
+  useEffect(() => sessionStorage.setItem('ps_edit_category', category), [category]);
+  useEffect(() => sessionStorage.setItem('ps_edit_artisan', artisanId), [artisanId]);
+  useEffect(() => sessionStorage.setItem('ps_edit_excluded', excludedShotIndex.toString()), [excludedShotIndex]);
+  useEffect(() => sessionStorage.setItem('ps_edit_picked', hasPickedExclusion.toString()), [hasPickedExclusion]);
   const artisanCanvasRef = useRef<HTMLCanvasElement>(null);
   const stripRef = useRef<HTMLDivElement>(null);
   const sessionDate = useMemo(() => Date.now(), []);
 
-  const isArtisan = category === 'artisan';
-  const activeFrame = getFrameOption(frame);
   const activeArtisan = getArtisanTemplate(artisanId);
+  const isArtisan = category === 'artisan';
+
+  const activeShots = useMemo(() => {
+    if (shots.length === 4 && isArtisan && activeArtisan?.slots.length === 3) {
+      return shots.filter((_, i) => i !== excludedShotIndex);
+    }
+    return shots;
+  }, [shots, isArtisan, activeArtisan, excludedShotIndex]);
+
+  const activeFrame = getFrameOption(frame);
   const stripFilterClass = getFilterOption(filter).className;
   const visibleFrames = isArtisan ? [] : FRAME_OPTIONS.filter((o) => o.category === (category as FrameCategory));
 
   useEffect(() => {
-    if (!isArtisan || shots.length === 0) return;
+    if (!isArtisan || activeShots.length === 0) return;
     let isCancelled = false;
 
     const canvas = artisanCanvasRef.current;
@@ -283,7 +302,7 @@ export default function Edit() {
         });
 
       const images = await Promise.all(
-        template.slots.map((_, i) => loadPhoto(shots[i] ?? shots[shots.length - 1]))
+        template.slots.map((_, i) => loadPhoto(activeShots[i] ?? activeShots[activeShots.length - 1]))
       );
 
       if (isCancelled || !artisanCanvasRef.current) return;
@@ -333,7 +352,7 @@ export default function Edit() {
     return () => {
       isCancelled = true;
     };
-  }, [isArtisan, artisanId, shots, filter, sessionDate]);
+  }, [isArtisan, artisanId, activeShots, filter, sessionDate]);
 
   const handleRetake = () => {
     clearShots();
@@ -396,12 +415,12 @@ export default function Edit() {
 
   // ── Artisan strip canvas renderer ──────────────────────────────────────────
   const generateArtisanImage = async (): Promise<string> => {
-    if (shots.length === 0) return '';
+    if (activeShots.length === 0) return '';
     const template = getArtisanTemplate(artisanId);
 
     const photos = await Promise.all(
       template.slots.map((_, i) => {
-        const src = shots[i] ?? shots[shots.length - 1];
+        const src = activeShots[i] ?? activeShots[activeShots.length - 1];
         return new Promise<HTMLCanvasElement | null>((resolve) => {
           const img = new Image();
           img.onload = () => resolve(filterImageForCanvas(img, filter));
@@ -540,48 +559,15 @@ export default function Edit() {
     }
   };
 
+  // If shots are lost (e.g., page refresh), seamlessly send them back to the studio
+  useEffect(() => {
+    if (shots.length === 0) {
+      setLocation('/studio', { replace: true });
+    }
+  }, [shots.length, setLocation]);
+
   if (shots.length === 0) {
-    return (
-      <div className="flex flex-col h-dvh">
-        <TopNav backTo="/setup" />
-        <main className="flex-1 flex flex-col items-center justify-center p-6">
-          <p className="text-xl font-bold mb-6 text-foreground/60 tracking-wide uppercase">No shots captured yet.</p>
-          <div className="flex flex-wrap gap-4 justify-center">
-            <button
-              onClick={() => setLocation('/studio')}
-              className="px-8 py-4 bg-primary text-white font-black rounded-full shadow-lg hover:scale-105 active:scale-95 transition-transform"
-            >
-              GO TO STUDIO
-            </button>
-            <button
-              onClick={() => {
-                const sampleColors = [
-                  ['#ffd5e6', '#cceaff'],
-                  ['#d7f5f0', '#ead6ff'],
-                  ['#ffe0c7', '#ffd2ed'],
-                  ['#d6e4ff', '#f9d7e8'],
-                ];
-                [0, 1, 2, 3].forEach((i) => {
-                  const [start, end] = sampleColors[i % sampleColors.length];
-                  addShot(`data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
-                    <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="900" viewBox="0 0 1200 900">
-                      <defs><linearGradient id="g" x1="0" x2="1" y1="0" y2="1"><stop stop-color="${start}"/><stop offset="1" stop-color="${end}"/></linearGradient></defs>
-                      <rect width="1200" height="900" fill="url(#g)"/>
-                      <circle cx="600" cy="380" r="140" fill="#fff" fill-opacity=".6"/>
-                      <circle cx="600" cy="380" r="70" fill="${start}"/>
-                      <text x="600" y="620" text-anchor="middle" font-family="sans-serif" font-size="52" font-weight="900" fill="#333">SAMPLE PHOTO ${i + 1}</text>
-                    </svg>
-                  `)}`);
-                });
-              }}
-              className="px-6 py-4 bg-foreground/10 text-foreground font-black rounded-full hover:bg-foreground/15 active:scale-95 transition-all text-sm"
-            >
-              USE SAMPLE SHOTS
-            </button>
-          </div>
-        </main>
-      </div>
-    );
+    return null;
   }
 
   const gridClass = layout === 'vertical-4'
@@ -701,7 +687,12 @@ export default function Edit() {
                       key={tpl.id}
                       template={tpl}
                       isSelected={artisanId === tpl.id}
-                      onClick={() => setArtisanId(tpl.id)}
+                      onClick={() => {
+                        if (layout !== 'horizontal-3' && tpl.slots.length === 3 && !hasPickedExclusion) {
+                          setShowArtisanWarning(true);
+                        }
+                        setArtisanId(tpl.id);
+                      }}
                     />
                   ))}
                 </div>
@@ -832,6 +823,125 @@ export default function Edit() {
       </main>
 
       <BottomNav />
+      {showArtisanWarning && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <style>{`
+            @keyframes modalOverlayIn {
+              from { opacity: 0; }
+              to { opacity: 1; }
+            }
+            @keyframes modalCardIn {
+              from { opacity: 0; transform: translateY(40px) scale(0.92); }
+              to { opacity: 1; transform: translateY(0) scale(1); }
+            }
+            @keyframes modalShimmer {
+              0% { background-position: -200% center; }
+              100% { background-position: 200% center; }
+            }
+            .modal-overlay-enter { animation: modalOverlayIn 0.35s ease-out both; }
+            .modal-card-enter { animation: modalCardIn 0.45s cubic-bezier(.34,1.56,.64,1) both; }
+            .confirm-shimmer {
+              background: linear-gradient(110deg, #f53d89 0%, #f53d89 35%, #ff6faa 50%, #f53d89 65%, #f53d89 100%);
+              background-size: 200% 100%;
+              animation: modalShimmer 2.5s ease-in-out infinite;
+            }
+          `}</style>
+
+          {/* Backdrop */}
+          <div
+            className="modal-overlay-enter absolute inset-0 bg-black/50 backdrop-blur-xl"
+            onClick={() => setShowArtisanWarning(false)}
+          />
+
+          {/* Card */}
+          <div className="modal-card-enter relative bg-white/95 backdrop-blur-2xl rounded-3xl shadow-[0_32px_80px_rgba(0,0,0,0.25)] w-full max-w-md p-7 sm:p-9 text-center border border-white/60">
+
+            {/* Decorative top accent line */}
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-24 h-1 rounded-full bg-gradient-to-r from-primary/60 via-primary to-primary/60 -translate-y-0.5" />
+
+            {/* PINKSNAP wordmark */}
+            <div className="mb-2 flex items-center justify-center gap-1 bg-foreground/[0.02] rounded-2xl p-3 max-w-max mx-auto border border-foreground/5 shadow-inner">
+              <span className="font-black text-[22px] tracking-tight text-[#2a1520]">PINK</span>
+              <span className="font-black text-[22px] tracking-tight text-[#f53d89]">SNAP</span>
+            </div>
+
+            <p className="text-black font-medium text-[13px] sm:text-sm mb-6 leading-relaxed max-w-[280px] mx-auto">
+              This design only fits 3 photos. Tap the one you'd like to <span className="font-black text-red-500">EVICT</span>.
+            </p>
+
+            {/* Photo grid — 2×2 */}
+            <div className="grid grid-cols-2 gap-3 sm:gap-4 mb-7 px-1">
+              {shots.map((shot, i) => {
+                const isExcluded = excludedShotIndex === i;
+                return (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => setExcludedShotIndex(i)}
+                    className={`relative aspect-[4/3] rounded-2xl overflow-hidden focus:outline-none transition-all duration-300 ${
+                      isExcluded
+                        ? 'opacity-80 ring-2 ring-foreground/20 shadow-inner'
+                        : 'ring-3 ring-primary/40 shadow-xl shadow-primary/10 hover:shadow-2xl hover:ring-primary/60'
+                    }`}
+                  >
+                    <img
+                      src={shot}
+                      alt={`Shot ${i + 1}`}
+                      className={`w-full h-full object-cover transition-all duration-300 ${isExcluded ? 'grayscale' : ''}`}
+                      draggable={false}
+                      onContextMenu={(e) => e.preventDefault()}
+                    />
+
+                    {/* Excluded overlay (Minimalist X) */}
+                    {isExcluded && (
+                      <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                        <div className="w-10 h-10 bg-black/70 backdrop-blur-md rounded-full flex items-center justify-center shadow-lg border border-white/20">
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round">
+                            <line x1="6" y1="6" x2="18" y2="18" />
+                            <line x1="18" y1="6" x2="6" y2="18" />
+                          </svg>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Kept indicator */}
+                    {!isExcluded && (
+                      <>
+                        <div className="absolute top-2 right-2 w-6 h-6 bg-emerald-500 rounded-full flex items-center justify-center shadow-md border-2 border-white/70">
+                          <Check className="w-3.5 h-3.5 text-white stroke-[3]" />
+                        </div>
+                        <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/50 to-transparent pt-6 pb-2 px-2">
+                          <span className="text-white font-black text-[11px] tracking-wider drop-shadow-md">
+                            SHOT {i + 1}
+                          </span>
+                        </div>
+                      </>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Confirm button */}
+            <button
+              onClick={() => {
+                setHasPickedExclusion(true);
+                setShowArtisanWarning(false);
+              }}
+              className="confirm-shimmer w-full py-4 text-white font-black text-base tracking-wider rounded-2xl shadow-xl shadow-primary/30 hover:shadow-2xl hover:shadow-primary/40 active:scale-[0.97] transition-all"
+            >
+              CONFIRM SELECTION
+            </button>
+
+            {/* Footer note */}
+            <div className="mt-5 bg-foreground/[0.03] rounded-xl border border-foreground/8 px-4 py-3">
+              <p className="text-black text-[11px] leading-relaxed">
+                <span className="font-black">Heads up:</span> This is a <span className="font-black text-primary">one-time choice</span>. Once you confirm, the same skipped photo will apply to all 3-photo Artisan strips so you won't have to pick again.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

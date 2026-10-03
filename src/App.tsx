@@ -31,6 +31,7 @@ let hasEnteredApp = false;
 
 export function resetAppFlow() {
   hasEnteredApp = false;
+  sessionStorage.removeItem('ps_has_entered_app');
 }
 
 function FlowGuard({ children }: { children: React.ReactNode }) {
@@ -38,8 +39,8 @@ function FlowGuard({ children }: { children: React.ReactNode }) {
   
   useEffect(() => {
     if (location === '/') {
-      hasEnteredApp = true;
-    } else if (!hasEnteredApp) {
+      sessionStorage.setItem('ps_has_entered_app', 'true');
+    } else if (!sessionStorage.getItem('ps_has_entered_app')) {
       const flowPages = ['/setup', '/styles', '/studio', '/edit', '/printing', '/receipt', '/loading', '/admin'];
       if (flowPages.includes(location)) {
         setLocation('/', { replace: true });

@@ -167,10 +167,28 @@ async function deleteCloudMemory(userId: string, memoryId: string, imageUrl: str
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
   const { user, isAuthenticated } = useAuth();
-  const [layout, setLayout] = useState<LayoutType>('vertical-4');
-  const [frame, setFrame] = useState<FrameType>('classic');
-  const [filter, setFilter] = useState<FilterType>('color');
-  const [shots, setShots] = useState<string[]>([]);
+  const [layout, setLayout] = useState<LayoutType>(() => (sessionStorage.getItem('ps_layout') as LayoutType) || 'vertical-4');
+  const [frame, setFrame] = useState<FrameType>(() => (sessionStorage.getItem('ps_frame') as FrameType) || 'classic');
+  const [filter, setFilter] = useState<FilterType>(() => (sessionStorage.getItem('ps_filter') as FilterType) || 'color');
+  const [shots, setShots] = useState<string[]>(() => {
+    try {
+      const stored = sessionStorage.getItem('ps_shots');
+      return stored ? JSON.parse(stored) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  useEffect(() => sessionStorage.setItem('ps_layout', layout), [layout]);
+  useEffect(() => sessionStorage.setItem('ps_frame', frame), [frame]);
+  useEffect(() => sessionStorage.setItem('ps_filter', filter), [filter]);
+  useEffect(() => {
+    try {
+      sessionStorage.setItem('ps_shots', JSON.stringify(shots));
+    } catch (e) {
+      console.warn('Could not save shots to sessionStorage', e);
+    }
+  }, [shots]);
   const [savedMemories, setSavedMemories] = useState<Memory[]>([]);
   const [isLoadingMemories, setIsLoadingMemories] = useState(false);
   const [isSavingMemory, setIsSavingMemory] = useState(false);
