@@ -1399,3 +1399,33 @@ html, body { overflow-x: hidden; }
   border-color: rgba(255, 255, 255, 0.2);
   transform: translateY(-1px);
 }
+
+/* ---------- Android Specific Responsiveness ---------- */
+/* Gives the layout more breathing room specifically on Android devices without affecting iOS/Desktop */
+
+html.is-android {
+  /* Scale down all rem-based sizing globally by ~10% just for Android to reduce cramped feeling */
+  font-size: 14.5px !important;
+}
+
+html.is-android body {
+  /* Ensure bottom navigation bar doesn't cut things off */
+  padding-bottom: env(safe-area-inset-bottom, 16px);
+}
+
+html.is-android .studio-panel,
+html.is-android .ticket,
+html.is-android .edit-card {
+  /* Add more relaxed padding inside cards to let content breathe */
+  padding: 1.5rem 1.25rem !important;
+  gap: 1.25rem !important;
+}
+
+html.is-android .strip-photo {
+  border-radius: 0.75rem;
+}
+
+html.is-android .booth-heading-kicker {
+  /* Give the tiny kickers slightly more padding on Android */
+  padding: 0.4rem 1rem;
+}
