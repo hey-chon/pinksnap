@@ -1400,52 +1400,58 @@ html, body { overflow-x: hidden; }
   transform: translateY(-1px);
 }
 
-/* ---------- Android Specific Responsiveness ---------- */
-/* Targeted fixes for cramped Android screens without affecting iOS/Desktop */
+/* ---------- Universal Mobile Phone Responsiveness ---------- */
+/* Applies to all narrow screens (Android, small iPhones, etc) to ensure the UI breathes */
 
-html.is-android body {
-  padding-bottom: env(safe-area-inset-bottom, 16px);
-}
+@media (max-width: 430px) {
+  /* 1. Ensure bottom navigation doesn't get cut off */
+  body {
+    padding-bottom: env(safe-area-inset-bottom, 16px);
+  }
 
-/* 1. Navbar Sign Up / Login buttons: hide text to save space */
-html.is-android [data-testid="button-signup-nav"] span,
-html.is-android [data-testid="button-login-nav"] span {
-  display: none;
-}
-html.is-android [data-testid="button-signup-nav"],
-html.is-android [data-testid="button-login-nav"] {
-  padding: 0.5rem 0.6rem !important; /* Square-ish icon button */
-}
+  /* 2. Navbar Sign Up / Login buttons: hide text to save space */
+  [data-testid="button-signup-nav"] span,
+  [data-testid="button-login-nav"] span {
+    display: none;
+  }
+  [data-testid="button-signup-nav"],
+  [data-testid="button-login-nav"] {
+    padding: 0.5rem 0.6rem !important; /* Square-ish icon button */
+  }
 
-/* 2. Auth Modal "Join PinkSnap" Container */
-html.is-android .ticket {
-  padding: 1.25rem !important; /* Smaller padding than the default p-6 (1.5rem) or p-8 */
-  margin-inline: auto;
-  max-width: calc(100vw - 1rem) !important;
-}
+  /* 3. Auth Modal "Join PinkSnap" Container */
+  .ticket {
+    padding: 1.25rem !important;
+    margin-inline: auto;
+    max-width: calc(100vw - 1rem) !important;
+  }
+  .auth-header-title {
+    font-size: 2rem !important;
+  }
 
-html.is-android .auth-header-title {
-  /* Ensure large titles scale down */
-  font-size: 2.25rem !important;
-}
+  /* 4. Community Chat Panel */
+  .pixel-panel {
+    border-width: 2px !important;
+    box-shadow: 0 0 0 2px #ffd9e8, 0 0 0 3px #2a1f33 !important;
+    max-width: calc(100vw - 1rem) !important;
+    margin-inline: auto;
+  }
+  .pixel-titlebar {
+    padding: 0.5rem !important;
+  }
+  .pixel-log {
+    /* Make chatbox height much smaller on mobile so the top title is visible */
+    min-height: 200px !important;
+    max-height: 260px !important; 
+  }
 
-/* 3. Community Chat Panel */
-html.is-android .pixel-panel {
-  border-width: 2px !important;
-  box-shadow: 0 0 0 2px #ffd9e8, 0 0 0 4px #2a1f33 !important;
-  max-width: calc(100vw - 1rem) !important;
-  margin-inline: auto;
-}
-html.is-android .pixel-titlebar {
-  padding: 0.5rem !important;
-}
-
-html.is-android .studio-panel,
-html.is-android .edit-card {
-  padding: 1.25rem 1rem !important;
-  gap: 1rem !important;
-}
-
-html.is-android .strip-photo {
-  border-radius: 0.6rem;
+  /* 5. App padding reduction */
+  .studio-panel,
+  .edit-card {
+    padding: 1.25rem 1rem !important;
+    gap: 1rem !important;
+  }
+  .strip-photo {
+    border-radius: 0.6rem;
+  }
 }

@@ -5,6 +5,7 @@ import { ArrowRight, Camera, Download, LayoutGrid, MessageCircle, Sparkles, Wand
 import Credits from '@/components/credits';
 import { useAuth } from '@/hooks/use-auth';
 
+
 const STEPS = [
   {
     num: 1,
@@ -134,7 +135,10 @@ export default function Home() {
 
           <button
             type="button"
-            onClick={() => document.getElementById('home-guide-title')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+            onClick={() => {
+              const el = document.getElementById('creator-section');
+              if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }}
             className="home-hero-item scroll-cue mt-8 inline-flex flex-col items-center gap-1.5 text-center text-foreground/45 hover:text-primary transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-full px-3 py-2"
             aria-label="Scroll to learn more"
           >
@@ -155,25 +159,6 @@ export default function Home() {
             <Link href="/how-it-works" className="inline-flex items-center gap-1 text-xs font-black text-foreground/55 hover:text-primary uppercase tracking-wider">
               SEE THE DIAGRAM <ArrowRight className="w-3.5 h-3.5" />
             </Link>
-          </div>
-
-          {/* ── Step pill nav ── */}
-          <div className="flex gap-2 mb-6 overflow-x-auto pb-1 snap-x">
-            {STEPS.map((s, i) => (
-              <button
-                key={i}
-                type="button"
-                onClick={() => setActiveStep(i)}
-                className={`snap-start shrink-0 flex items-center gap-2 px-3.5 py-2 rounded-full text-[11px] font-black uppercase tracking-wide border transition-all ${
-                  activeStep === i
-                    ? 'bg-primary text-white border-primary shadow-md shadow-primary/25'
-                    : 'bg-white/70 text-foreground/60 border-black/10 hover:border-primary/30 hover:text-primary'
-                }`}
-              >
-                <span className={`w-5 h-5 rounded-full text-[10px] font-black flex items-center justify-center shrink-0 ${activeStep === i ? 'bg-white/20' : 'bg-primary/10 text-primary'}`}>{s.num}</span>
-                {s.label}
-              </button>
-            ))}
           </div>
 
           {/* ── Active step big preview ── */}
@@ -238,21 +223,17 @@ export default function Home() {
             </div>
           </div>
 
-
-
           {/* ── Feedback CTA ── */}
-          <div className="mt-6 mb-8 flex flex-col items-center justify-center text-center gap-1.5">
-            <p className="text-foreground/70 font-medium text-xs sm:text-sm">
+          <div className="mt-4 sm:mt-6 mb-6 sm:mb-8 flex flex-col items-center justify-center text-center gap-1">
+            <p className="text-foreground/70 font-medium text-[10px] sm:text-sm">
               Want to give some feedback? Join the community chat
             </p>
-            <Link href="/chat" className="inline-flex items-center gap-1.5 text-[10px] sm:text-xs font-black text-primary hover:text-primary/80 uppercase tracking-wider transition-colors">
-              OPEN COMMUNITY CHAT <ArrowRight className="w-3.5 h-3.5" />
+            <Link href="/chat" className="inline-flex items-center gap-1 text-[9px] sm:text-xs font-black text-primary hover:text-primary/80 uppercase tracking-wider transition-colors">
+              OPEN COMMUNITY CHAT <ArrowRight className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
             </Link>
           </div>
 
         </section>
-
-
 
         <Credits />
       </main>
