@@ -47,7 +47,6 @@ export default function Studio() {
   const maxShots = layout === 'horizontal-3' ? 3 : 4;
 
   useEffect(() => {
-    clearShots();
     startCamera();
   }, []);
 

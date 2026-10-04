@@ -40,10 +40,16 @@ function FlowGuard({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (location === '/') {
       sessionStorage.setItem('ps_has_entered_app', 'true');
+      sessionStorage.removeItem('ps_has_loaded');
     } else if (!sessionStorage.getItem('ps_has_entered_app')) {
       const flowPages = ['/setup', '/styles', '/studio', '/edit', '/printing', '/receipt', '/loading', '/admin'];
       if (flowPages.includes(location)) {
         setLocation('/', { replace: true });
+      }
+    } else {
+      const flowProtected = ['/setup', '/styles', '/studio', '/edit'];
+      if (flowProtected.includes(location) && !sessionStorage.getItem('ps_has_loaded')) {
+        setLocation('/loading', { replace: true });
       }
     }
   }, [location, setLocation]);
