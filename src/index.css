@@ -1401,31 +1401,51 @@ html, body { overflow-x: hidden; }
 }
 
 /* ---------- Android Specific Responsiveness ---------- */
-/* Gives the layout more breathing room specifically on Android devices without affecting iOS/Desktop */
-
-html.is-android {
-  /* Scale down all rem-based sizing globally by ~10% just for Android to reduce cramped feeling */
-  font-size: 14.5px !important;
-}
+/* Targeted fixes for cramped Android screens without affecting iOS/Desktop */
 
 html.is-android body {
-  /* Ensure bottom navigation bar doesn't cut things off */
   padding-bottom: env(safe-area-inset-bottom, 16px);
 }
 
+/* 1. Navbar Sign Up / Login buttons: hide text to save space */
+html.is-android [data-testid="button-signup-nav"] span,
+html.is-android [data-testid="button-login-nav"] span {
+  display: none;
+}
+html.is-android [data-testid="button-signup-nav"],
+html.is-android [data-testid="button-login-nav"] {
+  padding: 0.5rem 0.6rem !important; /* Square-ish icon button */
+}
+
+/* 2. Auth Modal "Join PinkSnap" Container */
+html.is-android .ticket {
+  padding: 1.25rem !important; /* Smaller padding than the default p-6 (1.5rem) or p-8 */
+  margin-inline: auto;
+  max-width: calc(100vw - 1rem) !important;
+}
+
+html.is-android .auth-header-title {
+  /* Ensure large titles scale down */
+  font-size: 2.25rem !important;
+}
+
+/* 3. Community Chat Panel */
+html.is-android .pixel-panel {
+  border-width: 2px !important;
+  box-shadow: 0 0 0 2px #ffd9e8, 0 0 0 4px #2a1f33 !important;
+  max-width: calc(100vw - 1rem) !important;
+  margin-inline: auto;
+}
+html.is-android .pixel-titlebar {
+  padding: 0.5rem !important;
+}
+
 html.is-android .studio-panel,
-html.is-android .ticket,
 html.is-android .edit-card {
-  /* Add more relaxed padding inside cards to let content breathe */
-  padding: 1.5rem 1.25rem !important;
-  gap: 1.25rem !important;
+  padding: 1.25rem 1rem !important;
+  gap: 1rem !important;
 }
 
 html.is-android .strip-photo {
-  border-radius: 0.75rem;
-}
-
-html.is-android .booth-heading-kicker {
-  /* Give the tiny kickers slightly more padding on Android */
-  padding: 0.4rem 1rem;
+  border-radius: 0.6rem;
 }

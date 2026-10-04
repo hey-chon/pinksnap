@@ -365,7 +365,7 @@ export function AuthModal({
     <div className={`w-full max-w-md mx-auto ${isInline ? '' : 'ticket p-6 sm:p-8'}`}>
       {/* Header */}
       <div className="text-center mb-6">
-        <h2 className="font-display text-3xl sm:text-4xl text-foreground tracking-wide">
+        <h2 className="auth-header-title font-display text-3xl sm:text-4xl text-foreground tracking-wide">
           {mode === 'signin' && (
             <>WELCOME <span className="text-primary">BACK!</span></>
           )}
