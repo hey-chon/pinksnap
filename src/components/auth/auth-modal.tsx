@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link } from 'wouter';
+import { Link, useLocation } from 'wouter';
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast.tsx';
 import {
@@ -28,6 +28,7 @@ export function AuthModal({
   isInline = false,
 }: AuthModalProps) {
   const { signIn, signUp, resetPassword, isConfigured, isLoading } = useAuth();
+  const [, navigate] = useLocation();
   const { toast } = useToast();
 
   const [mode, setMode] = useState<'signin' | 'signup' | 'reset'>(initialMode);
@@ -45,6 +46,10 @@ export function AuthModal({
   const [welcomeName, setWelcomeName] = useState('');
   const [countdown, setCountdown] = useState(6);
   const countdownRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Email verification state
+  const [showVerification, setShowVerification] = useState(false);
+  const [verificationEmail, setVerificationEmail] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -92,8 +97,12 @@ export function AuthModal({
             description: res.error,
             variant: 'destructive',
           });
+        } else if (res.needsVerification) {
+          // Email verification required — show verification instructions
+          setVerificationEmail(email);
+          setShowVerification(true);
         } else {
-          // Show welcome splash — do NOT call onSuccess yet
+          // Instant sign-in (no verification needed)
           setWelcomeType('signup');
           setWelcomeName(displayName || email.split('@')[0] || 'there');
           setShowWelcome(true);
@@ -137,9 +146,11 @@ export function AuthModal({
     }
   };
 
-  // Start 10-second countdown when splash appears
+  // Start countdown when splash appears & mark WelcomeGate as done so
+  // the App-level gate doesn't fire a second "Welcome Back" screen.
   useEffect(() => {
     if (!showWelcome) return;
+    sessionStorage.setItem('ps_welcome_gate_done', '1');
     setCountdown(6);
     countdownRef.current = setInterval(() => {
       setCountdown(prev => {
@@ -159,6 +170,104 @@ export function AuthModal({
     return () => { if (countdownRef.current) clearInterval(countdownRef.current); };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showWelcome]);
+
+  // ── Email Verification Required Screen ───────────────────────────────────
+  if (showVerification) {
+    return (
+      <div
+        className={`w-full max-w-md mx-auto ${isInline ? '' : 'ticket p-6 sm:p-8'}`}
+        style={{ animation: 'verifyFadeIn 0.45s cubic-bezier(.36,.07,.19,.97) both' }}
+      >
+        <style>{`
+          @keyframes verifyFadeIn {
+            from { opacity: 0; transform: scale(0.93) translateY(18px); }
+            to   { opacity: 1; transform: scale(1) translateY(0); }
+          }
+          @keyframes verifyIconPop {
+            0%   { transform: scale(0); opacity: 0; }
+            60%  { transform: scale(1.18); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+          }
+          @keyframes verifyEnvelopeBounce {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            25% { transform: translateY(-6px) rotate(-3deg); }
+            75% { transform: translateY(-3px) rotate(3deg); }
+          }
+          @keyframes verifyPulse {
+            0%, 100% { box-shadow: 0 0 20px rgba(245,61,137,0.25); }
+            50%       { box-shadow: 0 0 40px rgba(245,61,137,0.5); }
+          }
+          @keyframes verifySparkle {
+            0%, 100% { transform: translateY(0) rotate(0deg); opacity: 0.7; }
+            50%       { transform: translateY(-6px) rotate(12deg); opacity: 1; }
+          }
+          .verify-icon-pop { animation: verifyIconPop 0.55s cubic-bezier(.36,.07,.19,.97) both; }
+          .verify-bounce   { animation: verifyEnvelopeBounce 2.5s ease-in-out infinite; }
+          .verify-pulse    { animation: verifyPulse 2s ease-in-out infinite; }
+          .verify-sparkle1 { animation: verifySparkle 2s ease-in-out infinite; }
+          .verify-sparkle2 { animation: verifySparkle 2s ease-in-out infinite 0.5s; }
+        `}</style>
+
+        <div className="flex flex-col items-center text-center mb-6">
+          {/* Envelope icon */}
+          <div className="relative mb-5">
+            <div className="w-20 h-20 rounded-full bg-emerald-500/15 border-2 border-emerald-500/40 flex items-center justify-center verify-icon-pop verify-pulse verify-bounce">
+              <Mail className="w-9 h-9 text-emerald-600" />
+            </div>
+            <span className="absolute -top-1 -right-1 text-xl verify-sparkle1 select-none">✉️</span>
+            <span className="absolute -bottom-1 -left-2 text-lg verify-sparkle2 select-none">✨</span>
+          </div>
+
+          <span className="booth-heading-kicker mb-2 !text-emerald-600">Almost there!</span>
+          <h2 className="font-display text-3xl sm:text-4xl text-foreground tracking-wide mb-1">
+            CHECK YOUR <span className="text-primary">EMAIL!</span>
+          </h2>
+          <p className="text-sm text-foreground/60 font-medium mt-2 max-w-xs">
+            We sent a verification link to:
+          </p>
+          <p className="text-sm font-bold text-primary mt-1 break-all">
+            {verificationEmail}
+          </p>
+        </div>
+
+        {/* Steps */}
+        <div className="bg-black/[.03] rounded-2xl p-4 sm:p-5 mb-6 text-left space-y-3">
+          <p className="text-[11px] font-black uppercase tracking-[.15em] text-foreground/50 mb-3">WHAT TO DO:</p>
+          <div className="flex items-start gap-3">
+            <span className="w-6 h-6 rounded-full bg-primary/15 text-primary text-[11px] font-black flex items-center justify-center shrink-0 mt-0.5">1</span>
+            <p className="text-sm text-foreground/70 font-medium">Open your <strong className="text-foreground">email inbox</strong> (check spam/junk too!)</p>
+          </div>
+          <div className="flex items-start gap-3">
+            <span className="w-6 h-6 rounded-full bg-primary/15 text-primary text-[11px] font-black flex items-center justify-center shrink-0 mt-0.5">2</span>
+            <p className="text-sm text-foreground/70 font-medium">Click the <strong className="text-foreground">confirmation link</strong> from PinkSnap</p>
+          </div>
+          <div className="flex items-start gap-3">
+            <span className="w-6 h-6 rounded-full bg-primary/15 text-primary text-[11px] font-black flex items-center justify-center shrink-0 mt-0.5">3</span>
+            <p className="text-sm text-foreground/70 font-medium">Come back here and <strong className="text-foreground">sign in</strong> with your new account!</p>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => {
+            setShowVerification(false);
+            setMode('signin');
+            setPassword('');
+            setAuthError(null);
+            setSuccessMessage(null);
+          }}
+          className="w-full py-3 px-4 bg-primary text-white font-black text-xs sm:text-sm uppercase tracking-widest rounded-xl shadow-lg shadow-primary/30 hover:shadow-primary/50 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+        >
+          <ArrowRight className="w-4 h-4" />
+          <span>GO TO SIGN IN</span>
+        </button>
+
+        <p className="text-[11px] text-center text-foreground/40 font-medium mt-4">
+          Didn't receive it? Check your spam folder or try signing up again.
+        </p>
+      </div>
+    );
+  }
 
   // ── Welcome Splash Screen ────────────────────────────────────────────────
   if (showWelcome) {

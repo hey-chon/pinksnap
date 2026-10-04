@@ -38,6 +38,9 @@ export default function AuthPage() {
       return;
     }
 
+    // Mark WelcomeGate as done so it doesn't fire after this redirect
+    sessionStorage.setItem('ps_welcome_gate_done', '1');
+
     setCountdown(REDIRECT_DELAY);
     timerRef.current = setInterval(() => {
       setCountdown(prev => {

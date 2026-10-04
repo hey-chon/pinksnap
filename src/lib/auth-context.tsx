@@ -161,7 +161,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     email: string,
     password: string,
     displayName?: string
-  ): Promise<{ error?: string; message?: string }> => {
+  ): Promise<{ error?: string; message?: string; needsVerification?: boolean }> => {
     setIsLoading(true);
     try {
       const { data, error } = await supabase.auth.signUp({
@@ -176,7 +176,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (error) {
         console.error('[Supabase SignUp Error]:', error.message);
+        const msg = error.message.toLowerCase();
+        if (msg.includes('rate limit') || msg.includes('too many requests') || msg.includes('email rate limit')) {
+          return { error: 'Too many sign-up attempts. Please wait a minute and try again.' };
+        }
+        if (msg.includes('already registered') || msg.includes('already been registered') || msg.includes('user already exists')) {
+          return { error: 'An account with this email already exists. Try signing in instead!' };
+        }
         return { error: error.message };
+      }
+
+      // Supabase returns a user with a fake id and no identities when the
+      // email is already taken but "email confirmations" are enabled. Detect
+      // this edge-case so we don't mislead the user into thinking the
+      // account was created.
+      if (data.user && data.user.identities && data.user.identities.length === 0) {
+        return { error: 'An account with this email already exists. Try signing in instead!' };
       }
 
       if (data.session && data.user) {
@@ -212,7 +227,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       return {
-        message: 'Account created! If email confirmation is enabled in your Supabase project, check your inbox to confirm.',
+        needsVerification: true,
+        message: 'Account created! Please check your email inbox for a confirmation link to verify your account.',
       };
     } catch (err: unknown) {
       console.error('[SignUp Exception]:', err);

@@ -27,7 +27,7 @@ export interface AuthState {
     email: string,
     password: string,
     displayName?: string
-  ) => Promise<{ error?: string; message?: string }>;
+  ) => Promise<{ error?: string; message?: string; needsVerification?: boolean }>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<{ error?: string; message?: string }>;
   updateProfile: (updates: {
