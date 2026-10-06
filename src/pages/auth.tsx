@@ -123,7 +123,7 @@ export default function AuthPage() {
             </div>
 
             <span className="booth-heading-kicker mb-2">Authenticated</span>
-            <h1 className="font-display text-4xl sm:text-5xl text-black tracking-wide mb-1">
+            <h1 className="font-hero text-[2rem] leading-[1] sm:text-4xl text-black mb-1">
               WELCOME <span className="text-primary">BACK!</span>
             </h1>
             <p className="text-sm text-black/60 font-medium mt-1">

@@ -22,7 +22,7 @@ export default function HowItWorks() {
         <div className="max-w-4xl w-full py-2 sm:py-4">
           <div className="text-center mb-6">
             <span className="booth-heading-kicker mb-2">Visual Guide</span>
-            <h1 className="font-display text-[2.6rem] leading-[.95] sm:text-5xl mt-2 uppercase">
+            <h1 className="font-hero text-[2rem] leading-[1] sm:text-4xl md:text-5xl mt-2 uppercase">
               How It <span className="text-primary">Works</span>
             </h1>
           </div>

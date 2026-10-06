@@ -145,7 +145,7 @@ export default function Studio() {
         <div className="studio-heading text-center mb-7 w-full max-w-[34rem]">
           <span className="booth-heading-kicker mb-3">Step 2 of 3 · STUDIO</span>
           <h1 className="font-hero text-[2rem] leading-[1] sm:text-3xl md:text-4xl text-foreground mt-4 mb-2">
-            LET'S GOO!
+            PINKSNAP <span className="text-primary">STUDIO</span>
           </h1>
           <p className="text-[11px] sm:text-xs font-black text-primary uppercase tracking-[.2em] h-5">
             {countdown === null ? 'READY WHEN YOU ARE' : countdown === 0 ? 'SMILE!' : 'GET READY...'}

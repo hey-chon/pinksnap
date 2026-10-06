@@ -603,7 +603,7 @@ export default function Edit() {
       <main className="flex-1 overflow-y-auto flex flex-col items-center px-4 py-6 sm:px-6 sm:py-8">
         <div className="edit-heading text-center mb-6 sm:mb-8 w-full max-w-4xl">
           <span className="booth-heading-kicker mb-3">Step 3 of 3 · Print</span>
-          <h1 className="font-display text-[2.35rem] leading-[.95] sm:text-5xl md:text-6xl mt-4 mb-3">
+          <h1 className="font-hero text-[2rem] leading-[1] sm:text-4xl md:text-5xl mt-4 mb-3">
             <span className="text-foreground">CHOOSE YOUR </span><span className="text-primary">STRIP.</span>
           </h1>
           <p className="text-[11px] sm:text-xs font-bold text-primary uppercase tracking-[.18em] sm:tracking-[.24em] leading-relaxed">

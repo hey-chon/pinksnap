@@ -315,7 +315,7 @@ export default function AdminPage() {
                 <span className="booth-heading-kicker mb-1 bg-purple-100 text-purple-700">
                   Role: Administrator
                 </span>
-                <h1 className="font-display text-3xl sm:text-4xl text-foreground">
+                <h1 className="font-hero text-[2rem] leading-[1] sm:text-3xl text-foreground">
                   CONTROL <span className="text-purple-600">CENTER</span>
                 </h1>
               </div>
