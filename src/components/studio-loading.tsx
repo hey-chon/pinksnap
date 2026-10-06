@@ -20,8 +20,7 @@ export default function StudioLoading() {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center overflow-hidden"
-      style={{ background: 'linear-gradient(160deg, #1a0f14 0%, #2a1520 100%)' }}
+      className="fixed inset-0 z-50 flex items-center justify-center overflow-hidden bg-white"
     >
       {/* Inline keyframes for loading-specific animations */}
       <style>{`
@@ -131,7 +130,7 @@ export default function StudioLoading() {
 
         {/* Wordmark */}
         <div className="reveal-pop flex items-center justify-center font-black text-[32px] leading-none tracking-[-.04em]">
-          <span style={{ color: '#ffffff' }}>PINK</span>
+          <span style={{ color: '#1a0f14' }}>PINK</span>
           <span style={{ color: '#f53d89' }}>SNAP</span>
         </div>
         

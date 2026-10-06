@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useLocation } from 'wouter';
 import { TopNav, BottomNav } from '@/components/layout';
-import { Camera, Zap, ZapOff, RefreshCw, AlertCircle, Trash2 } from 'lucide-react';
+import { Camera, Zap, ZapOff, RefreshCw, AlertCircle, Trash2, X } from 'lucide-react';
 import { useAppContext } from '@/lib/store';
 import { useCamera } from '@/hooks/use-camera';
 import { getFrameOption } from '@/lib/customization';
@@ -30,7 +30,7 @@ function createDemoShot(index: number) {
 
 export default function Studio() {
   const [, setLocation] = useLocation();
-  const { layout, frame, shots, addShot, clearShots } = useAppContext();
+  const { layout, frame, shots, addShot, removeShot, clearShots } = useAppContext();
   const { videoRef, startCamera, stopCamera, captureFrame, error } = useCamera();
   
   const [isCapturing, setIsCapturing] = useState(false);
@@ -152,7 +152,7 @@ export default function Studio() {
           </p>
         </div>
 
-        <div className="flex flex-col lg:flex-row gap-3 lg:gap-10 w-full max-w-5xl items-center lg:items-start justify-center flex-1 min-h-0 pb-2"></div>
+        <div className="flex flex-col lg:flex-row gap-3 lg:gap-10 w-full max-w-5xl items-center lg:items-start justify-center flex-1 min-h-0 pb-2">
 
           {/* Main Camera View */}
           <div className="studio-panel w-full max-w-2xl flex flex-col items-center gap-4">
@@ -261,41 +261,39 @@ export default function Studio() {
                 </button>
               </div>
               <div className="curtain-band mt-3 mx-2 hidden lg:block" aria-hidden="true" />
+              </div>
             </div>
           </div>
 
           {/* Strip Preview Sidebar */}
-          <div className="studio-panel w-full lg:w-56 shrink-0 flex flex-col gap-2 p-2 sm:p-4 bg-white shadow-xl border border-white/60 rounded-2xl rotate-0 lg:rotate-2 min-h-[120px] lg:min-h-0 flex-1 lg:flex-none">
+          <div className="studio-panel w-full max-w-2xl flex-1 flex flex-col gap-2 p-2 sm:p-4 bg-white shadow-xl border border-white/60 rounded-2xl rotate-0 lg:rotate-2 min-h-[120px] lg:min-h-0">
             <div className="flex justify-between items-center mb-1 shrink-0">
               <span className="font-display text-lg sm:text-xl text-foreground/75 tracking-[.12em]">YOUR STRIP</span>
               <div className="booth-led scale-75 origin-right shrink-0">
                 SHOT <b>{Math.min(shots.length + 1, maxShots)}</b> / {maxShots}
               </div>
-
-              {shots.length > 0 && (
-                <button 
-                  onClick={handleClearSession}
-                  data-testid="button-clear-session"
-                  className="text-[10px] font-bold text-destructive flex items-center gap-1 hover:underline focus:outline-none rounded px-1 ml-2 shrink-0"
-                >
-                  <Trash2 className="w-3 h-3" /> CLEAR
-                </button>
-              )}
             </div>
             
             <div className={`w-full flex lg:flex-col items-center lg:items-stretch gap-2 p-2 rounded-xl overflow-x-auto overflow-y-hidden lg:overflow-y-auto snap-x custom-scrollbar ${stripBgClass} flex-1 min-h-0`}>
               {Array.from({ length: maxShots }).map((_, i) => (
-                <div key={i} data-testid={`studio-shot-${i + 1}`} className="studio-shot-card aspect-[4/3] bg-black/5 rounded-lg overflow-hidden border border-black/10 shrink-0 h-[90%] w-auto lg:h-auto lg:w-full snap-center shadow-inner relative">
+                <div key={i} data-testid={`studio-shot-${i + 1}`} className="studio-shot-card aspect-[4/3] bg-black/5 rounded-lg overflow-hidden border border-black/10 shrink-0 h-[90%] w-auto lg:h-auto lg:w-full snap-center shadow-inner relative group">
                   {shots[i] ? (
-                    <img src={shots[i]} alt={`Shot ${i + 1}`} className="w-full h-full object-cover" />
+                    <>
+                      <img src={shots[i]} alt={`Shot ${i + 1}`} className="w-full h-full object-cover" />
+                      <button
+                        onClick={() => removeShot(i)}
+                        className="absolute top-2 right-2 bg-black/50 hover:bg-red-500 text-white rounded-full p-1.5 transition-colors z-10 lg:opacity-0 lg:group-hover:opacity-100"
+                        title="Retake this shot"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                      <div className="absolute bottom-1 right-1 bg-black/40 backdrop-blur-sm text-white text-[10px] font-bold px-1.5 rounded pointer-events-none">
+                        {i + 1}
+                      </div>
+                    </>
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-black/10">
                       <Camera className="w-6 h-6 lg:w-8 lg:h-8" />
-                    </div>
-                  )}
-                  {shots[i] && (
-                    <div className="absolute bottom-1 right-1 bg-black/40 backdrop-blur-sm text-white text-[10px] font-bold px-1.5 rounded">
-                      {i + 1}
                     </div>
                   )}
                 </div>

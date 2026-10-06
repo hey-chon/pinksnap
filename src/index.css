@@ -638,6 +638,14 @@ img { max-width: 100%; }
   border-radius: 10px;
 }
 
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
 @keyframes pinksnap-pulse {
   0%, 100% { transform: scale(1); opacity: .55; }
   50% { transform: scale(1.18); opacity: 1; }
