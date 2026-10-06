@@ -42,15 +42,15 @@ function FlowGuard({ children }: { children: React.ReactNode }) {
       sessionStorage.setItem('ps_has_entered_app', 'true');
       sessionStorage.removeItem('ps_has_loaded');
     } else if (!sessionStorage.getItem('ps_has_entered_app')) {
-      const flowPages = ['/setup', '/styles', '/studio', '/edit', '/printing', '/receipt', '/loading', '/admin'];
-      if (flowPages.includes(location)) {
+      const flowPages = ['/setup', '/styles', '/studio', '/edit', '/printing', '/receipt', '/admin'];
+      if (flowPages.includes(location) || location === '/loading') {
         setLocation('/', { replace: true });
       }
-    } else {
-      const flowProtected = ['/setup', '/styles', '/studio', '/edit'];
-      if (flowProtected.includes(location) && !sessionStorage.getItem('ps_has_loaded')) {
-        setLocation('/loading', { replace: true });
-      }
+    } else if (location === '/loading' && sessionStorage.getItem('ps_intent_start') !== 'true') {
+      setLocation('/', { replace: true });
+    } else if (['/setup', '/styles', '/studio', '/edit'].includes(location) && !sessionStorage.getItem('ps_has_loaded')) {
+      // If they go directly to setup/studio without loading first
+      setLocation('/', { replace: true });
     }
   }, [location, setLocation]);
 
@@ -170,9 +170,6 @@ function Router() {
     <Switch>
       <Route path="/" component={Home} />
       <Route path="/loading">
-        {() => <ProtectedRoute component={StudioLoading} />}
-      </Route>
-      <Route path="/get-started">
         {() => <ProtectedRoute component={StudioLoading} />}
       </Route>
       <Route path="/setup">

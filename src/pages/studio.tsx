@@ -141,18 +141,18 @@ export default function Studio() {
       
       <TopNav backTo="/setup" />
       
-      <main className="flex-1 overflow-y-auto flex flex-col items-center px-4 py-7 sm:px-6 sm:py-9">
-        <div className="studio-heading text-center mb-7 w-full max-w-[34rem]">
-          <span className="booth-heading-kicker mb-3">Step 2 of 3 · STUDIO</span>
-          <h1 className="font-hero text-[2rem] leading-[1] sm:text-3xl md:text-4xl text-foreground mt-4 mb-2">
+      <main className="flex-1 overflow-hidden flex flex-col items-center px-2 py-3 sm:px-6 sm:py-6">
+        <div className="studio-heading text-center mb-3 sm:mb-5 w-full max-w-[34rem] shrink-0">
+          <span className="booth-heading-kicker mb-2 hidden sm:block">Step 2 of 3 · STUDIO</span>
+          <h1 className="font-hero text-2xl leading-[1] sm:text-3xl md:text-4xl text-foreground mt-2 mb-1">
             PINKSNAP <span className="text-primary">STUDIO</span>
           </h1>
-          <p className="text-[11px] sm:text-xs font-black text-primary uppercase tracking-[.2em] h-5">
+          <p className="text-[10px] sm:text-[11px] font-black text-primary uppercase tracking-[.2em] h-4">
             {countdown === null ? 'READY WHEN YOU ARE' : countdown === 0 ? 'SMILE!' : 'GET READY...'}
           </p>
         </div>
 
-        <div className="flex flex-col lg:flex-row gap-6 lg:gap-10 w-full max-w-5xl items-center lg:items-start justify-center pb-12">
+        <div className="flex flex-col lg:flex-row gap-3 lg:gap-10 w-full max-w-5xl items-center lg:items-start justify-center flex-1 min-h-0 pb-2">
 
           {/* Main Camera View */}
           <div className="studio-panel w-full max-w-2xl flex flex-col items-center gap-4">
@@ -220,73 +220,70 @@ export default function Studio() {
                   CANCEL
                 </button>
               )}
-              </div>
-              <div className="curtain-band mt-3 mx-2" aria-hidden="true" />
-            </div>
-
-            {/* Camera Controls */}
-            <div className="booth-plate w-full flex justify-between items-center gap-2 p-3 sm:p-4">
-
-                <button 
-                onClick={restartCamera}
-                  data-testid="button-restart-camera"
-                className="p-2.5 sm:p-3 bg-white/50 hover:bg-white text-foreground/70 hover:text-foreground rounded-2xl transition-colors shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                aria-label="Restart Camera"
-              >
-                <RefreshCw className="w-5 h-5 sm:w-6 sm:h-6" />
-              </button>
-              
-              <div className="flex flex-col items-center">
+              {/* Flash and Refresh Floating Controls */}
+              {!isCapturing && (
+                <>
+                  <button 
+                    onClick={restartCamera}
+                    data-testid="button-restart-camera"
+                    className="absolute top-4 right-4 z-20 p-2 sm:p-3 bg-black/30 hover:bg-black/50 backdrop-blur-md text-white rounded-full transition-colors focus:outline-none"
+                    aria-label="Restart Camera"
+                  >
+                    <RefreshCw className="w-5 h-5" />
+                  </button>
+                  <button 
+                    onClick={() => setFlashEnabled(prev => !prev)}
+                    data-testid="button-toggle-flash"
+                    className={`absolute top-4 left-4 z-20 p-2 sm:p-3 backdrop-blur-md rounded-full transition-colors focus:outline-none ${flashEnabled ? 'bg-primary/60 text-white' : 'bg-black/30 hover:bg-black/50 text-white'}`}
+                    aria-label={flashEnabled ? "Disable Flash" : "Enable Flash"}
+                  >
+                    {flashEnabled ? <Zap className="w-5 h-5" /> : <ZapOff className="w-5 h-5" />}
+                  </button>
+                </>
+              )}
+              {/* Capture button on camera */}
+              <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30">
                 <button
                   ref={captureButtonRef}
                   onClick={startSequence}
                    disabled={isCapturing || shots.length >= maxShots}
                   data-testid="button-capture"
-                  className={`relative w-[4.25rem] h-[4.25rem] sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-full border-4 border-primary/30 flex items-center justify-center transition-all focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/50 ${
+                  className={`relative w-[4.25rem] h-[4.25rem] sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-full border-4 border-white/40 bg-white/20 backdrop-blur-sm flex items-center justify-center transition-all focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/50 ${
                     (isCapturing || shots.length >= maxShots)
-                      ? 'opacity-50 scale-95' 
-                      : 'hover:scale-105 active:scale-95 cursor-pointer hover:border-primary/50'
+                      ? 'opacity-0 scale-95 pointer-events-none' 
+                      : 'hover:scale-105 active:scale-95 cursor-pointer hover:border-white/60 hover:bg-white/30'
                   }`}
                   aria-label="Capture Sequence"
                 >
-                  <div className="w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 bg-primary rounded-full shadow-[0_0_20px_rgba(255,107,129,0.5)] flex items-center justify-center text-white">
-                    <Camera className="w-7 h-7 sm:w-8 sm:h-8 md:w-10 md:h-10" />
+                  <div className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 bg-primary rounded-full shadow-[0_4px_20px_rgba(245,61,137,0.6)] flex items-center justify-center text-white">
+                    <Camera className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8" />
                   </div>
                 </button>
-                <div className="booth-led mt-3">
-                  SHOT <b>{Math.min(shots.length + 1, maxShots)}</b> / {maxShots}
-                </div>
-
               </div>
-              
-              <button 
-                 onClick={() => setFlashEnabled(prev => !prev)}
-                 data-testid="button-toggle-flash"
-                className={`p-2.5 sm:p-3 rounded-2xl transition-colors shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${flashEnabled ? 'bg-primary/10 text-primary border border-primary/20' : 'bg-white/50 text-foreground/40 hover:text-foreground hover:bg-white border border-transparent'}`}
-                aria-label={flashEnabled ? "Disable Flash" : "Enable Flash"}
-              >
-                {flashEnabled ? <Zap className="w-5 h-5 sm:w-6 sm:h-6" /> : <ZapOff className="w-5 h-5 sm:w-6 sm:h-6" />}
-              </button>
+              <div className="curtain-band mt-3 mx-2 hidden lg:block" aria-hidden="true" />
             </div>
           </div>
 
           {/* Strip Preview Sidebar */}
-          <div className="studio-panel w-full lg:w-56 shrink-0 flex flex-col gap-2 p-3 sm:p-4 bg-white shadow-xl border border-white/60 rounded-2xl rotate-0 lg:rotate-2">
+          <div className="studio-panel w-full lg:w-56 shrink-0 flex flex-col gap-2 p-2 sm:p-4 bg-white shadow-xl border border-white/60 rounded-2xl rotate-0 lg:rotate-2 max-h-[30vh] lg:max-h-none">
             <div className="flex justify-between items-center mb-1">
-              <span className="font-display text-xl text-foreground/75 tracking-[.12em]">YOUR STRIP</span>
+              <span className="font-display text-lg sm:text-xl text-foreground/75 tracking-[.12em]">YOUR STRIP</span>
+              <div className="booth-led scale-75 origin-right">
+                SHOT <b>{Math.min(shots.length + 1, maxShots)}</b> / {maxShots}
+              </div>
 
               {shots.length > 0 && (
                 <button 
                   onClick={handleClearSession}
                   data-testid="button-clear-session"
-                  className="text-[10px] font-bold text-destructive flex items-center gap-1 hover:underline focus:outline-none rounded px-1"
+                  className="text-[10px] font-bold text-destructive flex items-center gap-1 hover:underline focus:outline-none rounded px-1 ml-2"
                 >
                   <Trash2 className="w-3 h-3" /> CLEAR
                 </button>
               )}
             </div>
             
-            <div className={`w-full flex lg:flex-col gap-2 p-2 rounded-xl overflow-x-auto snap-x custom-scrollbar ${stripBgClass}`}>
+            <div className={`w-full flex lg:flex-col gap-2 p-2 rounded-xl overflow-x-auto overflow-y-hidden lg:overflow-y-auto snap-x custom-scrollbar ${stripBgClass} h-full`}>
               {Array.from({ length: maxShots }).map((_, i) => (
                 <div key={i} data-testid={`studio-shot-${i + 1}`} className="studio-shot-card aspect-[4/3] bg-black/5 rounded-lg overflow-hidden border border-black/10 shrink-0 w-[128px] sm:w-[160px] lg:w-full snap-center shadow-inner relative">
                   {shots[i] ? (

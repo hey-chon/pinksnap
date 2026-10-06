@@ -10,6 +10,7 @@ export default function StudioLoading() {
     const duration = 3100;
     const timeout = window.setTimeout(() => {
       sessionStorage.setItem('ps_has_loaded', 'true');
+      sessionStorage.removeItem('ps_intent_start');
       setLocation('/setup', { replace: true });
     }, duration);
     return () => {
@@ -19,8 +20,8 @@ export default function StudioLoading() {
 
   return (
     <div
-      className="min-h-[100dvh] flex items-center justify-center px-6 py-12 overflow-hidden relative"
-      style={{ background: 'linear-gradient(160deg, #fff0f5 0%, #fff7fa 35%, #ffe8f0 70%, #fff0f5 100%)' }}
+      className="absolute inset-0 z-50 flex items-center justify-center overflow-hidden"
+      style={{ background: 'linear-gradient(160deg, #1a0f14 0%, #2a1520 100%)' }}
     >
       {/* Inline keyframes for loading-specific animations */}
       <style>{`
@@ -130,7 +131,7 @@ export default function StudioLoading() {
 
         {/* Wordmark */}
         <div className="reveal-pop flex items-center justify-center font-black text-[32px] leading-none tracking-[-.04em]">
-          <span style={{ color: '#2a1520' }}>PINK</span>
+          <span style={{ color: '#ffffff' }}>PINK</span>
           <span style={{ color: '#f53d89' }}>SNAP</span>
         </div>
         

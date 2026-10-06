@@ -67,6 +67,7 @@ export default function Home() {
   const [activeStep, setActiveStep] = useState(0);
 
   const handleGetStarted = () => {
+    sessionStorage.setItem('ps_intent_start', 'true');
     if (isAuthenticated) navigate('/loading');
     else navigate('/auth');
   };
@@ -116,7 +117,7 @@ export default function Home() {
             <span className="text-primary drop-shadow-sm">PINKSNAP.</span>
           </h1>
 
-          <p className="home-hero-item text-xs sm:text-sm lg:text-base font-black text-foreground/60 mb-8 lg:mb-10 tracking-[.22em] uppercase">
+          <p className="home-hero-item text-[10px] sm:text-sm lg:text-base font-black text-foreground/60 mb-8 lg:mb-10 tracking-[.22em] uppercase">
             YOUR VIRTUAL PHOTOBOOTH.
           </p>
 
