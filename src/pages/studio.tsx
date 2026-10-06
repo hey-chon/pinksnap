@@ -261,7 +261,6 @@ export default function Studio() {
                 </button>
               </div>
               <div className="curtain-band mt-3 mx-2 hidden lg:block" aria-hidden="true" />
-              </div>
             </div>
           </div>
 
