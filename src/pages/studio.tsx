@@ -152,7 +152,7 @@ export default function Studio() {
           </p>
         </div>
 
-        <div className="flex flex-col lg:flex-row gap-3 lg:gap-10 w-full max-w-5xl items-center lg:items-start justify-center flex-1 min-h-0 pb-2">
+        <div className="flex flex-col lg:flex-row gap-3 lg:gap-10 w-full max-w-5xl items-center lg:items-start justify-center flex-1 min-h-0 pb-2"></div>
 
           {/* Main Camera View */}
           <div className="studio-panel w-full max-w-2xl flex flex-col items-center gap-4">
