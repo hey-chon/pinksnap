@@ -266,7 +266,7 @@ export default function Studio() {
           </div>
 
           {/* Strip Preview Sidebar */}
-          <div className="studio-panel w-full max-w-2xl flex-1 flex flex-col gap-2 p-2 sm:p-4 bg-white shadow-xl border border-white/60 rounded-2xl rotate-0 lg:rotate-2 min-h-[120px] lg:min-h-0">
+          <div className="studio-panel w-full lg:w-56 shrink-0 flex flex-col gap-2 p-2 sm:p-4 bg-white shadow-xl border border-white/60 rounded-2xl rotate-0 lg:rotate-2 min-h-[120px] lg:min-h-0 flex-1 lg:flex-none">
             <div className="flex justify-between items-center mb-1 shrink-0">
               <span className="font-display text-lg sm:text-xl text-foreground/75 tracking-[.12em]">YOUR STRIP</span>
               <div className="booth-led scale-75 origin-right shrink-0">
@@ -282,7 +282,7 @@ export default function Studio() {
                       <img src={shots[i]} alt={`Shot ${i + 1}`} className="w-full h-full object-cover" />
                       <button
                         onClick={() => removeShot(i)}
-                        className="absolute top-2 right-2 bg-black/50 hover:bg-red-500 text-white rounded-full p-1.5 transition-colors z-10 lg:opacity-0 lg:group-hover:opacity-100"
+                        className="absolute top-2 right-2 bg-black/50 hover:bg-red-500 text-white rounded-full p-1.5 transition-colors z-10"
                         title="Retake this shot"
                       >
                         <X className="w-4 h-4" />
