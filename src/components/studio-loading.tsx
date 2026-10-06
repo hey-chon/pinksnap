@@ -20,7 +20,7 @@ export default function StudioLoading() {
 
   return (
     <div
-      className="absolute inset-0 z-50 flex items-center justify-center overflow-hidden"
+      className="fixed inset-0 z-50 flex items-center justify-center overflow-hidden"
       style={{ background: 'linear-gradient(160deg, #1a0f14 0%, #2a1520 100%)' }}
     >
       {/* Inline keyframes for loading-specific animations */}
