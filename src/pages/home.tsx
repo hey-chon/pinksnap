@@ -107,27 +107,27 @@ export default function Home() {
         </div>
         {/* ── Hero ── */}
         <div className="text-center z-10 max-w-3xl lg:max-w-5xl mx-auto min-h-[calc(100svh-4rem)] flex flex-col items-center justify-center pt-9 sm:pt-14 pb-16">
-          <div className="home-hero-item inline-flex items-center gap-2 rounded-full bg-white/60 border border-white/80 px-4 py-2 lg:px-6 lg:py-3 text-[11px] lg:text-sm font-black tracking-[.18em] text-primary uppercase shadow-sm">
-            <Sparkles className="w-3.5 h-3.5 lg:w-5 lg:h-5" /> Your pocket photo booth
+          <div className="home-hero-item inline-flex items-center gap-2 rounded-full bg-white/60 border border-white/80 px-4 py-2 lg:px-5 lg:py-2.5 text-[11px] lg:text-xs font-black tracking-[.18em] text-primary uppercase shadow-sm">
+            <Sparkles className="w-3.5 h-3.5 lg:w-4 lg:h-4" /> Your pocket photo booth
           </div>
 
-          <h1 className="home-hero-item font-hero text-[clamp(2.5rem,9vw,4.5rem)] lg:text-[6.5rem] xl:text-[7.5rem] text-foreground mt-5 lg:mt-8 mb-4 lg:mb-6 leading-[.9]">
+          <h1 className="home-hero-item font-hero text-[clamp(2.5rem,9vw,4.5rem)] lg:text-[5.5rem] xl:text-[6.2rem] text-foreground mt-5 lg:mt-7 mb-4 lg:mb-5 leading-[.9]">
             WELCOME TO <br />
             <span className="text-primary drop-shadow-sm">PINKSNAP.</span>
           </h1>
 
-          <p className="home-hero-item text-xs sm:text-sm lg:text-lg font-black text-foreground/60 mb-8 lg:mb-12 tracking-[.22em] uppercase">
+          <p className="home-hero-item text-xs sm:text-sm lg:text-base font-black text-foreground/60 mb-8 lg:mb-10 tracking-[.22em] uppercase">
             YOUR VIRTUAL PHOTOBOOTH.
           </p>
 
-          <div className="relative inline-block mt-4 mb-4 lg:mt-6 lg:mb-8">
+          <div className="relative inline-block mt-4 mb-4 lg:mt-5 lg:mb-6">
             <button
               type="button"
               onClick={handleGetStarted}
               data-testid="link-setup"
-              className="home-hero-item group relative inline-flex items-center justify-center px-9 py-4 lg:px-14 lg:py-6 font-black text-white bg-primary rounded-full overflow-hidden shadow-xl shadow-primary/30 hover:shadow-2xl hover:shadow-primary/40 transition-all hover:scale-105 active:scale-95 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/50 focus-visible:ring-offset-2 z-10"
+              className="home-hero-item group relative inline-flex items-center justify-center px-9 py-4 lg:px-12 lg:py-5 font-black text-white bg-primary rounded-full overflow-hidden shadow-xl shadow-primary/30 hover:shadow-2xl hover:shadow-primary/40 transition-all hover:scale-105 active:scale-95 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/50 focus-visible:ring-offset-2 z-10"
             >
-              <span className="relative flex items-center gap-2 text-sm sm:text-base lg:text-xl font-black tracking-wider uppercase">
+              <span className="relative flex items-center gap-2 text-sm sm:text-base lg:text-lg font-black tracking-wider uppercase">
                 GET STARTED
               </span>
             </button>
