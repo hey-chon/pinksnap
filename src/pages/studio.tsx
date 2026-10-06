@@ -142,12 +142,12 @@ export default function Studio() {
       <TopNav backTo="/setup" />
       
       <main className="flex-1 overflow-hidden flex flex-col items-center px-2 py-3 sm:px-6 sm:py-6">
-        <div className="studio-heading text-center mb-3 sm:mb-5 w-full max-w-[34rem] shrink-0">
-          <span className="booth-heading-kicker mb-2 hidden sm:block">Step 2 of 3 · STUDIO</span>
-          <h1 className="font-hero text-2xl leading-[1] sm:text-3xl md:text-4xl text-foreground mt-2 mb-1">
+        <div className="studio-heading text-center mb-8 sm:mb-10 w-full max-w-2xl shrink-0">
+          <span className="booth-heading-kicker mb-4">Step 2 of 3 · STUDIO</span>
+          <h1 className="font-hero text-[2rem] leading-[1] sm:text-4xl md:text-5xl text-foreground mt-4 mb-3">
             PINKSNAP <span className="text-primary">STUDIO</span>
           </h1>
-          <p className="text-[10px] sm:text-[11px] font-black text-primary uppercase tracking-[.2em] h-4">
+          <p className="text-[11px] sm:text-sm font-bold text-primary uppercase tracking-[.16em] sm:tracking-[.2em] h-5">
             {countdown === null ? 'READY WHEN YOU ARE' : countdown === 0 ? 'SMILE!' : 'GET READY...'}
           </p>
         </div>
@@ -266,7 +266,7 @@ export default function Studio() {
           </div>
 
           {/* Strip Preview Sidebar */}
-          <div className="studio-panel w-full lg:w-56 shrink-0 flex flex-col gap-2 p-2 sm:p-4 bg-white shadow-xl border border-white/60 rounded-2xl rotate-0 lg:rotate-2 min-h-[120px] lg:min-h-0 flex-1 lg:flex-none">
+          <div className="studio-panel w-full lg:w-48 shrink-0 flex flex-col gap-1.5 sm:gap-2 p-1.5 sm:p-4 bg-white shadow-xl border border-white/60 rounded-xl sm:rounded-2xl rotate-0 lg:rotate-2 h-[100px] sm:h-[120px] lg:h-auto lg:min-h-0 lg:flex-none mt-1 sm:mt-0">
             <div className="flex justify-between items-center mb-1 shrink-0">
               <span className="font-display text-lg sm:text-xl text-foreground/75 tracking-[.12em]">YOUR STRIP</span>
               <div className="booth-led scale-75 origin-right shrink-0">
@@ -276,7 +276,7 @@ export default function Studio() {
             
             <div className={`w-full flex lg:flex-col items-center lg:items-stretch gap-2 p-2 rounded-xl overflow-x-auto overflow-y-hidden lg:overflow-y-auto snap-x custom-scrollbar ${stripBgClass} flex-1 min-h-0`}>
               {Array.from({ length: maxShots }).map((_, i) => (
-                <div key={i} data-testid={`studio-shot-${i + 1}`} className="studio-shot-card aspect-[4/3] bg-black/5 rounded-lg overflow-hidden border border-black/10 shrink-0 h-[90%] w-auto lg:h-auto lg:w-full snap-center shadow-inner relative group">
+                <div key={i} data-testid={`studio-shot-${i + 1}`} className="studio-shot-card aspect-[4/3] bg-black/5 rounded-lg overflow-hidden border border-black/10 shrink-0 h-[85%] w-auto lg:h-auto lg:w-full snap-center shadow-inner relative group">
                   {shots[i] ? (
                     <>
                       <img src={shots[i]} alt={`Shot ${i + 1}`} className="w-full h-full object-cover" />

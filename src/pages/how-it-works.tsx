@@ -20,10 +20,10 @@ export default function HowItWorks() {
     <div className="flex flex-col h-[100dvh]">
       <TopNav backTo="/" title="DIAGRAM" />
       <main className="flex-1 overflow-hidden p-3 sm:p-4 flex flex-col items-center">
-        <div className="max-w-3xl w-full flex flex-col flex-1 min-h-0 pt-4 sm:pt-6 pb-2 sm:pb-4">
+        <div className="max-w-2xl w-full flex flex-col flex-1 min-h-0 pt-4 sm:pt-6 pb-2 sm:pb-4">
           <div className="text-center mb-4 sm:mb-6 shrink-0">
-            <span className="booth-heading-kicker mb-1">Visual Guide</span>
-            <h1 className="font-hero text-3xl sm:text-4xl mt-2 uppercase">
+            <span className="booth-heading-kicker">Visual Guide</span>
+            <h1 className="font-hero text-4xl sm:text-5xl mt-4 sm:mt-6 mb-2 uppercase">
               How It <span className="text-primary">Works</span>
             </h1>
           </div>
