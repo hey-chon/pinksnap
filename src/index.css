@@ -739,6 +739,13 @@ img { max-width: 100%; }
   line-height: .92;
 }
 
+.font-hero {
+  font-family: "Montserrat", var(--app-font-sans);
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  line-height: 0.92;
+}
+
 .booth-heading-kicker {
   display: inline-flex;
   align-items: center;

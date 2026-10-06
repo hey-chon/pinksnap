@@ -301,7 +301,7 @@ export default function ProfilePage() {
               <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2 mb-1">
-                    <h1 className="font-display text-2xl sm:text-3xl text-foreground truncate">
+                    <h1 className="font-hero text-xl sm:text-2xl text-foreground truncate">
                       {user.displayName}
                     </h1>
                     <span className={`shrink-0 px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider ${isAdmin ? 'bg-purple-100 text-purple-700' : 'bg-primary/10 text-primary'}`}>

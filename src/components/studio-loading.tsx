@@ -129,7 +129,7 @@ export default function StudioLoading() {
         </div>
 
         {/* Wordmark */}
-        <div className="reveal-pop flex items-center justify-center gap-1.5 font-black text-[32px] leading-none tracking-[-.04em]">
+        <div className="reveal-pop flex items-center justify-center font-black text-[32px] leading-none tracking-[-.04em]">
           <span style={{ color: '#2a1520' }}>PINK</span>
           <span style={{ color: '#f53d89' }}>SNAP</span>
         </div>

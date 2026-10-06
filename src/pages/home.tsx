@@ -111,7 +111,7 @@ export default function Home() {
             <Sparkles className="w-3.5 h-3.5" /> Your pocket photo booth
           </div>
 
-          <h1 className="home-hero-item font-display text-[clamp(3.1rem,13vw,7rem)] text-foreground mt-5 mb-4 leading-[.86]">
+          <h1 className="home-hero-item font-hero text-[clamp(2.5rem,9vw,5.5rem)] text-foreground mt-5 mb-4 leading-[.9]">
             WELCOME TO <br />
             <span className="text-primary drop-shadow-sm">PINKSNAP.</span>
           </h1>

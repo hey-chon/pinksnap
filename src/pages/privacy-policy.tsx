@@ -48,7 +48,7 @@ export default function PrivacyPolicy() {
         <div className="max-w-4xl w-full py-4 sm:py-8 space-y-8">
           {/* Header Banner */}
           <div className="text-center">
-            <h1 className="font-display text-[2.5rem] leading-[.95] sm:text-5xl md:text-6xl text-foreground">
+            <h1 className="font-hero text-[2rem] leading-[1] sm:text-4xl md:text-5xl text-foreground">
               PRIVACY <span className="text-primary">POLICY</span>
             </h1>
             <p className="text-xs sm:text-sm font-bold uppercase tracking-[.15em] text-foreground/60 mt-3">

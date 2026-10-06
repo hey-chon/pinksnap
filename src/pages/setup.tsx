@@ -121,7 +121,7 @@ export default function Setup() {
       <main className="flex-1 overflow-y-auto flex flex-col items-center px-4 py-8 sm:px-6 sm:py-10">
         <div className="text-center mb-8 sm:mb-10 w-full max-w-2xl">
           <span className="booth-heading-kicker mb-4">Step 1 of 3 · Booth layout</span>
-          <h1 className="font-display text-[2.6rem] leading-[.95] sm:text-6xl md:text-7xl text-foreground mt-4 mb-3">
+          <h1 className="font-hero text-[2rem] leading-[1] sm:text-4xl md:text-5xl text-foreground mt-4 mb-3">
             CHOOSE YOUR <span className="text-primary">LAYOUT.</span>
           </h1>
           <p className="text-[11px] sm:text-sm font-bold text-foreground/55 tracking-[.16em] sm:tracking-[.2em] leading-relaxed">
