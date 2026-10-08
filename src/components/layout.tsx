@@ -96,7 +96,7 @@ export function BottomNav() {
             className="creator-nav-button inline-flex items-center gap-1.5 sm:gap-2 rounded-full px-2.5 sm:px-3 py-1.5 sm:py-2 text-xs font-black tracking-[.12em] text-white/65 transition-all hover:bg-white/10 hover:text-primary hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           >
             <UserRound className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-            CREATOR
+            DEVELOPER
           </button>
           <span className="w-px h-3 bg-white/15 mx-0.5" aria-hidden="true" />
           <div className="flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-[11px] font-bold text-white/45 tracking-wider uppercase">
