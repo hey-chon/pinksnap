@@ -14,6 +14,8 @@ import {
   X,
   Eye,
   UserCheck,
+  Crown,
+  Zap,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast.tsx';
@@ -297,13 +299,15 @@ export default function CommunityChat() {
                       <div className="flex items-center gap-1.5">
                         <span className="pixel-text font-black">{nameDisplay}</span>
                         {isMsgAdmin && (
-                          <span className="px-1.5 py-0.5 rounded bg-primary text-white text-[8px] font-black tracking-widest leading-none">
-                            DEVELOPER
+                          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-primary text-white text-[8px] font-black tracking-widest leading-none shadow-xs">
+                            <Crown className="w-2.5 h-2.5 stroke-[2.5]" aria-hidden="true" />
+                            <span>CREATOR</span>
                           </span>
                         )}
                         {m.author.role === 'contributor' && (
-                          <span className="px-1.5 py-0.5 rounded bg-emerald-600 text-white text-[8px] font-black tracking-widest leading-none">
-                            CONTRIBUTOR
+                          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-amber-500 text-white text-[8px] font-black tracking-widest leading-none shadow-xs">
+                            <Zap className="w-2.5 h-2.5 fill-current stroke-none" aria-hidden="true" />
+                            <span>CONTRIBUTOR</span>
                           </span>
                         )}
                       </div>

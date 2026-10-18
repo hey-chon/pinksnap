@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { Link } from 'wouter';
-import { ExternalLink, Facebook, Github, Instagram, Sparkles, Shield, FileText, Cookie } from 'lucide-react';
+import { ExternalLink, Facebook, Github, Instagram, Sparkles, Shield, FileText, Cookie, Crown, Zap } from 'lucide-react';
 import { SiGooglegemini, SiLucide, SiReact, SiReplit, SiTailwindcss, SiTypescript, SiVite, SiSupabase } from 'react-icons/si';
 import { openCookieSettings } from '@/components/cookie-notice';
 import gsap from 'gsap';
@@ -90,7 +90,8 @@ export default function Credits() {
             {/* Role Badge */}
             <div className="mb-4">
               <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-white text-[#201b2c] text-[11px] font-black uppercase tracking-wider shadow-sm">
-                👑 Lead Creator & Developer
+                <Crown className="w-3.5 h-3.5 text-amber-500 fill-amber-400 stroke-none" aria-hidden="true" />
+                <span>Lead Creator & Developer</span>
               </span>
             </div>
 
@@ -145,7 +146,8 @@ export default function Credits() {
             {/* Role Badge */}
             <div className="mb-4">
               <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-white text-[#201b2c] text-[11px] font-black uppercase tracking-wider shadow-sm">
-                ⚡ Contributor
+                <Zap className="w-3.5 h-3.5 text-amber-500 fill-amber-400 stroke-none" aria-hidden="true" />
+                <span>Contributor</span>
               </span>
             </div>
 

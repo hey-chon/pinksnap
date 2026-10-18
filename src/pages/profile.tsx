@@ -18,6 +18,8 @@ import {
   User,
   Mail,
   Shield,
+  Crown,
+  Zap,
   Sparkles,
   KeyRound,
   LogOut,
@@ -68,6 +70,7 @@ export default function ProfilePage() {
   // Profile wall privacy: only strips explicitly chosen by user are displayed on their wall
   const [postedStripIds, setPostedStripIds] = useState<string[]>(() => {
     if (typeof window === 'undefined' || !user?.id) return [];
+    if (Array.isArray(user.wallStripIds)) return user.wallStripIds;
     try {
       const stored = localStorage.getItem(`pinksnap_wall_strips_${user.id}`);
       return stored ? JSON.parse(stored) : [];
@@ -91,9 +94,17 @@ export default function ProfilePage() {
     }
   }, [user?.bio]);
 
-  // Sync wall strips from localStorage if user changes
+  // Sync wall strips from cloud profile or localStorage across all devices
   useEffect(() => {
-    if (typeof window !== 'undefined' && user?.id) {
+    if (!user?.id) return;
+
+    if (Array.isArray(user.wallStripIds)) {
+      setPostedStripIds(user.wallStripIds);
+      try {
+        localStorage.setItem(`pinksnap_wall_strips_${user.id}`, JSON.stringify(user.wallStripIds));
+      } catch {
+      }
+    } else if (typeof window !== 'undefined') {
       try {
         const stored = localStorage.getItem(`pinksnap_wall_strips_${user.id}`);
         setPostedStripIds(stored ? JSON.parse(stored) : []);
@@ -101,7 +112,35 @@ export default function ProfilePage() {
         setPostedStripIds([]);
       }
     }
-  }, [user?.id]);
+
+    // Actively sync from cloud on focus or tab visibility change (syncing phone & laptop)
+    const syncFromCloud = async () => {
+      try {
+        const { data: { user: freshUser } } = await supabase.auth.getUser();
+        const cloudIds = freshUser?.user_metadata?.wall_strip_ids;
+        if (Array.isArray(cloudIds)) {
+          setPostedStripIds(cloudIds);
+          try {
+            localStorage.setItem(`pinksnap_wall_strips_${user.id}`, JSON.stringify(cloudIds));
+          } catch {
+          }
+        }
+      } catch {
+      }
+    };
+
+    syncFromCloud();
+    window.addEventListener('focus', syncFromCloud);
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') syncFromCloud();
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+
+    return () => {
+      window.removeEventListener('focus', syncFromCloud);
+      document.removeEventListener('visibilitychange', handleVisibility);
+    };
+  }, [user?.id, user?.wallStripIds]);
 
   const postedStrips = savedMemories.filter((m) => postedStripIds.includes(m.id));
 
@@ -331,17 +370,8 @@ export default function ProfilePage() {
         localStorage.setItem(`pinksnap_wall_strips_${user.id}`, JSON.stringify(next));
       } catch {
       }
-      if (isPosted) {
-        toast({
-          title: 'Removed from Wall',
-          description: 'This strip is now hidden from your wall and safe in your private gallery.',
-        });
-      } else {
-        toast({
-          title: 'Posted to Wall ✨',
-          description: 'This photo strip is now showcased on your public profile wall.',
-        });
-      }
+      // Cloud sync across phone, laptop, and tablet
+      updateProfile({ wallStripIds: next }).catch(() => {});
       return next;
     });
   };
@@ -358,6 +388,8 @@ export default function ProfilePage() {
             localStorage.setItem(`pinksnap_wall_strips_${user.id}`, JSON.stringify(next));
           } catch {
           }
+          // Cloud sync across phone, laptop, and tablet
+          updateProfile({ wallStripIds: next }).catch(() => {});
           return next;
         });
       }
@@ -582,10 +614,18 @@ export default function ProfilePage() {
 
                 {isAdmin && (
                   <div
-                    title="Verified Administrator"
+                    title="Verified Creator"
                     className="absolute -top-1 -right-1 p-1.5 rounded-full bg-purple-600 text-white shadow-md border-2 border-white"
                   >
                     <Shield className="w-3 h-3" />
+                  </div>
+                )}
+                {isContributor && !isAdmin && (
+                  <div
+                    title="Verified Contributor"
+                    className="absolute -top-1 -right-1 p-1.5 rounded-full bg-amber-500 text-white shadow-md border-2 border-white"
+                  >
+                    <Zap className="w-3 h-3 fill-white stroke-none" />
                   </div>
                 )}
               </div>
@@ -625,7 +665,7 @@ export default function ProfilePage() {
                 {/* Verified Checkmark (Shown for Admin and Contributor) */}
                 {isAdmin && (
                   <span
-                    title="Verified Administrator"
+                    title="Verified Creator"
                     className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-purple-600 text-white shadow-sm shrink-0"
                   >
                     <Check className="w-3 h-3 stroke-[3]" />
@@ -634,23 +674,35 @@ export default function ProfilePage() {
                 {isContributor && (
                   <span
                     title="Verified Contributor"
-                    className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-emerald-600 text-white shadow-sm shrink-0"
+                    className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-amber-500 text-white shadow-sm shrink-0"
                   >
-                    <Check className="w-3 h-3 stroke-[3]" />
+                    <Zap className="w-3 h-3 fill-white stroke-none" />
                   </span>
                 )}
 
                 {/* Role Badge */}
                 <span
-                  className={`shrink-0 px-2.5 py-0.5 rounded-full text-[9px] sm:text-[10px] font-black uppercase tracking-wider ${
+                  className={`shrink-0 inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] sm:text-[10px] font-black uppercase tracking-wider ${
                     isAdmin
                       ? 'bg-purple-100 text-purple-700 border border-purple-200'
                       : isContributor
-                      ? 'bg-emerald-100 text-emerald-700 border border-emerald-200'
+                      ? 'bg-amber-100 text-amber-900 border border-amber-300/80 shadow-xs'
                       : 'bg-primary/10 text-primary border border-primary/20'
                   }`}
                 >
-                  {isAdmin ? 'ADMIN' : isContributor ? 'CONTRIBUTOR' : 'MEMBER+'}
+                  {isAdmin ? (
+                    <>
+                      <Crown className="w-3 h-3 stroke-[2.5]" aria-hidden="true" />
+                      <span>CREATOR</span>
+                    </>
+                  ) : isContributor ? (
+                    <>
+                      <Zap className="w-3 h-3 fill-current stroke-none" aria-hidden="true" />
+                      <span>CONTRIBUTOR</span>
+                    </>
+                  ) : (
+                    'MEMBER+'
+                  )}
                 </span>
               </div>
 
@@ -703,7 +755,7 @@ export default function ProfilePage() {
               </div>
 
               <div className="p-2 rounded-2xl">
-                <p className="text-lg sm:text-2xl font-black text-emerald-600 leading-none">
+                <p className="text-lg sm:text-2xl font-black text-pink-600 leading-none">
                   Active
                 </p>
                 <p className="text-[9px] sm:text-[10px] font-bold text-foreground/50 uppercase tracking-wider mt-1">
@@ -805,7 +857,7 @@ export default function ProfilePage() {
                             type="button"
                             onClick={(e) => handleTogglePostToWall(memory.id, e)}
                             className="p-1 rounded-md hover:bg-foreground/[0.06] text-foreground/50 hover:text-amber-600 transition-colors"
-                            title="Remove from Wall (keeps in private gallery)"
+                            aria-label="Hide from wall"
                           >
                             <EyeOff className="w-3.5 h-3.5" />
                           </button>
@@ -813,7 +865,7 @@ export default function ProfilePage() {
                             type="button"
                             onClick={(e) => handleDownloadMemory(memory.url, memory.date, e)}
                             className="p-1 rounded-md hover:bg-foreground/[0.06] text-foreground/50 hover:text-primary transition-colors"
-                            title="Download strip"
+                            aria-label="Download strip"
                           >
                             <Download className="w-3.5 h-3.5" />
                           </button>
@@ -821,7 +873,7 @@ export default function ProfilePage() {
                             type="button"
                             onClick={(e) => handleDeleteMemory(memory.id, e)}
                             className="p-1 rounded-md hover:bg-destructive/10 text-foreground/50 hover:text-destructive transition-colors"
-                            title="Delete permanently"
+                            aria-label="Delete permanently"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
@@ -1009,28 +1061,37 @@ export default function ProfilePage() {
           onClick={() => setShowPostModal(false)}
         >
           <div
-            className="bg-white w-full max-w-lg max-h-[90dvh] sm:max-h-[85dvh] rounded-t-[28px] sm:rounded-3xl shadow-2xl border border-pink-100 flex flex-col animate-in slide-in-from-bottom-5 sm:zoom-in-95 duration-200 overflow-hidden"
+            className="bg-white w-full max-w-lg h-[82dvh] sm:h-auto sm:max-h-[85dvh] rounded-t-[28px] sm:rounded-3xl shadow-2xl border border-pink-100 flex flex-col animate-in slide-in-from-bottom-5 sm:zoom-in-95 duration-200 overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Mobile Sheet Drag Indicator */}
             <div className="w-12 h-1.5 rounded-full bg-foreground/15 mx-auto mt-3 sm:hidden" />
 
             {/* Modal Header */}
-            <div className="flex items-center justify-between px-3.5 sm:px-5 pt-2.5 sm:pt-4 pb-2.5 sm:pb-3.5 border-b border-pink-100">
+            <div className="flex items-center justify-between px-3.5 sm:px-5 pt-2.5 sm:pt-4 pb-2.5 sm:pb-3.5 border-b border-pink-100 shrink-0">
               <div>
                 <h3 className="font-hero text-base sm:text-xl text-foreground tracking-tight">CHOOSE STRIPS TO POST</h3>
                 <p className="text-[10px] sm:text-xs text-foreground/50 font-medium">
                   Tap any photo strip to toggle it on or off your wall
                 </p>
               </div>
-              <button
-                type="button"
-                onClick={() => setShowPostModal(false)}
-                className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-foreground/[0.04] hover:bg-foreground/[0.08] active:scale-90 text-foreground/60 flex items-center justify-center transition-all cursor-pointer"
-                aria-label="Close"
-              >
-                <X className="w-3.5 h-3.5 stroke-[2.5]" />
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowPostModal(false)}
+                  className="px-3.5 py-1.5 rounded-full bg-primary text-white text-xs font-black uppercase tracking-wider hover:brightness-105 active:scale-95 shadow-sm shadow-primary/25 cursor-pointer sm:hidden"
+                >
+                  Done
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowPostModal(false)}
+                  className="w-7 h-7 rounded-full bg-foreground/[0.04] hover:bg-foreground/[0.08] active:scale-90 text-foreground/60 flex items-center justify-center transition-all cursor-pointer"
+                  aria-label="Close"
+                >
+                  <X className="w-3.5 h-3.5 stroke-[2.5]" />
+                </button>
+              </div>
             </div>
 
             {/* Modal Body — Gallery strip grid */}
@@ -1107,17 +1168,17 @@ export default function ProfilePage() {
             </div>
 
             {/* Modal Footer */}
-            <div className="px-3.5 sm:px-5 py-2.5 sm:py-3.5 border-t border-pink-100 bg-white flex items-center justify-between gap-2 sm:gap-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+            <div className="px-4 sm:px-5 py-3 sm:py-3.5 border-t border-pink-100 bg-white/95 backdrop-blur-xs flex items-center justify-between gap-3 shrink-0 pb-[calc(1rem+env(safe-area-inset-bottom,0px))]">
               <div className="flex items-center gap-1.5 sm:gap-2">
-                <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-primary" />
-                <p className="text-[11px] sm:text-xs font-bold text-foreground/70">
+                <span className="w-2 h-2 rounded-full bg-primary" />
+                <p className="text-xs font-bold text-foreground/75">
                   <span className="text-primary font-black">{postedStripIds.length}</span> of {savedMemories.length} on wall
                 </p>
               </div>
               <button
                 type="button"
                 onClick={() => setShowPostModal(false)}
-                className="px-5 py-2 sm:px-6 sm:py-2.5 bg-primary text-white text-xs font-black uppercase tracking-wider rounded-xl shadow-md shadow-primary/25 hover:brightness-105 active:scale-95 transition-all cursor-pointer"
+                className="px-6 py-2.5 bg-primary text-white text-xs font-black uppercase tracking-wider rounded-xl shadow-md shadow-primary/25 hover:brightness-105 active:scale-95 transition-all cursor-pointer"
               >
                 Done
               </button>

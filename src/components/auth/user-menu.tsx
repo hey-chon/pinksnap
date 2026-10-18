@@ -12,6 +12,8 @@ import {
   ChevronDown,
   LogIn,
   Sliders,
+  Crown,
+  Zap,
 } from 'lucide-react';
 
 export function UserMenu() {
@@ -96,8 +98,20 @@ export function UserMenu() {
           <span className="text-[11px] font-bold text-white max-w-[90px] truncate">
             {user.displayName}
           </span>
-          <span className={`text-[9px] font-black tracking-wider uppercase ${isContributor ? 'text-emerald-400' : 'text-primary'}`}>
-            {isAdmin ? 'ADMIN' : isContributor ? 'CONTRIBUTOR' : 'MEMBER+'}
+          <span className={`text-[9px] font-black tracking-wider uppercase inline-flex items-center gap-1 ${isContributor ? 'text-amber-500' : 'text-primary'}`}>
+            {isAdmin ? (
+              <>
+                <Crown className="w-2.5 h-2.5 stroke-[2.5]" aria-hidden="true" />
+                <span>CREATOR</span>
+              </>
+            ) : isContributor ? (
+              <>
+                <Zap className="w-2.5 h-2.5 fill-current stroke-none" aria-hidden="true" />
+                <span>CONTRIBUTOR</span>
+              </>
+            ) : (
+              'MEMBER+'
+            )}
           </span>
         </div>
 
@@ -112,13 +126,15 @@ export function UserMenu() {
             <div className="flex items-center gap-2 mb-1">
               <span className="font-bold text-xs text-foreground truncate">{user.displayName}</span>
               {isAdmin && (
-                <span className="px-1.5 py-0.5 rounded-full bg-purple-100 text-purple-700 text-[9px] font-black tracking-wider uppercase">
-                  ADMIN
+                <span className="px-1.5 py-0.5 rounded-full bg-purple-100 text-purple-700 text-[9px] font-black tracking-wider uppercase inline-flex items-center gap-1">
+                  <Crown className="w-2.5 h-2.5 stroke-[2.5]" aria-hidden="true" />
+                  <span>CREATOR</span>
                 </span>
               )}
               {isContributor && (
-                <span className="px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-[9px] font-black tracking-wider uppercase">
-                  CONTRIBUTOR
+                <span className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-300/70 text-[9px] font-black tracking-wider uppercase inline-flex items-center gap-1 shadow-xs">
+                  <Zap className="w-2.5 h-2.5 fill-current stroke-none" aria-hidden="true" />
+                  <span>CONTRIBUTOR</span>
                 </span>
               )}
             </div>

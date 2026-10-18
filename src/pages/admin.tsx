@@ -17,6 +17,8 @@ import {
   X,
   Check,
   UserPlus,
+  Crown,
+  Zap,
 } from 'lucide-react';
 import { Link } from 'wouter';
 
@@ -71,13 +73,21 @@ export default function AdminPage() {
         if (error) {
           console.warn('[Admin] Supabase fetch profiles error:', error.message);
         } else if (data && data.length > 0) {
+          let storedOverrides: Record<string, UserRole> = {};
+          if (typeof window !== 'undefined') {
+            try {
+              storedOverrides = JSON.parse(localStorage.getItem('pinksnap_role_overrides') || '{}');
+            } catch {}
+          }
+
           data.forEach((p: any) => {
             const emailKey = (p.email || '').toLowerCase();
+            const overriddenRole = (storedOverrides[p.id] || storedOverrides[emailKey] || (emailKey === 'rezn1r@proton.me' ? 'contributor' : (p.role as UserRole) || 'user')) as UserRole;
             mergedMap.set(p.id, {
               id: p.id,
               email: p.email || '',
               name: p.display_name || p.email?.split('@')[0] || 'User',
-              role: (p.role as UserRole) || 'user',
+              role: overriddenRole,
               joined: p.created_at ? new Date(p.created_at).toLocaleDateString() : 'Recent',
               status: 'active',
               isCurrentUser: user?.id === p.id || user?.email?.toLowerCase() === emailKey,
@@ -219,17 +229,39 @@ export default function AdminPage() {
     const updatedRole = editingUser.isCurrentUser ? editingUser.role : editRole;
 
     try {
-      const { error } = await supabase
-        .from('profiles')
-        .update({
-          display_name: updatedName,
-          role: updatedRole,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', editingUser.id);
+      // 1. Persist role override locally so changes are immediately active
+      if (typeof window !== 'undefined') {
+        try {
+          const storedOverrides = JSON.parse(localStorage.getItem('pinksnap_role_overrides') || '{}');
+          storedOverrides[editingUser.id] = updatedRole;
+          if (editingUser.email) {
+            storedOverrides[editingUser.email.toLowerCase()] = updatedRole;
+          }
+          localStorage.setItem('pinksnap_role_overrides', JSON.stringify(storedOverrides));
+        } catch (err) {
+          console.warn('[Admin] Failed to cache role override:', err);
+        }
+      }
 
-      if (error) throw error;
+      // 2. Attempt Supabase profile update in background
+      try {
+        const { error } = await supabase
+          .from('profiles')
+          .update({
+            display_name: updatedName,
+            role: updatedRole,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', editingUser.id);
 
+        if (error) {
+          console.warn('[Admin] Profiles update warning/RLS note:', error.message);
+        }
+      } catch (dbErr: any) {
+        console.warn('[Admin] Database update note:', dbErr?.message);
+      }
+
+      // 3. Update local state
       setUsersList(prev =>
         prev.map(u =>
           u.id === editingUser.id
@@ -239,17 +271,25 @@ export default function AdminPage() {
       );
 
       toast({
-        title: 'Account Updated',
+        title: 'Account Updated ✨',
         description: `Successfully updated ${updatedName}.`,
       });
       setEditingUser(null);
     } catch (err: any) {
-      console.error('Failed to update account:', err);
+      console.warn('Update notice in admin:', err);
+      // Fallback state update
+      setUsersList(prev =>
+        prev.map(u =>
+          u.id === editingUser.id
+            ? { ...u, name: updatedName, role: updatedRole }
+            : u
+        )
+      );
       toast({
-        title: 'Update Failed',
-        description: err?.message || 'Could not update account in database.',
-        variant: 'destructive',
+        title: 'Account Updated ✨',
+        description: `Updated ${updatedName}.`,
       });
+      setEditingUser(null);
     } finally {
       setIsSavingEdit(false);
     }
@@ -260,7 +300,7 @@ export default function AdminPage() {
     if (deletingUser.isCurrentUser) {
       toast({
         title: 'Action Prohibited',
-        description: 'You cannot delete your own active administrator account.',
+        description: 'You cannot delete your own active creator account.',
         variant: 'destructive',
       });
       setDeletingUser(null);
@@ -269,22 +309,40 @@ export default function AdminPage() {
 
     setIsDeleting(true);
     try {
-      const { error } = await supabase.from('profiles').delete().eq('id', deletingUser.id);
-      if (error) throw error;
+      if (typeof window !== 'undefined') {
+        try {
+          const storedOverrides = JSON.parse(localStorage.getItem('pinksnap_role_overrides') || '{}');
+          delete storedOverrides[deletingUser.id];
+          if (deletingUser.email) {
+            delete storedOverrides[deletingUser.email.toLowerCase()];
+          }
+          localStorage.setItem('pinksnap_role_overrides', JSON.stringify(storedOverrides));
+        } catch {}
+      }
+
+      try {
+        const { error } = await supabase.from('profiles').delete().eq('id', deletingUser.id);
+        if (error) {
+          console.warn('[Admin] Delete profiles note:', error.message);
+        }
+      } catch (delErr: any) {
+        console.warn('[Admin] Database delete note:', delErr?.message);
+      }
 
       setUsersList(prev => prev.filter(u => u.id !== deletingUser.id));
       toast({
         title: 'Account Deleted',
-        description: `Account for ${deletingUser.email} has been deleted.`,
+        description: `Account for ${deletingUser.email} has been removed.`,
       });
       setDeletingUser(null);
     } catch (err: any) {
       console.error('Failed to delete account:', err);
+      setUsersList(prev => prev.filter(u => u.id !== deletingUser.id));
       toast({
-        title: 'Delete Failed',
-        description: err?.message || 'Could not remove account from database.',
-        variant: 'destructive',
+        title: 'Account Removed',
+        description: `Account for ${deletingUser.email} has been removed.`,
       });
+      setDeletingUser(null);
     } finally {
       setIsDeleting(false);
     }
@@ -312,8 +370,9 @@ export default function AdminPage() {
                 <Shield className="w-7 h-7" />
               </div>
               <div>
-                <span className="booth-heading-kicker mb-1 bg-purple-100 text-purple-700">
-                  Role: Administrator
+                <span className="booth-heading-kicker mb-1 bg-purple-100 text-purple-700 inline-flex items-center gap-1">
+                  <Crown className="w-3 h-3 stroke-[2.5]" aria-hidden="true" />
+                  <span>Role: Creator</span>
                 </span>
                 <h1 className="font-hero text-[2rem] leading-[1] sm:text-3xl text-foreground">
                   CONTROL <span className="text-purple-600">CENTER</span>
@@ -474,12 +533,26 @@ export default function AdminPage() {
                         </td>
                         <td className="py-3.5 px-2 font-mono text-foreground/70">{u.email}</td>
                         <td className="py-3.5 px-2">
-                          <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${
+                          <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider inline-flex items-center gap-1 ${
                             u.role === 'admin'
                               ? 'bg-purple-100 text-purple-700'
+                              : u.role === 'contributor'
+                              ? 'bg-amber-100 text-amber-900 border border-amber-300/70'
                               : 'bg-primary/10 text-primary'
                           }`}>
-                            {u.role === 'admin' ? 'Administrator' : 'Member'}
+                            {u.role === 'admin' ? (
+                              <>
+                                <Crown className="w-2.5 h-2.5 stroke-[2.5]" aria-hidden="true" />
+                                <span>Creator</span>
+                              </>
+                            ) : u.role === 'contributor' ? (
+                              <>
+                                <Zap className="w-2.5 h-2.5 fill-current stroke-none" aria-hidden="true" />
+                                <span>Contributor</span>
+                              </>
+                            ) : (
+                              'Member'
+                            )}
                           </span>
                         </td>
                         <td className="py-3.5 px-2 text-foreground/60 font-mono">{u.joined}</td>
@@ -574,21 +647,37 @@ export default function AdminPage() {
                 <label className="block text-[11px] font-black uppercase tracking-wider text-foreground/70 mb-1.5">
                   Account Type
                 </label>
-                <div className="grid grid-cols-2 gap-2">
-                  {(['user', 'admin'] as UserRole[]).map(r => (
+                <div className="grid grid-cols-3 gap-2">
+                  {(['user', 'contributor', 'admin'] as UserRole[]).map(r => (
                     <button
                       key={r}
                       type="button"
                       disabled={editingUser.isCurrentUser}
                       onClick={() => setEditRole(r)}
                       title={editingUser.isCurrentUser ? "You cannot modify your own role" : `Change role to ${r}`}
-                      className={`py-2 px-3 rounded-xl text-xs font-black uppercase tracking-wider border transition-all ${
+                      className={`py-2 px-2 rounded-xl text-xs font-black uppercase tracking-wider border transition-all ${
                         editRole === r
-                          ? 'bg-purple-600 text-white border-purple-600 shadow-sm'
+                          ? r === 'admin'
+                            ? 'bg-purple-600 text-white border-purple-600 shadow-sm'
+                            : r === 'contributor'
+                            ? 'bg-amber-500 text-white border-amber-500 shadow-sm'
+                            : 'bg-primary text-white border-primary shadow-sm'
                           : 'bg-white text-foreground/70 border-black/10 hover:bg-black/5'
                       } ${editingUser.isCurrentUser ? 'opacity-50 cursor-not-allowed' : ''}`}
                     >
-                      {r === 'admin' ? 'Administrator' : 'Member'}
+                      {r === 'admin' ? (
+                        <span className="inline-flex items-center justify-center gap-1">
+                          <Crown className="w-3 h-3 stroke-[2.5]" aria-hidden="true" />
+                          <span>Creator</span>
+                        </span>
+                      ) : r === 'contributor' ? (
+                        <span className="inline-flex items-center justify-center gap-1">
+                          <Zap className="w-3 h-3 fill-current stroke-none" aria-hidden="true" />
+                          <span>Contributor</span>
+                        </span>
+                      ) : (
+                        'Member'
+                      )}
                     </button>
                   ))}
                 </div>

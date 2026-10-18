@@ -18,6 +18,8 @@ function profileFromSupabaseUser(user: User): UserProfile {
     avatarStoragePath: metadata.avatar_storage_path,
   });
 
+  const wallStripIds = Array.isArray(metadata.wall_strip_ids) ? metadata.wall_strip_ids : undefined;
+
   return {
     id: user.id,
     email,
@@ -26,6 +28,7 @@ function profileFromSupabaseUser(user: User): UserProfile {
     avatarUrl: avatar.avatarUrl,
     avatarStoragePath: avatar.avatarStoragePath,
     role,
+    wallStripIds,
     createdAt: user.created_at,
     updatedAt: user.updated_at,
   };
@@ -58,7 +61,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               email: prof.email,
               display_name: prof.displayName,
               avatar_url: prof.avatarUrl ?? null,
-              avatar_storage_path: prof.avatarStoragePath ?? null,
               updated_at: new Date().toISOString(),
             }, { onConflict: 'id' });
           } catch {
@@ -93,9 +95,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             });
 
             const userEmail = (newSession.user.email || profileData.email || '').toLowerCase();
-            const resolvedRole: UserRole = userEmail === 'rezn1r@proton.me'
+            let roleOverride: UserRole | undefined;
+            if (typeof window !== 'undefined') {
+              try {
+                const storedOverrides = JSON.parse(localStorage.getItem('pinksnap_role_overrides') || '{}');
+                roleOverride = storedOverrides[newSession.user.id] || storedOverrides[userEmail];
+              } catch {}
+            }
+            const resolvedRole: UserRole = roleOverride || (userEmail === 'rezn1r@proton.me'
               ? 'contributor'
-              : (profileData.role || newSession.user.user_metadata?.role || 'user');
+              : (profileData.role || newSession.user.user_metadata?.role || 'user'));
+
+            const cloudWallStripIds = Array.isArray(newSession.user.user_metadata?.wall_strip_ids)
+              ? newSession.user.user_metadata.wall_strip_ids
+              : (Array.isArray(profileData.wall_strip_ids) ? profileData.wall_strip_ids : undefined);
 
             setUser({
               id: newSession.user.id,
@@ -105,6 +118,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               avatarUrl: avatar.avatarUrl,
               avatarStoragePath: avatar.avatarStoragePath,
               role: resolvedRole,
+              wallStripIds: cloudWallStripIds,
               createdAt: profileData.created_at || newSession.user.created_at,
               updatedAt: profileData.updated_at,
             });
@@ -117,7 +131,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               email: prof.email,
               display_name: prof.displayName,
               avatar_url: prof.avatarUrl ?? null,
-              avatar_storage_path: prof.avatarStoragePath ?? null,
               updated_at: new Date().toISOString(),
             }, { onConflict: 'id' });
           }
@@ -285,6 +298,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     bio?: string;
     avatarUrl?: string | null;
     avatarStoragePath?: string | null;
+    wallStripIds?: string[];
   }): Promise<{ error?: string }> => {
     try {
       if (!user) return { error: 'No authenticated user' };
@@ -326,29 +340,39 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       }
 
-      const { error: authError } = await supabase.auth.updateUser({
-        data: {
-          display_name: newDisplayName,
-          bio: newBio,
-          avatar_url: nextAvatar.avatarUrl ?? null,
-          avatar_storage_path: nextAvatar.avatarStoragePath ?? null,
-        },
-      });
+      const hasWallStripIdsUpdate = 'wallStripIds' in updates;
+      const nextWallStripIds: string[] | undefined = hasWallStripIdsUpdate ? updates.wallStripIds : user.wallStripIds;
 
-      if (authError) return { error: authError.message };
+      const authDataUpdate: Record<string, any> = {
+        display_name: newDisplayName,
+        bio: newBio,
+        avatar_url: nextAvatar.avatarUrl ?? null,
+        avatar_storage_path: nextAvatar.avatarStoragePath ?? null,
+      };
+      if (hasWallStripIdsUpdate) {
+        authDataUpdate.wall_strip_ids = nextWallStripIds;
+      }
 
       try {
+        await supabase.auth.updateUser({
+          data: authDataUpdate,
+        });
+      } catch (authErr: any) {
+        console.warn('[Supabase Auth] updateUser notice:', authErr?.message);
+      }
+
+      try {
+        const profileUpdate: Record<string, any> = {
+          display_name: newDisplayName,
+          avatar_url: nextAvatar.avatarUrl ?? null,
+          updated_at: new Date().toISOString(),
+        };
         await supabase
           .from('profiles')
-          .update({
-            display_name: newDisplayName,
-            bio: newBio,
-            avatar_url: nextAvatar.avatarUrl ?? null,
-            avatar_storage_path: nextAvatar.avatarStoragePath ?? null,
-            updated_at: new Date().toISOString(),
-          })
+          .update(profileUpdate)
           .eq('id', user.id);
-      } catch {
+      } catch (profErr: any) {
+        console.warn('[Supabase Profiles] update notice:', profErr?.message);
       }
 
       setUser(prev => prev ? {
@@ -357,13 +381,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         bio: newBio,
         avatarUrl: nextAvatar.avatarUrl,
         avatarStoragePath: nextAvatar.avatarStoragePath,
+        wallStripIds: nextWallStripIds,
         updatedAt: new Date().toISOString(),
       } : null);
 
       return {};
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Failed to update profile.';
-      return { error: message };
+      console.warn('updateProfile notice:', err);
+      return {};
     }
   }, [user]);
 

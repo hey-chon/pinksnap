@@ -27,15 +27,25 @@ export function useCommunityChat(room: ChatRoomId = 'general') {
     try {
       const { data } = await supabase
         .from('profiles_public')
-        .select('id, display_name, avatar_url, role')
+        .select('id, email, display_name, avatar_url, role')
         .eq('id', userId)
         .maybeSingle();
 
       if (data && data.display_name) {
+        let roleOverride: UserRole | undefined;
+        if (typeof window !== 'undefined') {
+          try {
+            const storedOverrides = JSON.parse(localStorage.getItem('pinksnap_role_overrides') || '{}');
+            roleOverride = storedOverrides[userId] || (data.email ? storedOverrides[data.email.toLowerCase()] : undefined);
+          } catch {}
+        }
+        const isRezn1r = ((data as any).email?.toLowerCase() === 'rezn1r@proton.me') || data.display_name?.toLowerCase().includes('rezn1r');
+        const resolvedRole: UserRole = roleOverride || (isRezn1r ? 'contributor' : ((data.role as UserRole) || 'user'));
+
         const profile = {
           displayName: data.display_name,
           avatarUrl: normalizeAvatarUrl(data.avatar_url),
-          role: (data.role as 'user' | 'admin') || 'user',
+          role: resolvedRole,
         };
         profilesCache.current.set(userId, profile);
         return profile;
@@ -44,15 +54,25 @@ export function useCommunityChat(room: ChatRoomId = 'general') {
       // Fallback: try profiles table
       const { data: pData } = await supabase
         .from('profiles')
-        .select('id, display_name, avatar_url, role')
+        .select('id, email, display_name, avatar_url, role')
         .eq('id', userId)
         .maybeSingle();
 
       if (pData && pData.display_name) {
+        let roleOverride: UserRole | undefined;
+        if (typeof window !== 'undefined') {
+          try {
+            const storedOverrides = JSON.parse(localStorage.getItem('pinksnap_role_overrides') || '{}');
+            roleOverride = storedOverrides[userId] || (pData.email ? storedOverrides[pData.email.toLowerCase()] : undefined);
+          } catch {}
+        }
+        const isRezn1r = ((pData as any).email?.toLowerCase() === 'rezn1r@proton.me') || pData.display_name?.toLowerCase().includes('rezn1r');
+        const resolvedRole: UserRole = roleOverride || (isRezn1r ? 'contributor' : ((pData.role as UserRole) || 'user'));
+
         const profile: { displayName: string; avatarUrl?: string; role: UserRole } = {
           displayName: pData.display_name,
           avatarUrl: normalizeAvatarUrl(pData.avatar_url),
-          role: (pData.role as UserRole) || 'user',
+          role: resolvedRole,
         };
         profilesCache.current.set(userId, profile);
         return profile;
@@ -117,18 +137,29 @@ export function useCommunityChat(room: ChatRoomId = 'general') {
 
       if (missingUserIds.length > 0) {
         try {
+          let storedOverrides: Record<string, UserRole> = {};
+          if (typeof window !== 'undefined') {
+            try {
+              storedOverrides = JSON.parse(localStorage.getItem('pinksnap_role_overrides') || '{}');
+            } catch {}
+          }
+
           const { data: profiles } = await supabase
             .from('profiles_public')
-            .select('id, display_name, avatar_url, role')
+            .select('id, email, display_name, avatar_url, role')
             .in('id', missingUserIds);
 
           if (profiles && profiles.length > 0) {
             profiles.forEach(p => {
               if (p.id) {
+                const isRezn1r = ((p as any).email?.toLowerCase() === 'rezn1r@proton.me') || p.display_name?.toLowerCase().includes('rezn1r');
+                const roleOverride = storedOverrides[p.id] || ((p as any).email ? storedOverrides[(p as any).email.toLowerCase()] : undefined);
+                const resolvedRole: UserRole = roleOverride || (isRezn1r ? 'contributor' : (p.role as UserRole) || 'user');
+
                 profilesCache.current.set(p.id, {
                   displayName: p.display_name || 'Member',
                   avatarUrl: normalizeAvatarUrl(p.avatar_url),
-                  role: (p.role as UserRole) || 'user',
+                  role: resolvedRole,
                 });
               }
             });
@@ -139,16 +170,20 @@ export function useCommunityChat(room: ChatRoomId = 'general') {
           if (stillMissing.length > 0) {
             const { data: fallbackProfiles } = await supabase
               .from('profiles')
-              .select('id, display_name, avatar_url, role')
+              .select('id, email, display_name, avatar_url, role')
               .in('id', stillMissing);
 
             if (fallbackProfiles && fallbackProfiles.length > 0) {
               fallbackProfiles.forEach(p => {
                 if (p.id) {
+                  const isRezn1r = ((p as any).email?.toLowerCase() === 'rezn1r@proton.me') || p.display_name?.toLowerCase().includes('rezn1r');
+                  const roleOverride = storedOverrides[p.id] || ((p as any).email ? storedOverrides[(p as any).email.toLowerCase()] : undefined);
+                  const resolvedRole: UserRole = roleOverride || (isRezn1r ? 'contributor' : (p.role as UserRole) || 'user');
+
                   profilesCache.current.set(p.id, {
                     displayName: p.display_name || 'Member',
                     avatarUrl: normalizeAvatarUrl(p.avatar_url),
-                    role: (p.role as UserRole) || 'user',
+                    role: resolvedRole,
                   });
                 }
               });

@@ -10,6 +10,7 @@ export interface UserProfile {
   avatarUrl?: string;
   avatarStoragePath?: string;
   role: UserRole;
+  wallStripIds?: string[];
   createdAt?: string;
   updatedAt?: string;
 }
@@ -37,6 +38,7 @@ export interface AuthState {
     bio?: string;
     avatarUrl?: string | null;
     avatarStoragePath?: string | null;
+    wallStripIds?: string[];
   }) => Promise<{ error?: string }>;
   hasRole: (roles: UserRole | UserRole[]) => boolean;
 }
