@@ -430,9 +430,11 @@ export default function ProfilePage() {
           variant: 'destructive',
         });
       } else {
+        setDisplayName(trimmedDisplayName);
         setBio(trimmedBio);
 
         if (typeof window !== 'undefined' && user?.id) {
+          localStorage.setItem(`pinksnap_user_name_${user.id}`, trimmedDisplayName);
           if (trimmedBio) {
             localStorage.setItem(`pinksnap_user_bio_${user.id}`, trimmedBio);
           } else {
@@ -1034,18 +1036,7 @@ export default function ProfilePage() {
             </div>
           )}
 
-
-
-          {/* ── Sign Out Button ── */}
-          <div className="mt-8 pt-4 text-center">
-            <button
-              type="button"
-              onClick={signOut}
-              className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground/40 hover:text-destructive transition-colors py-2.5 px-4 rounded-xl hover:bg-destructive/5 active:scale-95"
-            >
-              <LogOut className="w-3.5 h-3.5" /> Sign out of PinkSnap
-            </button>
-          </div>
+          
         </div>
       </main>
 

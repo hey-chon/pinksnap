@@ -34,6 +34,137 @@ function profileFromSupabaseUser(user: User): UserProfile {
   };
 }
 
+function getLocalProfile(userId: string): { displayName?: string; bio?: string; wallStripIds?: string[] } | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = localStorage.getItem(`pinksnap_user_profile_${userId}`);
+    const nameOnly = localStorage.getItem(`pinksnap_user_name_${userId}`);
+    const bioOnly = localStorage.getItem(`pinksnap_user_bio_${userId}`);
+    const parsed = raw ? JSON.parse(raw) : {};
+    return {
+      ...parsed,
+      ...(nameOnly ? { displayName: nameOnly } : {}),
+      ...(bioOnly ? { bio: bioOnly } : {}),
+    };
+  } catch {
+    return null;
+  }
+}
+
+function saveLocalProfile(userId: string, data: { displayName?: string; bio?: string; wallStripIds?: string[] }) {
+  if (typeof window === 'undefined') return;
+  try {
+    const current = getLocalProfile(userId) || {};
+    const updated = { ...current, ...data };
+    localStorage.setItem(`pinksnap_user_profile_${userId}`, JSON.stringify(updated));
+    if (data.displayName) {
+      localStorage.setItem(`pinksnap_user_name_${userId}`, data.displayName);
+    }
+    if (data.bio !== undefined) {
+      if (data.bio) {
+        localStorage.setItem(`pinksnap_user_bio_${userId}`, data.bio);
+      } else {
+        localStorage.removeItem(`pinksnap_user_bio_${userId}`);
+      }
+    }
+  } catch {}
+}
+
+async function resolveUserProfile(sbUser: User): Promise<UserProfile> {
+  const localCache = getLocalProfile(sbUser.id);
+  const metadata = sbUser.user_metadata || {};
+  const email = sbUser.email || '';
+  const emailLower = email.toLowerCase();
+
+  // 1. Fetch from Supabase 'profiles' table
+  let dbProfile: any = null;
+  try {
+    const { data } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', sbUser.id)
+      .maybeSingle();
+    dbProfile = data;
+  } catch (err) {
+    console.warn('[Supabase Auth] profiles fetch notice:', err);
+  }
+
+  // Priority: Local saved profile edits > database profile row > JWT metadata > email handle fallback
+  const resolvedDisplayName =
+    localCache?.displayName ||
+    dbProfile?.display_name ||
+    metadata.display_name ||
+    metadata.name ||
+    metadata.full_name ||
+    email.split('@')[0] ||
+    'User';
+
+  const resolvedBio =
+    (localCache?.bio !== undefined ? localCache.bio : undefined) ??
+    dbProfile?.bio ??
+    metadata.bio ??
+    '';
+
+  const avatar = normalizeAvatarFields({
+    avatarUrl: dbProfile?.avatar_url || metadata.avatar_url,
+    avatarStoragePath: dbProfile?.avatar_storage_path || metadata.avatar_storage_path,
+  });
+
+  let roleOverride: UserRole | undefined;
+  if (typeof window !== 'undefined') {
+    try {
+      const storedOverrides = JSON.parse(localStorage.getItem('pinksnap_role_overrides') || '{}');
+      roleOverride = storedOverrides[sbUser.id] || storedOverrides[emailLower];
+    } catch {}
+  }
+  const resolvedRole: UserRole = roleOverride || (emailLower === 'rezn1r@proton.me'
+    ? 'contributor'
+    : (dbProfile?.role || metadata.role || 'user'));
+
+  const cloudWallStripIds = localCache?.wallStripIds || (
+    Array.isArray(metadata.wall_strip_ids)
+      ? metadata.wall_strip_ids
+      : (Array.isArray(dbProfile?.wall_strip_ids) ? dbProfile.wall_strip_ids : undefined)
+  );
+
+  const profile: UserProfile = {
+    id: sbUser.id,
+    email,
+    displayName: resolvedDisplayName,
+    bio: resolvedBio,
+    avatarUrl: avatar.avatarUrl,
+    avatarStoragePath: avatar.avatarStoragePath,
+    role: resolvedRole,
+    wallStripIds: cloudWallStripIds,
+    createdAt: dbProfile?.created_at || sbUser.created_at,
+    updatedAt: dbProfile?.updated_at || sbUser.updated_at,
+  };
+
+  // If there wasn't a profile row in the database yet, initialize it
+  if (!dbProfile) {
+    try {
+      await supabase.from('profiles').upsert({
+        id: sbUser.id,
+        email,
+        display_name: resolvedDisplayName,
+        bio: resolvedBio,
+        avatar_url: avatar.avatarUrl ?? null,
+        avatar_storage_path: avatar.avatarStoragePath ?? null,
+        updated_at: new Date().toISOString(),
+      }, { onConflict: 'id' });
+    } catch {}
+  }
+
+  // Ensure local cache preserves the resolved name and bio
+  saveLocalProfile(sbUser.id, {
+    displayName: resolvedDisplayName,
+    bio: resolvedBio,
+    wallStripIds: cloudWallStripIds,
+  });
+
+  return profile;
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [supabaseUser, setSupabaseUser] = useState<User | null>(null);
@@ -52,18 +183,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (isMounted && initialSession?.user) {
           setSession(initialSession);
           setSupabaseUser(initialSession.user);
-          const prof = profileFromSupabaseUser(initialSession.user);
-          setUser(prof);
-
-          try {
-            await supabase.from('profiles').upsert({
-              id: initialSession.user.id,
-              email: prof.email,
-              display_name: prof.displayName,
-              avatar_url: prof.avatarUrl ?? null,
-              updated_at: new Date().toISOString(),
-            }, { onConflict: 'id' });
-          } catch {
+          const prof = await resolveUserProfile(initialSession.user);
+          if (isMounted) {
+            setUser(prof);
           }
         }
       } catch (err) {
@@ -81,66 +203,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setSupabaseUser(newSession?.user ?? null);
 
       if (newSession?.user) {
-        try {
-          const { data: profileData } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', newSession.user.id)
-            .maybeSingle();
-
-          if (profileData && isMounted) {
-            const avatar = normalizeAvatarFields({
-              avatarUrl: profileData.avatar_url || newSession.user.user_metadata?.avatar_url,
-              avatarStoragePath: profileData.avatar_storage_path || newSession.user.user_metadata?.avatar_storage_path,
-            });
-
-            const userEmail = (newSession.user.email || profileData.email || '').toLowerCase();
-            let roleOverride: UserRole | undefined;
-            if (typeof window !== 'undefined') {
-              try {
-                const storedOverrides = JSON.parse(localStorage.getItem('pinksnap_role_overrides') || '{}');
-                roleOverride = storedOverrides[newSession.user.id] || storedOverrides[userEmail];
-              } catch {}
-            }
-            const resolvedRole: UserRole = roleOverride || (userEmail === 'rezn1r@proton.me'
-              ? 'contributor'
-              : (profileData.role || newSession.user.user_metadata?.role || 'user'));
-
-            const cloudWallStripIds = Array.isArray(newSession.user.user_metadata?.wall_strip_ids)
-              ? newSession.user.user_metadata.wall_strip_ids
-              : (Array.isArray(profileData.wall_strip_ids) ? profileData.wall_strip_ids : undefined);
-
-            setUser({
-              id: newSession.user.id,
-              email: newSession.user.email || profileData.email || '',
-              displayName: profileData.display_name || newSession.user.user_metadata?.display_name || 'User',
-              bio: profileData.bio ?? newSession.user.user_metadata?.bio ?? '',
-              avatarUrl: avatar.avatarUrl,
-              avatarStoragePath: avatar.avatarStoragePath,
-              role: resolvedRole,
-              wallStripIds: cloudWallStripIds,
-              createdAt: profileData.created_at || newSession.user.created_at,
-              updatedAt: profileData.updated_at,
-            });
-            setIsLoading(false);
-            return;
-          } else {
-            const prof = profileFromSupabaseUser(newSession.user);
-            await supabase.from('profiles').upsert({
-              id: newSession.user.id,
-              email: prof.email,
-              display_name: prof.displayName,
-              avatar_url: prof.avatarUrl ?? null,
-              updated_at: new Date().toISOString(),
-            }, { onConflict: 'id' });
-          }
-        } catch {
+        const prof = await resolveUserProfile(newSession.user);
+        if (isMounted) {
+          setUser(prof);
         }
-        setUser(profileFromSupabaseUser(newSession.user));
       } else {
         setUser(null);
       }
-      setIsLoading(false);
+      if (isMounted) setIsLoading(false);
     });
 
     return () => {
@@ -353,24 +423,42 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         authDataUpdate.wall_strip_ids = nextWallStripIds;
       }
 
+      // 1. Immediately persist to client local storage cache
+      saveLocalProfile(user.id, {
+        displayName: newDisplayName,
+        bio: newBio,
+        wallStripIds: nextWallStripIds,
+      });
+
+      // 2. Update Supabase Auth user metadata
       try {
-        await supabase.auth.updateUser({
+        const { data: authUpdateRes } = await supabase.auth.updateUser({
           data: authDataUpdate,
         });
+        if (authUpdateRes?.user) {
+          setSupabaseUser(authUpdateRes.user);
+        }
       } catch (authErr: any) {
         console.warn('[Supabase Auth] updateUser notice:', authErr?.message);
       }
 
+      // 3. Upsert into Supabase 'profiles' table with both display_name and bio
       try {
-        const profileUpdate: Record<string, any> = {
+        const profileUpsert: Record<string, any> = {
+          id: user.id,
+          email: user.email,
           display_name: newDisplayName,
+          bio: newBio,
           avatar_url: nextAvatar.avatarUrl ?? null,
+          avatar_storage_path: nextAvatar.avatarStoragePath ?? null,
           updated_at: new Date().toISOString(),
         };
+        if (hasWallStripIdsUpdate) {
+          profileUpsert.wall_strip_ids = nextWallStripIds;
+        }
         await supabase
           .from('profiles')
-          .update(profileUpdate)
-          .eq('id', user.id);
+          .upsert(profileUpsert, { onConflict: 'id' });
       } catch (profErr: any) {
         console.warn('[Supabase Profiles] update notice:', profErr?.message);
       }
