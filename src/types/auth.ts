@@ -6,6 +6,7 @@ export interface UserProfile {
   id: string;
   email: string;
   displayName: string;
+  bio?: string;
   avatarUrl?: string;
   avatarStoragePath?: string;
   role: UserRole;
@@ -32,6 +33,7 @@ export interface AuthState {
   resetPassword: (email: string) => Promise<{ error?: string; message?: string }>;
   updateProfile: (updates: {
     displayName?: string;
+    bio?: string;
     avatarUrl?: string | null;
     avatarStoragePath?: string | null;
   }) => Promise<{ error?: string }>;

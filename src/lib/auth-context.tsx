@@ -10,6 +10,7 @@ function profileFromSupabaseUser(user: User): UserProfile {
   const metadata = user.user_metadata || {};
   const email = user.email || '';
   const displayName = metadata.display_name || metadata.name || metadata.full_name || email.split('@')[0] || 'User';
+  const bio = (metadata.bio as string) || '';
   const role: UserRole = 'user';
   const avatar = normalizeAvatarFields({
     avatarUrl: metadata.avatar_url,
@@ -20,6 +21,7 @@ function profileFromSupabaseUser(user: User): UserProfile {
     id: user.id,
     email,
     displayName,
+    bio,
     avatarUrl: avatar.avatarUrl,
     avatarStoragePath: avatar.avatarStoragePath,
     role,
@@ -93,6 +95,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               id: newSession.user.id,
               email: newSession.user.email || profileData.email || '',
               displayName: profileData.display_name || newSession.user.user_metadata?.display_name || 'User',
+              bio: profileData.bio || newSession.user.user_metadata?.bio || '',
               avatarUrl: avatar.avatarUrl,
               avatarStoragePath: avatar.avatarStoragePath,
               role: profileData.role || newSession.user.user_metadata?.role || 'user',
@@ -273,6 +276,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const updateProfile = useCallback(async (updates: {
     displayName?: string;
+    bio?: string;
     avatarUrl?: string | null;
     avatarStoragePath?: string | null;
   }): Promise<{ error?: string }> => {
@@ -280,6 +284,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (!user) return { error: 'No authenticated user' };
 
       const hasDisplayNameUpdate = Object.prototype.hasOwnProperty.call(updates, 'displayName');
+      const hasBioUpdate = Object.prototype.hasOwnProperty.call(updates, 'bio');
       const hasAvatarUrlUpdate = Object.prototype.hasOwnProperty.call(updates, 'avatarUrl');
       const hasAvatarStoragePathUpdate = Object.prototype.hasOwnProperty.call(updates, 'avatarStoragePath');
 
@@ -291,6 +296,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (!newDisplayName) {
         return { error: 'Display name cannot be empty.' };
       }
+
+      const newBio = hasBioUpdate ? (updates.bio ?? '').trim() : (user.bio || '');
 
       let nextAvatar = normalizeAvatarFields({
         avatarUrl: user.avatarUrl,
@@ -316,6 +323,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const { error: authError } = await supabase.auth.updateUser({
         data: {
           display_name: newDisplayName,
+          bio: newBio,
           avatar_url: nextAvatar.avatarUrl ?? null,
           avatar_storage_path: nextAvatar.avatarStoragePath ?? null,
         },
@@ -328,6 +336,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           .from('profiles')
           .update({
             display_name: newDisplayName,
+            bio: newBio,
             avatar_url: nextAvatar.avatarUrl ?? null,
             avatar_storage_path: nextAvatar.avatarStoragePath ?? null,
             updated_at: new Date().toISOString(),
@@ -339,6 +348,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(prev => prev ? {
         ...prev,
         displayName: newDisplayName,
+        bio: newBio,
         avatarUrl: nextAvatar.avatarUrl,
         avatarStoragePath: nextAvatar.avatarStoragePath,
         updatedAt: new Date().toISOString(),
