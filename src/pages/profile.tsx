@@ -609,9 +609,9 @@ export default function ProfilePage() {
         {/* ── Main Profile Container ── */}
         <div className="max-w-3xl mx-auto px-3.5 sm:px-6">
           {/* ── Social Profile Card (Completely Solves Mobile Overlap) ── */}
-          <div className="relative -mt-14 sm:-mt-16 mb-5 bg-white/95 backdrop-blur-sm rounded-3xl shadow-[0_12px_45px_-12px_rgba(245,61,137,0.18)] border border-pink-100/90 p-4 sm:p-7">
+          <div className={`relative -mt-14 sm:-mt-16 mb-5 rounded-3xl p-4 sm:p-7 backdrop-blur-sm ${isAdmin ? 'bg-[#0e0f13]/[0.97] border border-orange-900/40 shadow-[0_12px_45px_-12px_rgba(255,100,0,0.12)]' : 'bg-white/95 border border-pink-100/90 shadow-[0_12px_45px_-12px_rgba(245,61,137,0.18)]'}`}>
             {/* Cute Scrapbook Washi Tape Sticker on Card */}
-            <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 w-20 sm:w-24 h-4 bg-gradient-to-r from-pink-300/80 via-pink-200/95 to-pink-300/80 rounded-xs rotate-[-1.5deg] border border-white/80 shadow-xs pointer-events-none z-20" />
+            <div className={`absolute -top-2.5 left-1/2 -translate-x-1/2 w-20 sm:w-24 h-4 rounded-xs rotate-[-1.5deg] border shadow-xs pointer-events-none z-20 ${isAdmin ? 'bg-gradient-to-r from-orange-800/60 via-orange-700/70 to-orange-800/60 border-orange-600/30' : 'bg-gradient-to-r from-pink-300/80 via-pink-200/95 to-pink-300/80 border-white/80'}`} />
             
             {/* ROW 1: Avatar + Action Buttons (Twitter / Instagram Header Row) */}
             <div className="flex items-end justify-between gap-3 relative">
@@ -697,7 +697,7 @@ export default function ProfilePage() {
             {/* ROW 2: Name & Identity (Dedicated Block — GUARANTEED NEVER OVERLAPPED BY AVATAR) */}
             <div className="mt-4 sm:mt-5 space-y-2">
               <div className="flex flex-wrap items-center gap-2">
-                <h1 className="font-hero text-2xl sm:text-3xl text-foreground tracking-tight leading-tight break-words">
+                <h1 className={`font-hero text-2xl sm:text-3xl tracking-tight leading-tight break-words ${isAdmin ? 'text-white' : 'text-foreground'}`}>
                   {user.displayName}
                 </h1>
                 
@@ -747,7 +747,7 @@ export default function ProfilePage() {
 
               {/* Metadata without the username handle — 100% untouchable & unclickable on iOS/Android */}
               <div
-                className="flex flex-wrap items-center gap-x-3.5 gap-y-1 text-xs text-foreground/55 font-medium select-none pointer-events-none"
+                className={`flex flex-wrap items-center gap-x-3.5 gap-y-1 text-xs font-medium select-none pointer-events-none ${isAdmin ? 'text-white/45' : 'text-foreground/55'}`}
                 style={{
                   pointerEvents: 'none',
                   WebkitUserSelect: 'none',
@@ -767,7 +767,7 @@ export default function ProfilePage() {
                 >
                   <Mail className="w-3 h-3 text-primary/70 shrink-0 select-none pointer-events-none" />
                   <span
-                    className="truncate select-none pointer-events-none cursor-default no-underline text-foreground/55 font-medium inline-flex items-center"
+                    className={`truncate select-none pointer-events-none cursor-default no-underline font-medium inline-flex items-center ${isAdmin ? 'text-white/45' : 'text-foreground/55'}`}
                     style={{
                       pointerEvents: 'none',
                       WebkitUserSelect: 'none',
@@ -798,18 +798,18 @@ export default function ProfilePage() {
 
               {/* Custom User Bio */}
               {bio ? (
-                <p className="text-xs sm:text-sm text-foreground/80 font-medium leading-relaxed pt-1 whitespace-pre-wrap break-words">
+                <p className={`text-xs sm:text-sm font-medium leading-relaxed pt-1 whitespace-pre-wrap break-words ${isAdmin ? 'text-white/65' : 'text-foreground/80'}`}>
                   {bio}
                 </p>
               ) : (
-                <p className="text-xs text-foreground/40 italic font-medium pt-1">
+                <p className={`text-xs italic font-medium pt-1 ${isAdmin ? 'text-white/30' : 'text-foreground/40'}`}>
                   No bio yet. Tap &ldquo;Settings&rdquo; to add your bio!
                 </p>
               )}
             </div>
 
             {/* ROW 3: Social Media Stats Counters — Customized By Role */}
-            <div className="mt-5 pt-4 border-t border-black/[0.06] grid grid-cols-3 gap-2 text-center">
+            <div className={`mt-5 pt-4 border-t grid grid-cols-3 gap-2 text-center ${isAdmin ? 'border-white/[0.06]' : 'border-black/[0.06]'}`}>
               {isAdmin ? (
                 /* ── CREATOR ROLE: Obsidian fire card glow with flame and crown accents ── */
                 <>
@@ -819,10 +819,10 @@ export default function ProfilePage() {
                     className="p-2 sm:p-3 rounded-2xl creator-role-card flex flex-col items-center justify-center transition-all group cursor-pointer"
                   >
                     <div className="flex items-center gap-1">
-                      <p className="text-lg sm:text-2xl font-black text-orange-400 group-hover:text-orange-300 transition-colors leading-none drop-shadow-[0_0_8px_rgba(255,140,0,0.6)]">
+                      <p className="text-sm sm:text-base font-black text-orange-400 group-hover:text-orange-300 transition-colors leading-none drop-shadow-[0_0_8px_rgba(255,140,0,0.6)]">
                         {postedStrips.length}
                       </p>
-                      <Flame className="w-3.5 h-3.5 creator-flame text-orange-500 fill-none" aria-hidden="true" />
+                      <Flame className="w-3 h-3 creator-flame text-orange-500 fill-none" aria-hidden="true" />
                     </div>
                     <p className="text-[9px] sm:text-[10px] font-bold text-orange-200/90 uppercase tracking-wider mt-1">
                       Photo Strips
@@ -831,7 +831,7 @@ export default function ProfilePage() {
 
                   <div className="p-2 sm:p-3 rounded-2xl creator-role-card flex flex-col items-center justify-center">
                     <div className="flex items-center gap-1">
-                      <p className="text-lg sm:text-2xl font-black text-orange-500 leading-none drop-shadow-[0_0_8px_rgba(255,69,0,0.8)]">
+                      <p className="text-sm sm:text-base font-black text-orange-500 leading-none drop-shadow-[0_0_8px_rgba(255,69,0,0.8)]">
                         Creator+
                       </p>
   
@@ -843,7 +843,7 @@ export default function ProfilePage() {
 
                   <div className="p-2 sm:p-3 rounded-2xl creator-role-card flex flex-col items-center justify-center">
                     <div className="flex items-center gap-1">
-                      <p className="text-lg sm:text-2xl font-black text-orange-400 leading-none drop-shadow-[0_0_8px_rgba(255,140,0,0.6)]">
+                      <p className="text-sm sm:text-base font-black text-orange-400 leading-none drop-shadow-[0_0_8px_rgba(255,140,0,0.6)]">
                         Active
                       </p>
                     </div>
@@ -860,7 +860,7 @@ export default function ProfilePage() {
                     onClick={() => setActiveTab('strips')}
                     className="p-2 sm:p-3 rounded-2xl bg-amber-50/50 hover:bg-amber-100/60 border border-amber-200/70 transition-colors group cursor-pointer flex flex-col items-center justify-center"
                   >
-                    <p className="text-lg sm:text-2xl font-black text-foreground group-hover:text-amber-700 transition-colors leading-none">
+                    <p className="text-sm sm:text-base font-black text-foreground group-hover:text-amber-700 transition-colors leading-none">
                       {postedStrips.length}
                     </p>
                     <p className="text-[9px] sm:text-[10px] font-bold text-foreground/50 uppercase tracking-wider mt-1">
@@ -870,7 +870,7 @@ export default function ProfilePage() {
 
                   <div className="p-2 sm:p-3 rounded-2xl bg-amber-50/50 border border-amber-200/70 flex flex-col items-center justify-center">
                     <div className="flex items-center gap-1">
-                      <p className="text-lg sm:text-2xl font-black text-amber-700 leading-none">
+                      <p className="text-sm sm:text-base font-black text-amber-700 leading-none">
                         Contributor+
                       </p>
                       <Zap className="w-3 h-3 fill-amber-500 text-amber-500" aria-hidden="true" />
@@ -881,7 +881,7 @@ export default function ProfilePage() {
                   </div>
 
                   <div className="p-2 sm:p-3 rounded-2xl bg-amber-50/50 border border-amber-200/70 flex flex-col items-center justify-center">
-                    <p className="text-lg sm:text-2xl font-black text-amber-600 leading-none">
+                    <p className="text-sm sm:text-base font-black text-amber-600 leading-none">
                       Active
                     </p>
                     <p className="text-[9px] sm:text-[10px] font-bold text-foreground/50 uppercase tracking-wider mt-1">
@@ -897,7 +897,7 @@ export default function ProfilePage() {
                     onClick={() => setActiveTab('strips')}
                     className="p-2 sm:p-3 rounded-2xl bg-pink-50/40 hover:bg-pink-100/50 border border-pink-100/60 transition-colors group cursor-pointer flex flex-col items-center justify-center"
                   >
-                    <p className="text-lg sm:text-2xl font-black text-foreground group-hover:text-primary transition-colors leading-none">
+                    <p className="text-sm sm:text-base font-black text-foreground group-hover:text-primary transition-colors leading-none">
                       {postedStrips.length}
                     </p>
                     <p className="text-[9px] sm:text-[10px] font-bold text-foreground/50 uppercase tracking-wider mt-1">
@@ -906,7 +906,7 @@ export default function ProfilePage() {
                   </button>
 
                   <div className="p-2 sm:p-3 rounded-2xl bg-pink-50/40 border border-pink-100/60 flex flex-col items-center justify-center">
-                    <p className="text-lg sm:text-2xl font-black text-foreground leading-none">
+                    <p className="text-sm sm:text-base font-black text-foreground leading-none">
                       Member+
                     </p>
                     <p className="text-[9px] sm:text-[10px] font-bold text-foreground/50 uppercase tracking-wider mt-1">
@@ -915,7 +915,7 @@ export default function ProfilePage() {
                   </div>
 
                   <div className="p-2 sm:p-3 rounded-2xl bg-pink-50/40 border border-pink-100/60 flex flex-col items-center justify-center">
-                    <p className="text-lg sm:text-2xl font-black text-pink-600 leading-none">
+                    <p className="text-sm sm:text-base font-black text-pink-600 leading-none">
                       Active
                     </p>
                     <p className="text-[9px] sm:text-[10px] font-bold text-foreground/50 uppercase tracking-wider mt-1">

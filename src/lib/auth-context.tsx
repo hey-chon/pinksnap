@@ -602,18 +602,42 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         console.warn('[Supabase Profiles] update exception:', profileUpdateError);
       }
 
+      // Dedicated fallback: if avatar clearing failed on the profile table,
+      // retry with ONLY the avatar columns to bypass RLS or schema issues.
+      const shouldClearAvatar = hasAvatarUrlUpdate && updates.avatarUrl === null;
+      if (shouldClearAvatar && profileUpdateError) {
+        try {
+          const { error: avatarClearErr } = await supabase
+            .from('profiles')
+            .update({
+              avatar_url: null,
+              avatar_storage_path: null,
+              updated_at: new Date().toISOString(),
+            })
+            .eq('id', user.id);
+          if (!avatarClearErr) {
+            profileUpdateError = undefined;
+          } else {
+            console.warn('[Supabase Profiles] avatar clear fallback failed:', avatarClearErr.message);
+          }
+        } catch (clearErr: any) {
+          console.warn('[Supabase Profiles] avatar clear exception:', clearErr?.message);
+        }
+      }
+
       // If both cloud writes failed, return the error so the caller can surface it
       if (authUpdateError && profileUpdateError) {
         return { error: `Save failed: ${profileUpdateError}` };
       }
 
       // Optimistic update of local user state
+      const clearingAvatar = hasAvatarUrlUpdate && updates.avatarUrl === null;
       setUser(prev => prev ? {
         ...prev,
         displayName: newDisplayName,
         bio: newBio,
-        avatarUrl: nextAvatar.avatarUrl,
-        avatarStoragePath: nextAvatar.avatarStoragePath,
+        avatarUrl: clearingAvatar ? null : nextAvatar.avatarUrl,
+        avatarStoragePath: clearingAvatar ? null : nextAvatar.avatarStoragePath,
         wallStripIds: nextWallStripIds,
         updatedAt: new Date().toISOString(),
       } : null);
