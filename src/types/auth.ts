@@ -40,5 +40,6 @@ export interface AuthState {
     avatarStoragePath?: string | null;
     wallStripIds?: string[];
   }) => Promise<{ error?: string }>;
+  refreshProfile: () => Promise<void>;
   hasRole: (roles: UserRole | UserRole[]) => boolean;
 }

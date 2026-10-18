@@ -106,10 +106,23 @@ async function resolveUserProfile(sbUser: User): Promise<UserProfile> {
     metadata.bio ??
     '';
 
-  const avatar = normalizeAvatarFields({
-    avatarUrl: dbProfile?.avatar_url || metadata.avatar_url,
-    avatarStoragePath: dbProfile?.avatar_storage_path || metadata.avatar_storage_path,
-  });
+  // For avatar: When dbProfile exists, it is the primary cloud truth across devices.
+  // If dbProfile explicitly has null or empty avatar fields (e.g. user removed avatar),
+  // we do NOT resurrect stale JWT metadata.
+  const rawAvatarUrl = dbProfile
+    ? (dbProfile.avatar_url ?? undefined)
+    : (metadata.avatar_url ?? undefined);
+
+  const rawAvatarPath = dbProfile
+    ? (dbProfile.avatar_storage_path ?? undefined)
+    : (metadata.avatar_storage_path ?? undefined);
+
+  const avatar = (rawAvatarUrl || rawAvatarPath)
+    ? normalizeAvatarFields({
+        avatarUrl: rawAvatarUrl,
+        avatarStoragePath: rawAvatarPath,
+      })
+    : {};
 
   let roleOverride: UserRole | undefined;
   if (typeof window !== 'undefined') {
@@ -122,10 +135,10 @@ async function resolveUserProfile(sbUser: User): Promise<UserProfile> {
     ? 'contributor'
     : (dbProfile?.role || metadata.role || 'user'));
 
-  const cloudWallStripIds = localCache?.wallStripIds || (
-    Array.isArray(metadata.wall_strip_ids)
-      ? metadata.wall_strip_ids
-      : (Array.isArray(dbProfile?.wall_strip_ids) ? dbProfile.wall_strip_ids : undefined)
+  const cloudWallStripIds = (
+    Array.isArray(dbProfile?.wall_strip_ids)
+      ? dbProfile.wall_strip_ids
+      : (Array.isArray(metadata.wall_strip_ids) ? metadata.wall_strip_ids : localCache?.wallStripIds)
   );
 
   const profile: UserProfile = {
@@ -148,7 +161,6 @@ async function resolveUserProfile(sbUser: User): Promise<UserProfile> {
         id: sbUser.id,
         email,
         display_name: resolvedDisplayName,
-        bio: resolvedBio,
         avatar_url: avatar.avatarUrl ?? null,
         avatar_storage_path: avatar.avatarStoragePath ?? null,
         updated_at: new Date().toISOString(),
@@ -171,6 +183,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [supabaseUser, setSupabaseUser] = useState<User | null>(null);
   const [user, setUser] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+
+  const refreshProfile = useCallback(async (): Promise<void> => {
+    try {
+      const { data: { user: freshAuthUser } } = await supabase.auth.getUser();
+      let targetUser = freshAuthUser;
+      if (!targetUser) {
+        const { data: { session: currentSession } } = await supabase.auth.getSession();
+        targetUser = currentSession?.user ?? null;
+      }
+      if (!targetUser) return;
+
+      setSupabaseUser(targetUser);
+      const prof = await resolveUserProfile(targetUser);
+      setUser(prof);
+    } catch (err) {
+      console.warn('[Supabase Auth] refreshProfile notice:', err);
+    }
+  }, []);
 
   useEffect(() => {
     let isMounted = true;
@@ -219,6 +249,56 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       authListener.subscription.unsubscribe();
     };
   }, []);
+
+  // Realtime cross-device sync & active window/tab synchronization
+  useEffect(() => {
+    if (!user?.id || !isSupabaseConfigured) return;
+
+    // Realtime postgres changes on profiles table for cross-device sync
+    const channelName = `profile-sync-${user.id}`;
+    const channel = supabase
+      .channel(channelName)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'profiles',
+          filter: `id=eq.${user.id}`,
+        },
+        async () => {
+          await refreshProfile();
+        }
+      )
+      .subscribe();
+
+    // Re-verify cloud profile when device wakes, tab becomes active, or window gains focus
+    const handleActiveSync = () => {
+      if (typeof document !== 'undefined' && document.visibilityState === 'visible') {
+        refreshProfile();
+      }
+    };
+
+    window.addEventListener('focus', handleActiveSync);
+    document.addEventListener('visibilitychange', handleActiveSync);
+
+    const handleStorage = (e: StorageEvent) => {
+      if (
+        e.key?.includes(`pinksnap_user_profile_${user.id}`) ||
+        e.key?.includes('pinksnap_role_overrides')
+      ) {
+        refreshProfile();
+      }
+    };
+    window.addEventListener('storage', handleStorage);
+
+    return () => {
+      supabase.removeChannel(channel);
+      window.removeEventListener('focus', handleActiveSync);
+      document.removeEventListener('visibilitychange', handleActiveSync);
+      window.removeEventListener('storage', handleStorage);
+    };
+  }, [user?.id, refreshProfile]);
 
   const signIn = useCallback(async (email: string, password: string): Promise<{ error?: string }> => {
     setIsLoading(true);
@@ -446,7 +526,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         console.warn('[Supabase Auth] updateUser error:', authUpdateError);
       }
 
-      // 3. Upsert into Supabase 'profiles' table with both display_name and bio
+      // 3. Upsert into Supabase 'profiles' table with guaranteed core columns fallback
       let profileUpsertError: string | undefined;
       try {
         const profileUpsert: Record<string, any> = {
@@ -461,11 +541,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (hasWallStripIdsUpdate) {
           profileUpsert.wall_strip_ids = nextWallStripIds;
         }
-        const { error: profErr } = await supabase
+
+        let { error: profErr } = await supabase
           .from('profiles')
           .upsert(profileUpsert, { onConflict: 'id' });
-        if (profErr) profileUpsertError = profErr.message;
-        if (profErr) console.warn('[Supabase Profiles] upsert error:', profileUpsertError);
+
+        // If unknown columns (like bio or wall_strip_ids) caused an error, retry with core schema columns
+        if (profErr && (profErr.message?.includes('column') || profErr.code === 'PGRST204' || profErr.code === '42703')) {
+          console.warn('[Supabase Profiles] Retrying upsert with core schema columns only:', profErr.message);
+          const coreUpsert: Record<string, any> = {
+            id: user.id,
+            email: user.email,
+            display_name: newDisplayName,
+            avatar_url: nextAvatar.avatarUrl ?? null,
+            avatar_storage_path: nextAvatar.avatarStoragePath ?? null,
+            updated_at: new Date().toISOString(),
+          };
+          const { error: retryErr } = await supabase
+            .from('profiles')
+            .upsert(coreUpsert, { onConflict: 'id' });
+          if (!retryErr) {
+            profErr = null;
+          } else {
+            profileUpsertError = retryErr.message;
+          }
+        } else if (profErr) {
+          profileUpsertError = profErr.message;
+        }
+
+        if (profileUpsertError) {
+          console.warn('[Supabase Profiles] upsert error:', profileUpsertError);
+        }
       } catch (profErr: any) {
         profileUpsertError = profErr?.message;
         console.warn('[Supabase Profiles] upsert exception:', profileUpsertError);
@@ -476,6 +582,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return { error: `Save failed: ${profileUpsertError}` };
       }
 
+      // Optimistic update of local user state
       setUser(prev => prev ? {
         ...prev,
         displayName: newDisplayName,
@@ -486,45 +593,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         updatedAt: new Date().toISOString(),
       } : null);
 
-      // ── Refresh user state from cloud so the UI stays in sync ──
-      // After writing to auth metadata + profiles table, re-fetch from Supabase
-      // so the `user` state reflects cloud truth (not just local cache).
-      try {
-        const { data: { user: freshAuthUser }, error: getUserErr } = await supabase.auth.getUser();
-        if (getUserErr) throw getUserErr;
-        if (freshAuthUser && freshAuthUser.id === user.id) {
-          const { data: dbProfile, error: dbErr } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', freshAuthUser.id)
-            .maybeSingle();
-          if (dbErr) throw dbErr;
-
-          setSupabaseUser(freshAuthUser);
-          setUser(prev => prev ? {
-            ...prev,
-            id: freshAuthUser.id,
-            email: freshAuthUser.email || '',
-            displayName: dbProfile?.display_name || freshAuthUser.user_metadata?.display_name || prev.displayName,
-            bio: (dbProfile?.bio ?? freshAuthUser.user_metadata?.bio ?? prev.bio) || '',
-            avatarUrl: dbProfile?.avatar_url || freshAuthUser.user_metadata?.avatar_url || prev.avatarUrl,
-            avatarStoragePath: dbProfile?.avatar_storage_path || freshAuthUser.user_metadata?.avatar_storage_path || prev.avatarStoragePath,
-            role: freshAuthUser.user_metadata?.role || prev.role,
-            wallStripIds: Array.isArray(dbProfile?.wall_strip_ids) ? dbProfile.wall_strip_ids : (Array.isArray(freshAuthUser.user_metadata?.wall_strip_ids) ? freshAuthUser.user_metadata.wall_strip_ids : prev.wallStripIds),
-            updatedAt: new Date().toISOString(),
-          } : null);
-        }
-      } catch (refreshErr) {
-        console.warn('[Auth] refresh after update notice:', refreshErr);
-        // Non-fatal: optimistic state was already set above
-      }
+      // Refresh from cloud so state is 100% verified against cloud truth
+      await refreshProfile();
 
       return {};
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Unknown error';
       return { error: message };
     }
-  }, [user]);
+  }, [user, refreshProfile]);
 
   const hasRole = useCallback((roles: UserRole | UserRole[]): boolean => {
     if (!user) return false;
@@ -552,6 +629,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     signOut,
     resetPassword,
     updateProfile,
+    refreshProfile,
     hasRole,
   }), [
     user,
@@ -567,6 +645,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     signOut,
     resetPassword,
     updateProfile,
+    refreshProfile,
     hasRole,
   ]);
 
