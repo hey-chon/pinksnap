@@ -16,13 +16,6 @@ export function validateAvatarFile(file: File): { isValid: boolean; error?: stri
     };
   }
 
-  if (!AVATAR_ALLOWED_MIME_TYPES.includes(file.type as typeof AVATAR_ALLOWED_MIME_TYPES[number])) {
-    return {
-      isValid: false,
-      error: 'Only JPG, PNG, or WEBP images are allowed.',
-    };
-  }
-
   if (file.size <= 0) {
     return {
       isValid: false,
@@ -34,6 +27,17 @@ export function validateAvatarFile(file: File): { isValid: boolean; error?: stri
     return {
       isValid: false,
       error: `Avatar must be ${MAX_MB_TEXT} or smaller.`,
+    };
+  }
+
+  // Support iOS Safari Photo Library (which can have image/heic, image/heif, empty type, etc.)
+  const isImageMime = file.type ? file.type.startsWith('image/') : false;
+  const isImageExt = /\.(jpe?g|png|webp|heic|heif|bmp|gif|avif)$/i.test(file.name);
+
+  if (!isImageMime && !isImageExt) {
+    return {
+      isValid: false,
+      error: 'Please select an image from your photos (JPG, PNG, WEBP, or HEIC).',
     };
   }
 
@@ -53,25 +57,36 @@ function loadImageFromFile(file: File): Promise<HTMLImageElement> {
 
     image.onerror = () => {
       URL.revokeObjectURL(imageUrl);
-      reject(new Error('Unable to decode the selected image.'));
+      reject(new Error('Unable to decode the selected image. Please try another photo.'));
     };
 
     image.src = imageUrl;
   });
 }
 
-function canvasToWebpBlob(canvas: HTMLCanvasElement): Promise<Blob> {
+function canvasToAvatarBlob(canvas: HTMLCanvasElement): Promise<{ blob: Blob; ext: string; mimeType: string }> {
   return new Promise((resolve, reject) => {
-    canvas.toBlob((blob) => {
-      if (!blob) {
-        reject(new Error('Failed to process image data.'));
+    // 1. Try webp first
+    canvas.toBlob((webpBlob) => {
+      if (webpBlob && webpBlob.type === 'image/webp') {
+        resolve({ blob: webpBlob, ext: 'webp', mimeType: 'image/webp' });
         return;
       }
-      if (blob.type !== 'image/webp') {
-        reject(new Error('Your browser could not encode a secure avatar format.'));
-        return;
-      }
-      resolve(blob);
+      // 2. Safari / iOS fallback to jpeg
+      canvas.toBlob((jpegBlob) => {
+        if (jpegBlob && (jpegBlob.type === 'image/jpeg' || jpegBlob.type === 'image/jpg')) {
+          resolve({ blob: jpegBlob, ext: 'jpg', mimeType: 'image/jpeg' });
+          return;
+        }
+        // 3. Fallback to png
+        canvas.toBlob((pngBlob) => {
+          if (pngBlob) {
+            resolve({ blob: pngBlob, ext: 'png', mimeType: 'image/png' });
+            return;
+          }
+          reject(new Error('Failed to process image data on this browser.'));
+        }, 'image/png');
+      }, 'image/jpeg', 0.9);
     }, 'image/webp', 0.9);
   });
 }
@@ -112,11 +127,11 @@ export async function sanitizeAvatarForUpload(file: File): Promise<File> {
   context.imageSmoothingQuality = 'high';
   context.drawImage(image, sx, sy, cropSize, cropSize, 0, 0, targetSize, targetSize);
 
-  const sanitizedBlob = await canvasToWebpBlob(canvas);
+  const { blob: sanitizedBlob, ext, mimeType } = await canvasToAvatarBlob(canvas);
 
   if (sanitizedBlob.size <= 0 || sanitizedBlob.size > AVATAR_MAX_FILE_BYTES) {
     throw new Error(`Processed avatar must be ${MAX_MB_TEXT} or smaller.`);
   }
 
-  return new File([sanitizedBlob], 'avatar.webp', { type: 'image/webp' });
+  return new File([sanitizedBlob], `avatar.${ext}`, { type: mimeType });
 }

@@ -1,15 +1,24 @@
 export const AVATAR_BUCKET = 'avatars';
 
-export const AVATAR_ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp'] as const;
-export const AVATAR_ACCEPT_ATTRIBUTE = AVATAR_ALLOWED_MIME_TYPES.join(',');
+export const AVATAR_ALLOWED_MIME_TYPES = [
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+  'image/heic',
+  'image/heif',
+  'image/pjpeg',
+  'image/x-png',
+  'image/*',
+] as const;
+export const AVATAR_ACCEPT_ATTRIBUTE = 'image/*';
 
-export const AVATAR_MAX_FILE_BYTES = 3 * 1024 * 1024;
+export const AVATAR_MAX_FILE_BYTES = 5 * 1024 * 1024;
 export const AVATAR_TARGET_SIZE_PX = 512;
 export const AVATAR_MIN_DIMENSION_PX = 64;
 export const AVATAR_MAX_PIXEL_AREA = 16_000_000;
 
 const USER_ID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-const AVATAR_FILE_PATTERN = /^avatar-[A-Za-z0-9-]{12,80}\.webp$/;
+const AVATAR_FILE_PATTERN = /^avatar-[A-Za-z0-9-]{12,80}\.(webp|jpg|jpeg|png)$/i;
 const AVATAR_PUBLIC_PREFIX = `/storage/v1/object/public/${AVATAR_BUCKET}/`;
 
 function getConfiguredSupabaseOrigin(): string | null {
@@ -33,7 +42,7 @@ function createAvatarObjectId(): string {
 }
 
 export function isSafeAvatarStoragePath(value: unknown): value is string {
-  if (typeof value !== 'string') return false;
+  if (!value || typeof value !== 'string') return false;
   const trimmed = value.trim();
   if (!trimmed || trimmed.length > 160) return false;
 
@@ -49,12 +58,13 @@ export function normalizeAvatarStoragePath(value: unknown): string | undefined {
   return value.trim();
 }
 
-export function buildAvatarStoragePath(userId: string): string {
+export function buildAvatarStoragePath(userId: string, ext = 'webp'): string {
   const trimmedUserId = userId.trim();
   if (!USER_ID_PATTERN.test(trimmedUserId)) {
     throw new Error('Invalid user ID for avatar upload path');
   }
-  return `${trimmedUserId}/avatar-${createAvatarObjectId()}.webp`;
+  const cleanExt = ext.replace(/^\./, '').toLowerCase() || 'webp';
+  return `${trimmedUserId}/avatar-${createAvatarObjectId()}.${cleanExt}`;
 }
 
 export function buildAvatarPublicUrl(storagePath: string): string | null {

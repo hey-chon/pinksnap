@@ -212,7 +212,8 @@ export default function ProfilePage() {
 
     try {
       const sanitizedAvatar = await sanitizeAvatarForUpload(file);
-      const nextAvatarPath = buildAvatarStoragePath(user.id);
+      const ext = sanitizedAvatar.name.split('.').pop() || 'webp';
+      const nextAvatarPath = buildAvatarStoragePath(user.id, ext);
       uploadedAvatarPath = nextAvatarPath;
 
       const { error: uploadError } = await supabase.storage
@@ -872,7 +873,7 @@ export default function ProfilePage() {
                   <div className="w-14 h-14 sm:w-20 sm:h-20 mx-auto mb-3 sm:mb-4 rounded-2xl sm:rounded-3xl bg-gradient-to-tr from-pink-100 to-pink-50 flex items-center justify-center text-primary border border-pink-200/60 shadow-sm">
                     <Images className="w-7 h-7 sm:w-10 sm:h-10 stroke-[1.75]" />
                   </div>
-                  <h3 className="font-hero text-xl sm:text-2xl text-foreground mb-1.5 sm:mb-2">YOUR PROFILE WALL</h3>
+                  <h3 className="font-hero text-xl sm:text-2xl text-foreground mb-1.5 sm:mb-2">PROFILE WALL</h3>
                   <p className="text-foreground/60 text-xs sm:text-sm max-w-sm mx-auto mb-5 sm:mb-6 leading-relaxed">
                     Strips in your gallery are private by default. Pick your favorite snapshots to showcase here on your public wall.
                   </p>
@@ -1061,52 +1062,58 @@ export default function ProfilePage() {
         </div>
       </main>
 
-      {/* ── Avatar Action Modal (Upload New Photo or Remove Photo) ── */}
+      {/* ── Avatar Action Modal (Clean, Minimal, Non-Pink UI) ── */}
       {showAvatarMenu && (
         <div
-          className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-150"
+          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-150"
           onClick={() => setShowAvatarMenu(false)}
         >
           <div
-            className="bg-white rounded-3xl p-5 max-w-xs w-full shadow-2xl border border-pink-100 space-y-2.5 animate-in zoom-in-95 duration-150 text-center"
+            className="bg-white rounded-2xl p-5 max-w-[280px] sm:max-w-xs w-full shadow-xl border border-neutral-200/90 space-y-3 animate-in zoom-in-95 duration-150 text-center"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="pb-1">
-              <h3 className="font-hero text-lg text-foreground">PROFILE PHOTO</h3>
-              <p className="text-[11px] text-foreground/50 font-medium">Update or remove your booth picture</p>
+            <div className="pt-1 pb-1">
+              <h3 className="text-sm font-bold tracking-tight text-neutral-900 uppercase">
+                Profile Photo
+              </h3>
+              <p className="text-[11px] text-neutral-500 font-medium mt-0.5">
+                JPG, PNG, or HEIC up to {MAX_AVATAR_MB}MB
+              </p>
             </div>
 
-            <button
-              type="button"
-              onClick={() => {
-                setShowAvatarMenu(false);
-                fileInputRef.current?.click();
-              }}
-              className="w-full py-3 px-4 rounded-2xl bg-primary text-white text-xs font-black uppercase tracking-wider shadow-md shadow-primary/25 flex items-center justify-center gap-2 active:scale-98 transition-all hover:brightness-105"
-            >
-              <Upload className="w-4 h-4" /> Upload New Photo
-            </button>
+            <div className="space-y-2 pt-1">
+              <label
+                htmlFor="avatar-file-input"
+                onClick={() => setShowAvatarMenu(false)}
+                className="w-full py-2.5 px-3.5 rounded-xl bg-neutral-900 hover:bg-black text-white text-xs font-semibold flex items-center justify-center gap-2 active:scale-98 transition-all cursor-pointer select-none"
+              >
+                <Upload className="w-3.5 h-3.5 text-neutral-300" />
+                <span>Choose from Library</span>
+              </label>
 
-            <button
-              type="button"
-              onClick={handleDirectRemoveAvatar}
-              className="w-full py-3 px-4 rounded-2xl bg-destructive/10 text-destructive hover:bg-destructive/15 text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 active:scale-98 transition-all"
-            >
-              <Trash2 className="w-4 h-4" /> Remove Photo
-            </button>
+              {(user.avatarUrl || user.avatarStoragePath) && (
+                <button
+                  type="button"
+                  onClick={handleDirectRemoveAvatar}
+                  className="w-full py-2.5 px-3.5 rounded-xl border border-neutral-200 text-neutral-700 hover:text-red-600 hover:border-red-200 hover:bg-red-50/40 text-xs font-semibold flex items-center justify-center gap-2 active:scale-98 transition-all cursor-pointer"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span>Remove Photo</span>
+                </button>
+              )}
 
-            <button
-              type="button"
-              onClick={() => setShowAvatarMenu(false)}
-              className="w-full py-2.5 px-4 rounded-2xl text-foreground/50 hover:bg-foreground/[0.04] text-xs font-bold uppercase tracking-wider transition-colors"
-            >
-              Cancel
-            </button>
+              <button
+                type="button"
+                onClick={() => setShowAvatarMenu(false)}
+                className="w-full py-2 rounded-xl text-neutral-400 hover:text-neutral-700 text-xs font-medium transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+            </div>
           </div>
         </div>
       )}
 
-      {/* ── Post to Wall Modal (Select strips from private gallery) ── */}
       {/* ── Post to Wall Modal (Select strips from private gallery) ── */}
       {showPostModal && (
         <div
@@ -1241,13 +1248,16 @@ export default function ProfilePage() {
         </div>
       )}
 
-      {/* Hidden Native File Input for Direct Upload */}
+      {/* Native File Input for Photo Library and Camera Upload (Accessible to iOS Safari) */}
       <input
+        id="avatar-file-input"
         ref={fileInputRef}
         type="file"
         accept={AVATAR_ACCEPT_ATTRIBUTE}
         onChange={handleDirectAvatarUpload}
-        className="hidden"
+        className="sr-only"
+        tabIndex={-1}
+        aria-hidden="true"
       />
 
       <BottomNav />
