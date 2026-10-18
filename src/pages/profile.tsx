@@ -623,7 +623,7 @@ export default function ProfilePage() {
                 className="p-2 rounded-2xl hover:bg-foreground/[0.02] transition-colors group cursor-pointer"
               >
                 <p className="text-lg sm:text-2xl font-black text-foreground group-hover:text-primary transition-colors leading-none">
-                  {isAdmin ? 'Admin' : 'Member+'}
+                  {isAdmin ? 'Creator+' : 'Member+'}
                 </p>
                 <p className="text-[9px] sm:text-[10px] font-bold text-foreground/50 uppercase tracking-wider mt-1">
                   Booth Tier
