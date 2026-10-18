@@ -80,6 +80,7 @@ export default function ProfilePage() {
   });
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const cloudSyncTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Sync state if user changes
   useEffect(() => {
@@ -97,6 +98,7 @@ export default function ProfilePage() {
   // Sync wall strips from cloud profile or localStorage across all devices
   useEffect(() => {
     if (!user?.id) return;
+    if (showPostModal) return; // Do not overwrite while user is picking strips in modal
 
     if (Array.isArray(user.wallStripIds)) {
       setPostedStripIds(user.wallStripIds);
@@ -115,6 +117,7 @@ export default function ProfilePage() {
 
     // Actively sync from cloud on focus or tab visibility change (syncing phone & laptop)
     const syncFromCloud = async () => {
+      if (showPostModal) return;
       try {
         const { data: { user: freshUser } } = await supabase.auth.getUser();
         const cloudIds = freshUser?.user_metadata?.wall_strip_ids;
@@ -140,7 +143,7 @@ export default function ProfilePage() {
       window.removeEventListener('focus', syncFromCloud);
       document.removeEventListener('visibilitychange', handleVisibility);
     };
-  }, [user?.id, user?.wallStripIds]);
+  }, [user?.id, user?.wallStripIds, showPostModal]);
 
   const postedStrips = savedMemories.filter((m) => postedStripIds.includes(m.id));
 
@@ -359,7 +362,7 @@ export default function ProfilePage() {
     }
   };
 
-  const handleTogglePostToWall = (stripId: string, e?: React.MouseEvent) => {
+  const handleTogglePostToWall = (stripId: string, e?: React.MouseEvent | React.TouchEvent) => {
     e?.stopPropagation();
     if (!user?.id) return;
 
@@ -370,10 +373,28 @@ export default function ProfilePage() {
         localStorage.setItem(`pinksnap_wall_strips_${user.id}`, JSON.stringify(next));
       } catch {
       }
-      // Cloud sync across phone, laptop, and tablet
-      updateProfile({ wallStripIds: next }).catch(() => {});
+
+      // Debounce cloud sync so rapid clicks / taps don't conflict or overwrite
+      if (cloudSyncTimeoutRef.current) {
+        clearTimeout(cloudSyncTimeoutRef.current);
+      }
+      cloudSyncTimeoutRef.current = setTimeout(() => {
+        updateProfile({ wallStripIds: next }).catch(() => {});
+      }, 500);
+
       return next;
     });
+  };
+
+  const handleClosePostModal = () => {
+    setShowPostModal(false);
+    if (cloudSyncTimeoutRef.current) {
+      clearTimeout(cloudSyncTimeoutRef.current);
+      cloudSyncTimeoutRef.current = null;
+    }
+    if (user?.id) {
+      updateProfile({ wallStripIds: postedStripIds }).catch(() => {});
+    }
   };
 
   const handleDeleteMemory = (id: string, e?: React.MouseEvent) => {
@@ -789,7 +810,7 @@ export default function ProfilePage() {
                   {isAdmin ? 'Creator+' : isContributor ? 'Contributor+' : 'Member+'}
                 </p>
                 <p className="text-[9px] sm:text-[10px] font-bold text-foreground/50 uppercase tracking-wider mt-1">
-                  Booth Tier
+                  Booth Role
                 </p>
               </div>
 
@@ -1086,10 +1107,11 @@ export default function ProfilePage() {
       )}
 
       {/* ── Post to Wall Modal (Select strips from private gallery) ── */}
+      {/* ── Post to Wall Modal (Select strips from private gallery) ── */}
       {showPostModal && (
         <div
           className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center animate-in fade-in duration-150 p-0 sm:p-4"
-          onClick={() => setShowPostModal(false)}
+          onClick={handleClosePostModal}
         >
           <div
             className="bg-white w-full max-w-lg h-[82dvh] sm:h-auto sm:max-h-[85dvh] rounded-t-[28px] sm:rounded-3xl shadow-2xl border border-pink-100 flex flex-col animate-in slide-in-from-bottom-5 sm:zoom-in-95 duration-200 overflow-hidden"
@@ -1109,14 +1131,14 @@ export default function ProfilePage() {
               <div className="flex items-center gap-2">
                 <button
                   type="button"
-                  onClick={() => setShowPostModal(false)}
+                  onClick={handleClosePostModal}
                   className="px-3.5 py-1.5 rounded-full bg-primary text-white text-xs font-black uppercase tracking-wider hover:brightness-105 active:scale-95 shadow-sm shadow-primary/25 cursor-pointer sm:hidden"
                 >
                   Done
                 </button>
                 <button
                   type="button"
-                  onClick={() => setShowPostModal(false)}
+                  onClick={handleClosePostModal}
                   className="w-7 h-7 rounded-full bg-foreground/[0.04] hover:bg-foreground/[0.08] active:scale-90 text-foreground/60 flex items-center justify-center transition-all cursor-pointer"
                   aria-label="Close"
                 >
@@ -1136,28 +1158,29 @@ export default function ProfilePage() {
                   <p className="text-xs text-foreground/55 max-w-xs mx-auto mb-4 font-medium leading-relaxed">
                     You haven't saved any photobooth strips yet. Start snapping to build your collection!
                   </p>
-                
                 </div>
               ) : (
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
                   {savedMemories.map((memory) => {
                     const isOnWall = postedStripIds.includes(memory.id);
                     return (
-                      <div
+                      <button
+                        type="button"
                         key={memory.id}
-                        onClick={() => handleTogglePostToWall(memory.id)}
-                        className={`group relative rounded-xl sm:rounded-2xl p-1.5 sm:p-2 transition-all cursor-pointer select-none border-2 flex flex-col justify-between active:scale-[0.98] ${
+                        onClick={(e) => handleTogglePostToWall(memory.id, e)}
+                        style={{ touchAction: 'manipulation' }}
+                        className={`relative rounded-xl sm:rounded-2xl p-1.5 sm:p-2 select-none border-2 flex flex-col justify-between text-left cursor-pointer transition-colors active:scale-[0.98] ${
                           isOnWall
-                            ? 'bg-primary/[0.04] border-primary shadow-sm ring-1 ring-primary/25'
-                            : 'bg-white border-pink-100/90 hover:border-pink-200 shadow-xs'
+                            ? 'bg-primary/[0.06] border-primary shadow-sm'
+                            : 'bg-white border-pink-100/90 shadow-xs'
                         }`}
                       >
-                        {/* Thumbnail Container */}
-                        <div className="aspect-[3/4] w-full rounded-lg sm:rounded-xl overflow-hidden bg-black/5 relative mb-1.5 sm:mb-2">
+                        {/* Thumbnail Container — No hover zoom */}
+                        <div className="aspect-[3/4] w-full rounded-lg sm:rounded-xl overflow-hidden bg-black/5 relative mb-1.5 sm:mb-2 pointer-events-none">
                           <img
                             src={memory.url}
                             alt="Strip preview"
-                            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-102"
+                            className="w-full h-full object-cover select-none"
                             loading="lazy"
                           />
 
@@ -1168,7 +1191,7 @@ export default function ProfilePage() {
                                 <Check className="w-3 h-3 sm:w-3.5 sm:h-3.5 stroke-[3]" />
                               </div>
                             ) : (
-                              <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-black/35 backdrop-blur-sm border border-white/60 text-white/90 flex items-center justify-center group-hover:bg-primary/80 transition-colors">
+                              <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-black/40 backdrop-blur-sm border border-white/60 text-white flex items-center justify-center">
                                 <Plus className="w-3 h-3 sm:w-3.5 sm:h-3.5 stroke-[2.5]" />
                               </div>
                             )}
@@ -1176,7 +1199,7 @@ export default function ProfilePage() {
                         </div>
 
                         {/* Footer Info */}
-                        <div className="flex items-center justify-between px-0.5 sm:px-1 text-[10px] sm:text-[11px]">
+                        <div className="flex items-center justify-between px-0.5 sm:px-1 text-[10px] sm:text-[11px] pointer-events-none">
                           <span className="font-semibold text-foreground/50 text-[9px] sm:text-[10px] truncate">
                             {new Date(memory.date).toLocaleDateString(undefined, {
                               month: 'short',
@@ -1188,10 +1211,10 @@ export default function ProfilePage() {
                               isOnWall ? 'text-primary' : 'text-foreground/40'
                             }`}
                           >
-                            {isOnWall ? 'On Wall' : 'Private'}
+                            {isOnWall ? 'Public' : 'Private'}
                           </span>
                         </div>
-                      </div>
+                      </button>
                     );
                   })}
                 </div>
@@ -1208,7 +1231,7 @@ export default function ProfilePage() {
               </div>
               <button
                 type="button"
-                onClick={() => setShowPostModal(false)}
+                onClick={handleClosePostModal}
                 className="px-6 py-2.5 bg-primary text-white text-xs font-black uppercase tracking-wider rounded-xl shadow-md shadow-primary/25 hover:brightness-105 active:scale-95 transition-all cursor-pointer"
               >
                 Done
