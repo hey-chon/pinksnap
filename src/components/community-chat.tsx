@@ -298,7 +298,7 @@ export default function CommunityChat() {
                         <span className="pixel-text font-black">{nameDisplay}</span>
                         {isMsgAdmin && (
                           <span className="px-1.5 py-0.5 rounded bg-primary text-white text-[8px] font-black tracking-widest leading-none">
-                            ADMIN
+                            DEVELOPER
                           </span>
                         )}
                       </div>

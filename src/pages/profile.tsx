@@ -39,6 +39,8 @@ import {
   Loader2,
   Heart,
   ImageIcon,
+  Settings,
+  Settings2,
 } from 'lucide-react';
 
 const MAX_AVATAR_MB = Math.round(AVATAR_MAX_FILE_BYTES / (1024 * 1024));
@@ -50,9 +52,9 @@ export default function ProfilePage() {
   const { toast } = useToast();
 
   const [displayName, setDisplayName] = useState(user?.displayName || '');
-  const [selectedAvatarFile, setSelectedAvatarFile] = useState<File | null>(null);
-  const [avatarPreviewUrl, setAvatarPreviewUrl] = useState<string | null>(null);
-  const [isRemovingAvatar, setIsRemovingAvatar] = useState(false);
+  const [bio, setBio] = useState(user?.bio ?? '');
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const [showAvatarMenu, setShowAvatarMenu] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isSendingReset, setIsSendingReset] = useState(false);
   const [activeTab, setActiveTab] = useState<'strips' | 'edit' | 'badges'>('strips');
@@ -68,12 +70,10 @@ export default function ProfilePage() {
   }, [user?.displayName]);
 
   useEffect(() => {
-    return () => {
-      if (avatarPreviewUrl) {
-        URL.revokeObjectURL(avatarPreviewUrl);
-      }
-    };
-  }, [avatarPreviewUrl]);
+    if (user?.bio !== undefined) {
+      setBio(user.bio ?? '');
+    }
+  }, [user?.bio]);
 
   if (!user) {
     return (
@@ -101,30 +101,19 @@ export default function ProfilePage() {
     );
   }
 
-  const storedAvatarUrl = normalizeAvatarUrl(user.avatarUrl);
-  const shownAvatarUrl = isRemovingAvatar
-    ? undefined
-    : avatarPreviewUrl || storedAvatarUrl;
-  const hasAvatarToRemove = Boolean(
-    avatarPreviewUrl || storedAvatarUrl || user.avatarStoragePath
-  );
-
-  const resetAvatarSelection = () => {
-    setSelectedAvatarFile(null);
-    setAvatarPreviewUrl((current) => {
-      if (current) {
-        URL.revokeObjectURL(current);
-      }
-      return null;
-    });
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+  const handleAvatarClick = () => {
+    if (user?.avatarUrl || user?.avatarStoragePath) {
+      setShowAvatarMenu(true);
+    } else {
+      fileInputRef.current?.click();
     }
   };
 
-  const handleAvatarFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleDirectAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
+    event.target.value = '';
+    setShowAvatarMenu(false);
 
     const validation = validateAvatarFile(file);
     if (!validation.isValid) {
@@ -133,24 +122,124 @@ export default function ProfilePage() {
         description: validation.error || 'Please choose a valid image file.',
         variant: 'destructive',
       });
-      event.target.value = '';
       return;
     }
 
-    setAvatarPreviewUrl((current) => {
-      if (current) {
-        URL.revokeObjectURL(current);
+    setIsUploadingAvatar(true);
+    let uploadedAvatarPath: string | null = null;
+
+    const cleanupUploadedAvatar = async () => {
+      if (!uploadedAvatarPath) return;
+      try {
+        await supabase.storage.from(AVATAR_BUCKET).remove([uploadedAvatarPath]);
+      } catch {
+      } finally {
+        uploadedAvatarPath = null;
       }
-      return URL.createObjectURL(file);
-    });
-    setSelectedAvatarFile(file);
-    setIsRemovingAvatar(false);
-    setActiveTab('edit'); // Switch to edit tab so user can preview and save
+    };
+
+    try {
+      const sanitizedAvatar = await sanitizeAvatarForUpload(file);
+      const nextAvatarPath = buildAvatarStoragePath(user.id);
+      uploadedAvatarPath = nextAvatarPath;
+
+      const { error: uploadError } = await supabase.storage
+        .from(AVATAR_BUCKET)
+        .upload(nextAvatarPath, sanitizedAvatar, {
+          upsert: false,
+          cacheControl: '31536000',
+          contentType: sanitizedAvatar.type,
+        });
+
+      if (uploadError) {
+        throw new Error(uploadError.message || 'Failed to upload avatar image.');
+      }
+
+      const { data: publicUrlData } = supabase.storage
+        .from(AVATAR_BUCKET)
+        .getPublicUrl(nextAvatarPath);
+
+      const trustedAvatarUrl = normalizeAvatarUrl(publicUrlData.publicUrl);
+      if (!trustedAvatarUrl) {
+        await cleanupUploadedAvatar();
+        throw new Error('Uploaded avatar URL could not be verified.');
+      }
+
+      const previousAvatarPath = user.avatarStoragePath;
+      const res = await updateProfile({
+        avatarUrl: trustedAvatarUrl,
+        avatarStoragePath: nextAvatarPath,
+      });
+
+      if (res.error) {
+        await cleanupUploadedAvatar();
+        toast({
+          title: 'Update Failed',
+          description: res.error,
+          variant: 'destructive',
+        });
+      } else {
+        if (previousAvatarPath && previousAvatarPath !== nextAvatarPath) {
+          try {
+            await supabase.storage.from(AVATAR_BUCKET).remove([previousAvatarPath]);
+          } catch {
+          }
+        }
+        toast({
+          title: 'Profile Picture Updated ✨',
+          description: 'Your new avatar is live on your profile.',
+        });
+      }
+    } catch (err: unknown) {
+      await cleanupUploadedAvatar();
+      const message = err instanceof Error ? err.message : 'Could not upload avatar.';
+      toast({
+        title: 'Upload Failed',
+        description: message,
+        variant: 'destructive',
+      });
+    } finally {
+      setIsUploadingAvatar(false);
+    }
   };
 
-  const handleRemoveAvatar = () => {
-    resetAvatarSelection();
-    setIsRemovingAvatar(true);
+  const handleDirectRemoveAvatar = async () => {
+    setShowAvatarMenu(false);
+    setIsUploadingAvatar(true);
+    try {
+      const previousAvatarPath = user.avatarStoragePath;
+      const res = await updateProfile({
+        avatarUrl: null,
+        avatarStoragePath: null,
+      });
+
+      if (res.error) {
+        toast({
+          title: 'Removal Failed',
+          description: res.error,
+          variant: 'destructive',
+        });
+      } else {
+        if (previousAvatarPath) {
+          try {
+            await supabase.storage.from(AVATAR_BUCKET).remove([previousAvatarPath]);
+          } catch {
+          }
+        }
+        toast({
+          title: 'Profile Picture Removed',
+          description: 'Your avatar has been reset.',
+        });
+      }
+    } catch {
+      toast({
+        title: 'Error',
+        description: 'Failed to remove avatar image.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsUploadingAvatar(false);
+    }
   };
 
   const handleShareProfile = async () => {
@@ -227,99 +316,38 @@ export default function ProfilePage() {
     }
 
     setIsSaving(true);
-    let uploadedAvatarPath: string | null = null;
-
-    const cleanupUploadedAvatar = async () => {
-      if (!uploadedAvatarPath) return;
-      try {
-        await supabase.storage.from(AVATAR_BUCKET).remove([uploadedAvatarPath]);
-      } catch {
-      } finally {
-        uploadedAvatarPath = null;
-      }
-    };
-
     try {
-      const updates: {
-        displayName?: string;
-        avatarUrl?: string | null;
-        avatarStoragePath?: string | null;
-      } = {
+      const trimmedBio = bio.trim();
+      const updates = {
         displayName: trimmedDisplayName,
+        bio: trimmedBio,
       };
-
-      const previousAvatarPath = user.avatarStoragePath;
-
-      if (isRemovingAvatar) {
-        updates.avatarUrl = null;
-        updates.avatarStoragePath = null;
-      } else if (selectedAvatarFile) {
-        const sanitizedAvatar = await sanitizeAvatarForUpload(selectedAvatarFile);
-        const nextAvatarPath = buildAvatarStoragePath(user.id);
-        uploadedAvatarPath = nextAvatarPath;
-
-        const { error: uploadError } = await supabase.storage
-          .from(AVATAR_BUCKET)
-          .upload(nextAvatarPath, sanitizedAvatar, {
-            upsert: false,
-            cacheControl: '31536000',
-            contentType: sanitizedAvatar.type,
-          });
-
-        if (uploadError) {
-          throw new Error(uploadError.message || 'Failed to upload avatar image.');
-        }
-
-        const { data: publicUrlData } = supabase.storage
-          .from(AVATAR_BUCKET)
-          .getPublicUrl(nextAvatarPath);
-
-        const trustedAvatarUrl = normalizeAvatarUrl(publicUrlData.publicUrl);
-        if (!trustedAvatarUrl) {
-          await cleanupUploadedAvatar();
-          throw new Error('Uploaded avatar URL could not be verified.');
-        }
-
-        updates.avatarUrl = trustedAvatarUrl;
-        updates.avatarStoragePath = nextAvatarPath;
-      }
 
       const res = await updateProfile(updates);
 
       if (res.error) {
-        await cleanupUploadedAvatar();
         toast({
           title: 'Update Failed',
           description: res.error,
           variant: 'destructive',
         });
       } else {
-        if (isRemovingAvatar && previousAvatarPath) {
-          try {
-            await supabase.storage.from(AVATAR_BUCKET).remove([previousAvatarPath]);
-          } catch {
+        setBio(trimmedBio);
+
+        if (typeof window !== 'undefined' && user?.id) {
+          if (trimmedBio) {
+            localStorage.setItem(`pinksnap_user_bio_${user.id}`, trimmedBio);
+          } else {
+            localStorage.removeItem(`pinksnap_user_bio_${user.id}`);
           }
         }
-
-        if (selectedAvatarFile && previousAvatarPath && updates.avatarStoragePath && previousAvatarPath !== updates.avatarStoragePath) {
-          try {
-            await supabase.storage.from(AVATAR_BUCKET).remove([previousAvatarPath]);
-          } catch {
-          }
-        }
-
-        resetAvatarSelection();
-        setIsRemovingAvatar(false);
 
         toast({
           title: 'Profile Saved ✨',
-          description: selectedAvatarFile || isRemovingAvatar
-            ? 'Your profile picture and details were updated.'
-            : 'Your changes have been saved.',
+          description: 'Your changes have been saved.',
         });
       }
     } catch (err: unknown) {
-      await cleanupUploadedAvatar();
       const message = err instanceof Error ? err.message : 'Could not save profile changes.';
       toast({
         title: 'Update Failed',
@@ -433,13 +461,7 @@ export default function ProfilePage() {
           />
           <div className="absolute top-0 right-0 w-80 h-80 bg-white/15 rounded-full blur-3xl pointer-events-none" />
           <div className="absolute bottom-0 left-0 w-64 h-64 bg-pink-900/30 rounded-full blur-2xl pointer-events-none" />
-
-          {/* Social Booth Banner Watermark / Badge */}
-          <div className="absolute top-3.5 right-3.5 sm:top-5 sm:right-6 flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/25 backdrop-blur-md border border-white/20 text-white text-[10px] sm:text-xs font-bold tracking-wide">
-            <Sparkles className="w-3 h-3 text-pink-200" />
-            <span>Booth Star Profile</span>
-          </div>
-        </div>
+          </div>      
 
         {/* ── Main Profile Container ── */}
         <div className="max-w-3xl mx-auto px-3.5 sm:px-6">
@@ -448,18 +470,19 @@ export default function ProfilePage() {
             
             {/* ROW 1: Avatar + Action Buttons (Twitter / Instagram Header Row) */}
             <div className="flex items-end justify-between gap-3 relative">
-              {/* Profile Avatar with dedicated upload trigger */}
+              {/* Profile Avatar with direct click-to-change functions */}
               <div className="relative shrink-0">
                 <button
                   type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  title="Click to change profile photo"
-                  className="group relative block rounded-full focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/40 active:scale-95 transition-transform"
+                  onClick={handleAvatarClick}
+                  disabled={isUploadingAvatar}
+                  title="Change profile photo"
+                  className="group relative block rounded-full focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/40 active:scale-95 transition-transform cursor-pointer"
                 >
                   <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-white border-4 border-white shadow-xl flex items-center justify-center text-primary font-display text-4xl sm:text-5xl overflow-hidden ring-4 ring-pink-500/10">
-                    {shownAvatarUrl ? (
+                    {user.avatarUrl ? (
                       <img
-                        src={shownAvatarUrl}
+                        src={normalizeAvatarUrl(user.avatarUrl)}
                         alt={user.displayName}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         referrerPolicy="no-referrer"
@@ -469,16 +492,26 @@ export default function ProfilePage() {
                     )}
                   </div>
 
-                  {/* Hover Camera Overlay */}
-                  <div className="absolute inset-0 rounded-full bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-white text-[9px] font-bold">
-                    <Camera className="w-5 h-5 mb-0.5" />
-                    <span>Change</span>
-                  </div>
+                  {/* Loading spinner overlay when uploading */}
+                  {isUploadingAvatar ? (
+                    <div className="absolute inset-0 rounded-full bg-black/60 flex flex-col items-center justify-center text-white text-[9px] font-bold z-10">
+                      <Loader2 className="w-6 h-6 animate-spin text-primary mb-0.5" />
+                      <span>Saving...</span>
+                    </div>
+                  ) : (
+                    <>
+                      {/* Hover Camera Overlay */}
+                      <div className="absolute inset-0 rounded-full bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-white text-[9px] font-bold">
+                        <Camera className="w-5 h-5 mb-0.5" />
+                        <span>Change</span>
+                      </div>
 
-                  {/* Camera icon badge at bottom-right of avatar */}
-                  <div className="absolute bottom-0 right-0 p-2 rounded-full bg-primary text-white shadow-md border-2 border-white group-hover:scale-110 transition-transform">
-                    <Camera className="w-3.5 h-3.5" />
-                  </div>
+                      {/* Camera icon badge at bottom-right of avatar */}
+                      <div className="absolute bottom-0 right-0 p-2 rounded-full bg-primary text-white shadow-md border-2 border-white group-hover:scale-110 transition-transform">
+                        <Camera className="w-3.5 h-3.5" />
+                      </div>
+                    </>
+                  )}
                 </button>
 
                 {isAdmin && (
@@ -493,20 +526,6 @@ export default function ProfilePage() {
 
               {/* Action Buttons: Positioned cleanly opposite the avatar */}
               <div className="flex flex-wrap items-center justify-end gap-1.5 sm:gap-2.5 pb-1 sm:pb-2">
-                <button
-                  type="button"
-                  onClick={() => setActiveTab('edit')}
-                  data-testid="button-edit-profile-tab"
-                  className={`px-3.5 sm:px-4 py-2 rounded-full text-xs font-black uppercase tracking-wider transition-all flex items-center gap-1.5 active:scale-95 ${
-                    activeTab === 'edit'
-                      ? 'bg-primary text-white shadow-md shadow-primary/25'
-                      : 'bg-foreground/[0.04] hover:bg-foreground/[0.08] text-foreground/80 border border-black/[0.08]'
-                  }`}
-                >
-                  <Sliders className="w-3.5 h-3.5" />
-                  <span>Edit Profile</span>
-                </button>
-
                 <button
                   type="button"
                   onClick={handleShareProfile}
@@ -537,13 +556,15 @@ export default function ProfilePage() {
                   {user.displayName}
                 </h1>
                 
-                {/* Verified Pink Checkmark */}
-                <span
-                  title="Verified Booth Star"
-                  className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-primary text-white shadow-sm shrink-0"
-                >
-                  <Check className="w-3 h-3 stroke-[3]" />
-                </span>
+                {/* Verified Checkmark (Only shown for Admin, NOT for members) */}
+                {isAdmin && (
+                  <span
+                    title="Verified Administrator"
+                    className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-purple-600 text-white shadow-sm shrink-0"
+                  >
+                    <Check className="w-3 h-3 stroke-[3]" />
+                  </span>
+                )}
 
                 {/* Role Badge */}
                 <span
@@ -553,13 +574,12 @@ export default function ProfilePage() {
                       : 'bg-primary/10 text-primary border border-primary/20'
                   }`}
                 >
-                  {isAdmin ? 'ADMIN' : 'VIP STAR'}
+                  {isAdmin ? 'ADMIN' : 'MEMBER+'}
                 </span>
               </div>
 
-              {/* Username Handle & Metadata */}
+              {/* Metadata without the username handle */}
               <div className="flex flex-wrap items-center gap-x-3.5 gap-y-1 text-xs text-foreground/55 font-medium">
-                <span className="font-bold text-foreground/75">@{userHandle}</span>
                 <span className="flex items-center gap-1 truncate max-w-full">
                   <Mail className="w-3 h-3 text-primary/70 shrink-0" />
                   <span className="truncate">{user.email}</span>
@@ -570,13 +590,19 @@ export default function ProfilePage() {
                 </span>
               </div>
 
-              {/* Bio / Tagline */}
-              <p className="text-xs sm:text-sm text-foreground/75 font-medium leading-relaxed pt-1">
-                📸 Snapping aesthetic 4-cut memories & classic photo strips on PinkSnap ✨
-              </p>
+              {/* Custom User Bio */}
+              {bio ? (
+                <p className="text-xs sm:text-sm text-foreground/80 font-medium leading-relaxed pt-1 whitespace-pre-wrap break-words">
+                  {bio}
+                </p>
+              ) : (
+                <p className="text-xs text-foreground/40 italic font-medium pt-1">
+                  No bio yet. Tap &ldquo;Edit Profile&rdquo; to add your bio!
+                </p>
+              )}
             </div>
 
-            {/* ROW 3: Social Media Stats Counters (Instagram / TikTok Style) */}
+            {/* ROW 3: Social Media Stats Counters (Booth Tier is Member+ for members) */}
             <div className="mt-5 pt-4 border-t border-black/[0.06] grid grid-cols-3 gap-2 text-center">
               <button
                 type="button"
@@ -597,7 +623,7 @@ export default function ProfilePage() {
                 className="p-2 rounded-2xl hover:bg-foreground/[0.02] transition-colors group cursor-pointer"
               >
                 <p className="text-lg sm:text-2xl font-black text-foreground group-hover:text-primary transition-colors leading-none">
-                  {isAdmin ? 'Creator+' : 'VIP Star'}
+                  {isAdmin ? 'Admin' : 'Member+'}
                 </p>
                 <p className="text-[9px] sm:text-[10px] font-bold text-foreground/50 uppercase tracking-wider mt-1">
                   Booth Tier
@@ -627,7 +653,7 @@ export default function ProfilePage() {
               }`}
             >
               <Grid className="w-4 h-4" />
-              <span>My Strips ({savedMemories.length})</span>
+              <span>Strips ({savedMemories.length})</span>
             </button>
 
             <button
@@ -639,7 +665,7 @@ export default function ProfilePage() {
                   : 'text-foreground/60 hover:text-foreground hover:bg-foreground/[0.03]'
               }`}
             >
-              <Sliders className="w-4 h-4" />
+              <Settings className="w-4 h-4" />
               <span>Edit Profile</span>
             </button>
 
@@ -743,68 +769,6 @@ export default function ProfilePage() {
               </div>
 
               <form onSubmit={handleUpdateProfile} className="space-y-6">
-                {/* Profile Picture Uploader with Live Preview */}
-                <div>
-                  <label className="block text-[11px] font-black uppercase tracking-wider text-foreground/60 mb-2">
-                    Profile Picture
-                  </label>
-                  <div className="p-4 rounded-2xl border-2 border-dashed border-pink-200 bg-pink-50/30 flex flex-col sm:flex-row items-center gap-4">
-                    {/* Live Preview circle */}
-                    <div className="w-20 h-20 rounded-full border-2 border-white shadow-md bg-white overflow-hidden shrink-0 flex items-center justify-center text-primary font-display text-3xl ring-2 ring-primary/20">
-                      {shownAvatarUrl ? (
-                        <img
-                          src={shownAvatarUrl}
-                          alt="Avatar preview"
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        initial
-                      )}
-                    </div>
-
-                    <div className="flex-1 text-center sm:text-left space-y-2">
-                      <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
-                        <button
-                          type="button"
-                          onClick={() => fileInputRef.current?.click()}
-                          className="px-3.5 py-2 rounded-xl bg-primary text-white text-xs font-black uppercase tracking-wider shadow-sm hover:brightness-105 active:scale-95 transition-all flex items-center gap-1.5"
-                        >
-                          <Upload className="w-3.5 h-3.5" /> Choose Photo
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={handleRemoveAvatar}
-                          disabled={!hasAvatarToRemove || isRemovingAvatar}
-                          className="px-3 py-2 rounded-xl bg-destructive/10 hover:bg-destructive/20 text-destructive text-xs font-black uppercase tracking-wider transition-colors disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-1.5"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                          {isRemovingAvatar ? 'Removed' : 'Remove'}
-                        </button>
-                      </div>
-
-                      <p className="text-[11px] text-foreground/45 font-medium">
-                        JPG, PNG, or WEBP up to {MAX_AVATAR_MB}MB. Auto-cropped to square.
-                      </p>
-
-                      {selectedAvatarFile && (
-                        <p className="text-xs text-emerald-600 font-bold flex items-center justify-center sm:justify-start gap-1">
-                          <Check className="w-3.5 h-3.5" /> New image selected: {selectedAvatarFile.name}
-                        </p>
-                      )}
-                    </div>
-
-                    {/* Hidden Native File Input */}
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept={AVATAR_ACCEPT_ATTRIBUTE}
-                      onChange={handleAvatarFileChange}
-                      className="hidden"
-                    />
-                  </div>
-                </div>
-
                 {/* Display Name Input */}
                 <div>
                   <label className="block text-[11px] font-black uppercase tracking-wider text-foreground/60 mb-2">
@@ -819,6 +783,28 @@ export default function ProfilePage() {
                   />
                   <p className="text-[11px] text-foreground/45 mt-1.5 font-medium">
                     This name appears on your profile and public chat.
+                  </p>
+                </div>
+
+                {/* Custom User Bio Input */}
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="block text-[11px] font-black uppercase tracking-wider text-foreground/60">
+                      Bio
+                    </label>
+                    <span className="text-[10px] font-bold text-foreground/40">
+                      {bio.length}/160
+                    </span>
+                  </div>
+                  <textarea
+                    value={bio}
+                    onChange={(e) => setBio(e.target.value.slice(0, 160))}
+                    placeholder="Write something about yourself, your booth style, favorite memories..."
+                    rows={3}
+                    className="w-full px-4 py-3 bg-foreground/[0.02] border border-black/[0.08] focus:border-primary/50 focus:ring-4 focus:ring-primary/10 rounded-2xl text-sm font-medium outline-none transition-all placeholder:text-foreground/30 resize-none"
+                  />
+                  <p className="text-[11px] text-foreground/45 mt-1.5 font-medium">
+                    Share a personal description on your social profile. Visible to the community.
                   </p>
                 </div>
 
@@ -938,11 +924,11 @@ export default function ProfilePage() {
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
-                      <h4 className="text-sm font-black text-foreground">VIP Access</h4>
-                      <span className="text-[9px] font-black uppercase bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full">Active</span>
+                      <h4 className="text-sm font-black text-foreground">Member+ Tier</h4>
+                      <span className="text-[9px] font-black uppercase bg-pink-100 text-primary px-2 py-0.5 rounded-full">Active</span>
                     </div>
                     <p className="text-xs text-foreground/60 font-medium mt-1 leading-relaxed">
-                      Access to artisan frame templates, live community chat & high-res downloads.
+                      Full access to Member+ photobooth perks, cloud strip saves & artisan frame templates.
                     </p>
                   </div>
                 </div>
@@ -962,6 +948,60 @@ export default function ProfilePage() {
           </div>
         </div>
       </main>
+
+      {/* ── Avatar Action Modal (Upload New Photo or Remove Photo) ── */}
+      {showAvatarMenu && (
+        <div
+          className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-150"
+          onClick={() => setShowAvatarMenu(false)}
+        >
+          <div
+            className="bg-white rounded-3xl p-5 max-w-xs w-full shadow-2xl border border-pink-100 space-y-2.5 animate-in zoom-in-95 duration-150 text-center"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="pb-1">
+              <h3 className="font-hero text-lg text-foreground">PROFILE PHOTO</h3>
+              <p className="text-[11px] text-foreground/50 font-medium">Update or remove your booth picture</p>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => {
+                setShowAvatarMenu(false);
+                fileInputRef.current?.click();
+              }}
+              className="w-full py-3 px-4 rounded-2xl bg-primary text-white text-xs font-black uppercase tracking-wider shadow-md shadow-primary/25 flex items-center justify-center gap-2 active:scale-98 transition-all hover:brightness-105"
+            >
+              <Upload className="w-4 h-4" /> Upload New Photo
+            </button>
+
+            <button
+              type="button"
+              onClick={handleDirectRemoveAvatar}
+              className="w-full py-3 px-4 rounded-2xl bg-destructive/10 text-destructive hover:bg-destructive/15 text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 active:scale-98 transition-all"
+            >
+              <Trash2 className="w-4 h-4" /> Remove Photo
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setShowAvatarMenu(false)}
+              className="w-full py-2.5 px-4 rounded-2xl text-foreground/50 hover:bg-foreground/[0.04] text-xs font-bold uppercase tracking-wider transition-colors"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Hidden Native File Input for Direct Upload */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept={AVATAR_ACCEPT_ATTRIBUTE}
+        onChange={handleDirectAvatarUpload}
+        className="hidden"
+      />
 
       <BottomNav />
     </div>

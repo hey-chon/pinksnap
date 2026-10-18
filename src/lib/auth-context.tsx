@@ -95,7 +95,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               id: newSession.user.id,
               email: newSession.user.email || profileData.email || '',
               displayName: profileData.display_name || newSession.user.user_metadata?.display_name || 'User',
-              bio: profileData.bio || newSession.user.user_metadata?.bio || '',
+              bio: profileData.bio ?? newSession.user.user_metadata?.bio ?? '',
               avatarUrl: avatar.avatarUrl,
               avatarStoragePath: avatar.avatarStoragePath,
               role: profileData.role || newSession.user.user_metadata?.role || 'user',

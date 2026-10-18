@@ -97,7 +97,7 @@ export function UserMenu() {
             {user.displayName}
           </span>
           <span className="text-[9px] font-black tracking-wider uppercase text-primary">
-            {role}
+            {isAdmin ? 'ADMIN' : 'MEMBER+'}
           </span>
         </div>
 
