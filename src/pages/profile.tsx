@@ -30,7 +30,6 @@ import {
   Grid,
   Award,
   Calendar,
-  
   Download,
   X,
   Sliders,
@@ -41,6 +40,10 @@ import {
   ImageIcon,
   Settings,
   Settings2,
+  Lock,
+  Plus,
+  EyeOff,
+  Eye,
 } from 'lucide-react';
 
 const MAX_AVATAR_MB = Math.round(AVATAR_MAX_FILE_BYTES / (1024 * 1024));
@@ -59,6 +62,18 @@ export default function ProfilePage() {
   const [isSendingReset, setIsSendingReset] = useState(false);
   const [activeTab, setActiveTab] = useState<'strips' | 'edit' | 'badges'>('strips');
   const [selectedMemory, setSelectedMemory] = useState<{ id: string; url: string; date: number; frame: string } | null>(null);
+  const [showPostModal, setShowPostModal] = useState(false);
+
+  // Profile wall privacy: only strips explicitly chosen by user are displayed on their wall
+  const [postedStripIds, setPostedStripIds] = useState<string[]>(() => {
+    if (typeof window === 'undefined' || !user?.id) return [];
+    try {
+      const stored = localStorage.getItem(`pinksnap_wall_strips_${user.id}`);
+      return stored ? JSON.parse(stored) : [];
+    } catch {
+      return [];
+    }
+  });
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -74,6 +89,20 @@ export default function ProfilePage() {
       setBio(user.bio ?? '');
     }
   }, [user?.bio]);
+
+  // Sync wall strips from localStorage if user changes
+  useEffect(() => {
+    if (typeof window !== 'undefined' && user?.id) {
+      try {
+        const stored = localStorage.getItem(`pinksnap_wall_strips_${user.id}`);
+        setPostedStripIds(stored ? JSON.parse(stored) : []);
+      } catch {
+        setPostedStripIds([]);
+      }
+    }
+  }, [user?.id]);
+
+  const postedStrips = savedMemories.filter((m) => postedStripIds.includes(m.id));
 
   if (!user) {
     return (
@@ -290,14 +319,50 @@ export default function ProfilePage() {
     }
   };
 
+  const handleTogglePostToWall = (stripId: string, e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    if (!user?.id) return;
+
+    setPostedStripIds((prev) => {
+      const isPosted = prev.includes(stripId);
+      const next = isPosted ? prev.filter((id) => id !== stripId) : [...prev, stripId];
+      try {
+        localStorage.setItem(`pinksnap_wall_strips_${user.id}`, JSON.stringify(next));
+      } catch {
+      }
+      if (isPosted) {
+        toast({
+          title: 'Removed from Wall',
+          description: 'This strip is now hidden from your wall and safe in your private gallery.',
+        });
+      } else {
+        toast({
+          title: 'Posted to Wall ✨',
+          description: 'This photo strip is now showcased on your public profile wall.',
+        });
+      }
+      return next;
+    });
+  };
+
   const handleDeleteMemory = (id: string, e?: React.MouseEvent) => {
     e?.stopPropagation();
-    if (confirm('Are you sure you want to delete this photo strip?')) {
+    if (confirm('Are you sure you want to permanently delete this photo strip?')) {
       deleteMemory(id);
       if (selectedMemory?.id === id) setSelectedMemory(null);
+      if (user?.id) {
+        setPostedStripIds((prev) => {
+          const next = prev.filter((stripId) => stripId !== id);
+          try {
+            localStorage.setItem(`pinksnap_wall_strips_${user.id}`, JSON.stringify(next));
+          } catch {
+          }
+          return next;
+        });
+      }
       toast({
         title: 'Memory Deleted',
-        description: 'Photo strip removed from your profile.',
+        description: 'Photo strip has been deleted.',
       });
     }
   };
@@ -597,7 +662,7 @@ export default function ProfilePage() {
                 </p>
               ) : (
                 <p className="text-xs text-foreground/40 italic font-medium pt-1">
-                  No bio yet. Tap &ldquo;Edit Profile&rdquo; to add your bio!
+                  No bio yet. Tap &ldquo;Settings&rdquo; to add your bio!
                 </p>
               )}
             </div>
@@ -610,10 +675,10 @@ export default function ProfilePage() {
                 className="p-2 rounded-2xl hover:bg-foreground/[0.02] transition-colors group cursor-pointer"
               >
                 <p className="text-lg sm:text-2xl font-black text-foreground group-hover:text-primary transition-colors leading-none">
-                  {savedMemories.length}
+                  {postedStrips.length}
                 </p>
                 <p className="text-[9px] sm:text-[10px] font-bold text-foreground/50 uppercase tracking-wider mt-1">
-                  Photo Strips
+                  Wall Strips
                 </p>
               </button>
 
@@ -653,7 +718,7 @@ export default function ProfilePage() {
               }`}
             >
               <Grid className="w-4 h-4" />
-              <span>Strips ({savedMemories.length})</span>
+              <span>Wall ({postedStrips.length})</span>
             </button>
 
             <button
@@ -666,7 +731,7 @@ export default function ProfilePage() {
               }`}
             >
               <Settings className="w-4 h-4" />
-              <span>Edit Profile</span>
+              <span>Settings</span>
             </button>
 
             <button
@@ -683,28 +748,72 @@ export default function ProfilePage() {
             </button>
           </div>
 
-          {/* ── TAB 1: Photo Strips Feed ── */}
+          {/* ── TAB 1: Profile Wall (Private by default, user-selected showcase) ── */}
           {activeTab === 'strips' && (
-            <div>
-              {savedMemories.length === 0 ? (
+            <div className="space-y-4">
+              {/* Privacy Notice & Post Action Header Bar */}
+              <div className="bg-gradient-to-r from-pink-50/80 via-white to-pink-50/60 rounded-2xl p-3 sm:p-4 border border-pink-100/90 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                    <Shield className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-xs font-black uppercase tracking-wider text-foreground">
+                        Profile Wall
+                      </span>
+                      <span className="inline-flex items-center gap-1 text-[9px] font-black uppercase px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">
+                        <Lock className="w-2.5 h-2.5" /> Private by default
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-foreground/50 font-medium leading-tight mt-0.5">
+                      Only strips you choose to post appear here. Your booth gallery stays private.
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setShowPostModal(true)}
+                  className="px-4 py-2.5 bg-primary text-white text-xs font-black uppercase tracking-wider rounded-xl shadow-md shadow-primary/25 hover:brightness-105 active:scale-95 transition-all inline-flex items-center justify-center gap-1.5 shrink-0 cursor-pointer"
+                >
+                  <Plus className="w-4 h-4" /> Post a Strip
+                </button>
+              </div>
+
+              {postedStrips.length === 0 ? (
+                /* Empty Wall State */
                 <div className="bg-white rounded-3xl p-8 sm:p-12 text-center border border-pink-100 shadow-sm">
                   <div className="w-20 h-20 mx-auto mb-4 rounded-3xl bg-pink-50 flex items-center justify-center text-primary border border-pink-100 shadow-inner">
-                    <ImageIcon className="w-10 h-10 stroke-[1.5]" />
+                    <Lock className="w-10 h-10 stroke-[1.5]" />
                   </div>
-                  <h3 className="font-hero text-2xl text-foreground mb-2">NO PHOTO STRIPS YET</h3>
+                  <h3 className="font-hero text-2xl text-foreground mb-2">YOUR PROFILE WALL IS PRIVATE</h3>
                   <p className="text-foreground/65 text-xs sm:text-sm max-w-sm mx-auto mb-6 leading-relaxed">
-                    Step into the photobooth to capture your first memory! Your saved prints will appear on your profile feed.
+                    {savedMemories.length === 0
+                      ? 'Step into the photobooth to snap your first memory! Once saved in your private gallery, you can pick what to post on your wall.'
+                      : `You have ${savedMemories.length} strip${savedMemories.length > 1 ? 's' : ''} in your private gallery. PinkSnap keeps them private until you choose which ones to showcase on your wall.`}
                   </p>
-                  <Link
-                    href="/loading"
-                    className="px-6 py-3.5 bg-primary text-white font-black text-xs uppercase tracking-wider rounded-2xl shadow-lg shadow-primary/30 inline-flex items-center gap-2 hover:scale-105 active:scale-95 transition-all"
-                  >
-                    <Camera className="w-4 h-4" /> Start Snapping
-                  </Link>
+                  {savedMemories.length === 0 ? (
+                    <Link
+                      href="/loading"
+                      className="px-6 py-3.5 bg-primary text-white font-black text-xs uppercase tracking-wider rounded-2xl shadow-lg shadow-primary/30 inline-flex items-center gap-2 hover:scale-105 active:scale-95 transition-all"
+                    >
+                      <Camera className="w-4 h-4" /> Start Snapping
+                    </Link>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setShowPostModal(true)}
+                      className="px-6 py-3.5 bg-primary text-white font-black text-xs uppercase tracking-wider rounded-2xl shadow-lg shadow-primary/30 inline-flex items-center gap-2 hover:scale-105 active:scale-95 transition-all cursor-pointer"
+                    >
+                      <Plus className="w-4 h-4" /> Choose Strips to Post
+                    </button>
+                  )}
                 </div>
               ) : (
+                /* Wall Strips Grid */
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
-                  {savedMemories.map((memory) => (
+                  {postedStrips.map((memory) => (
                     <div
                       key={memory.id}
                       onClick={() => setSelectedMemory({ id: memory.id, url: memory.url, date: memory.date, frame: memory.frame })}
@@ -714,7 +823,7 @@ export default function ProfilePage() {
                       <div className="aspect-[3/4] w-full rounded-xl overflow-hidden bg-black/5 relative flex items-center justify-center mb-2.5">
                         <img
                           src={memory.url}
-                          alt="Saved photo strip"
+                          alt="Wall photo strip"
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 select-none"
                           loading="lazy"
                         />
@@ -732,6 +841,14 @@ export default function ProfilePage() {
                         <div className="flex items-center gap-1">
                           <button
                             type="button"
+                            onClick={(e) => handleTogglePostToWall(memory.id, e)}
+                            className="p-1 rounded-md hover:bg-foreground/[0.06] text-foreground/50 hover:text-amber-600 transition-colors"
+                            title="Remove from Wall (keeps in private gallery)"
+                          >
+                            <EyeOff className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            type="button"
                             onClick={(e) => handleDownloadMemory(memory.url, memory.date, e)}
                             className="p-1 rounded-md hover:bg-foreground/[0.06] text-foreground/50 hover:text-primary transition-colors"
                             title="Download strip"
@@ -742,7 +859,7 @@ export default function ProfilePage() {
                             type="button"
                             onClick={(e) => handleDeleteMemory(memory.id, e)}
                             className="p-1 rounded-md hover:bg-destructive/10 text-foreground/50 hover:text-destructive transition-colors"
-                            title="Delete strip"
+                            title="Delete permanently"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
