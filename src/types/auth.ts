@@ -1,6 +1,6 @@
 import type { Session, User } from '@supabase/supabase-js';
 
-export type UserRole = 'user' | 'admin';
+export type UserRole = 'user' | 'admin' | 'contributor';
 
 export interface UserProfile {
   id: string;
@@ -23,6 +23,7 @@ export interface AuthState {
   isConfigured: boolean;
   isAuthenticated: boolean;
   isAdmin: boolean;
+  isContributor: boolean;
   signIn: (email: string, password: string) => Promise<{ error?: string }>;
   signUp: (
     email: string,

@@ -51,7 +51,7 @@ const MAX_AVATAR_MB = Math.round(AVATAR_MAX_FILE_BYTES / (1024 * 1024));
 
 export default function ProfilePage() {
   const [, setLocation] = useLocation();
-  const { user, updateProfile, signOut, resetPassword, isAdmin } = useAuth();
+  const { user, updateProfile, signOut, resetPassword, isAdmin, isContributor } = useAuth();
   const { savedMemories, deleteMemory } = useAppContext();
   const { toast } = useToast();
 
@@ -622,11 +622,19 @@ export default function ProfilePage() {
                   {user.displayName}
                 </h1>
                 
-                {/* Verified Checkmark (Only shown for Admin, NOT for members) */}
+                {/* Verified Checkmark (Shown for Admin and Contributor) */}
                 {isAdmin && (
                   <span
                     title="Verified Administrator"
                     className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-purple-600 text-white shadow-sm shrink-0"
+                  >
+                    <Check className="w-3 h-3 stroke-[3]" />
+                  </span>
+                )}
+                {isContributor && (
+                  <span
+                    title="Verified Contributor"
+                    className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-emerald-600 text-white shadow-sm shrink-0"
                   >
                     <Check className="w-3 h-3 stroke-[3]" />
                   </span>
@@ -637,10 +645,12 @@ export default function ProfilePage() {
                   className={`shrink-0 px-2.5 py-0.5 rounded-full text-[9px] sm:text-[10px] font-black uppercase tracking-wider ${
                     isAdmin
                       ? 'bg-purple-100 text-purple-700 border border-purple-200'
+                      : isContributor
+                      ? 'bg-emerald-100 text-emerald-700 border border-emerald-200'
                       : 'bg-primary/10 text-primary border border-primary/20'
                   }`}
                 >
-                  {isAdmin ? 'ADMIN' : 'MEMBER+'}
+                  {isAdmin ? 'ADMIN' : isContributor ? 'CONTRIBUTOR' : 'MEMBER+'}
                 </span>
               </div>
 
@@ -679,13 +689,13 @@ export default function ProfilePage() {
                   {postedStrips.length}
                 </p>
                 <p className="text-[9px] sm:text-[10px] font-bold text-foreground/50 uppercase tracking-wider mt-1">
-                  Wall Strips
+                 Photo Strips
                 </p>
               </button>
 
               <div className="p-2 rounded-2xl">
                 <p className="text-lg sm:text-2xl font-black text-foreground leading-none">
-                  {isAdmin ? 'Creator+' : 'Member+'}
+                  {isAdmin ? 'Creator+' : isContributor ? 'Contributor+' : 'Member+'}
                 </p>
                 <p className="text-[9px] sm:text-[10px] font-bold text-foreground/50 uppercase tracking-wider mt-1">
                   Booth Tier
@@ -715,7 +725,7 @@ export default function ProfilePage() {
               }`}
             >
               <Grid className="w-4 h-4" />
-              <span>Wall ({postedStrips.length})</span>
+              <span>Strips ({postedStrips.length})</span>
             </button>
 
             <button
@@ -737,7 +747,7 @@ export default function ProfilePage() {
               className="flex-1 py-2.5 px-3 rounded-xl text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 transition-all text-foreground/60 hover:text-foreground hover:bg-foreground/[0.03] cursor-pointer"
             >
               <PlusCircle className="w-4 h-4" />
-              <span>Post a Strip</span>
+              <span>Post</span>
             </button>
           </div>
 
@@ -746,18 +756,18 @@ export default function ProfilePage() {
             <div>
               {postedStrips.length === 0 ? (
                 /* Empty Wall State */
-                <div className="bg-white rounded-3xl p-6 sm:p-10 text-center border border-pink-100 shadow-[0_10px_30px_-15px_rgba(245,61,137,0.12)]">
-                  <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-4 rounded-3xl bg-gradient-to-tr from-pink-100 to-pink-50 flex items-center justify-center text-primary border border-pink-200/60 shadow-sm">
-                    <Images className="w-8 h-8 sm:w-10 sm:h-10 stroke-[1.75]" />
+                <div className="bg-white rounded-3xl p-5 sm:p-10 text-center border border-pink-100 shadow-[0_10px_30px_-15px_rgba(245,61,137,0.12)]">
+                  <div className="w-14 h-14 sm:w-20 sm:h-20 mx-auto mb-3 sm:mb-4 rounded-2xl sm:rounded-3xl bg-gradient-to-tr from-pink-100 to-pink-50 flex items-center justify-center text-primary border border-pink-200/60 shadow-sm">
+                    <Images className="w-7 h-7 sm:w-10 sm:h-10 stroke-[1.75]" />
                   </div>
-                  <h3 className="font-hero text-xl sm:text-2xl text-foreground mb-2">YOUR PROFILE WALL</h3>
-                  <p className="text-foreground/60 text-xs sm:text-sm max-w-sm mx-auto mb-6 leading-relaxed">
+                  <h3 className="font-hero text-xl sm:text-2xl text-foreground mb-1.5 sm:mb-2">YOUR PROFILE WALL</h3>
+                  <p className="text-foreground/60 text-xs sm:text-sm max-w-sm mx-auto mb-5 sm:mb-6 leading-relaxed">
                     Strips in your gallery are private by default. Pick your favorite snapshots to showcase here on your public wall.
                   </p>
                   <button
                     type="button"
                     onClick={() => setShowPostModal(true)}
-                    className="w-full sm:w-auto px-7 py-3.5 bg-primary text-white font-black text-xs uppercase tracking-wider rounded-2xl shadow-lg shadow-primary/25 inline-flex items-center justify-center gap-2 hover:brightness-105 active:scale-95 transition-all cursor-pointer"
+                    className="w-full sm:w-auto px-5 py-3 sm:px-7 sm:py-3.5 bg-primary text-white font-black text-xs uppercase tracking-wider rounded-2xl shadow-lg shadow-primary/25 inline-flex items-center justify-center gap-2 hover:brightness-105 active:scale-95 transition-all cursor-pointer"
                   >
                     <Plus className="w-4 h-4 stroke-[2.5]" /> Choose Strips to Post
                   </button>
@@ -1006,58 +1016,52 @@ export default function ProfilePage() {
             <div className="w-12 h-1.5 rounded-full bg-foreground/15 mx-auto mt-3 sm:hidden" />
 
             {/* Modal Header */}
-            <div className="flex items-center justify-between px-5 pt-3 sm:pt-5 pb-4 border-b border-pink-100">
+            <div className="flex items-center justify-between px-3.5 sm:px-5 pt-2.5 sm:pt-4 pb-2.5 sm:pb-3.5 border-b border-pink-100">
               <div>
-                <h3 className="font-hero text-lg sm:text-xl text-foreground tracking-tight">CHOOSE STRIPS TO POST</h3>
-                <p className="text-[11px] sm:text-xs text-foreground/50 font-medium mt-0.5">
+                <h3 className="font-hero text-base sm:text-xl text-foreground tracking-tight">CHOOSE STRIPS TO POST</h3>
+                <p className="text-[10px] sm:text-xs text-foreground/50 font-medium">
                   Tap any photo strip to toggle it on or off your wall
                 </p>
               </div>
               <button
                 type="button"
                 onClick={() => setShowPostModal(false)}
-                className="w-8 h-8 rounded-full bg-foreground/[0.04] hover:bg-foreground/[0.08] active:scale-90 text-foreground/60 flex items-center justify-center transition-all cursor-pointer"
+                className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-foreground/[0.04] hover:bg-foreground/[0.08] active:scale-90 text-foreground/60 flex items-center justify-center transition-all cursor-pointer"
                 aria-label="Close"
               >
-                <X className="w-4 h-4 stroke-[2.5]" />
+                <X className="w-3.5 h-3.5 stroke-[2.5]" />
               </button>
             </div>
 
             {/* Modal Body — Gallery strip grid */}
-            <div className="flex-1 overflow-y-auto p-4 sm:p-5 overscroll-contain">
+            <div className="flex-1 overflow-y-auto p-2 sm:p-4 overscroll-contain">
               {savedMemories.length === 0 ? (
-                <div className="text-center py-12 px-4">
-                  <div className="w-16 h-16 mx-auto mb-3.5 rounded-3xl bg-pink-50 flex items-center justify-center text-primary border border-pink-100/80 shadow-sm">
-                    <Camera className="w-8 h-8 stroke-[1.75]" />
+                <div className="text-center py-10 px-3">
+                  <div className="w-14 h-14 mx-auto mb-3 rounded-2xl bg-pink-50 flex items-center justify-center text-primary border border-pink-100/80 shadow-sm">
+                    <Camera className="w-7 h-7 stroke-[1.75]" />
                   </div>
-                  <h4 className="font-hero text-lg text-foreground mb-1">NO STRIPS IN GALLERY</h4>
-                  <p className="text-xs text-foreground/55 max-w-xs mx-auto mb-5 font-medium leading-relaxed">
+                  <h4 className="font-hero text-base sm:text-lg text-foreground mb-1">NO STRIPS IN GALLERY</h4>
+                  <p className="text-xs text-foreground/55 max-w-xs mx-auto mb-4 font-medium leading-relaxed">
                     You haven't saved any photobooth strips yet. Start snapping to build your collection!
                   </p>
-                  <Link
-                    href="/loading"
-                    onClick={() => setShowPostModal(false)}
-                    className="inline-flex items-center gap-2 px-5 py-3 bg-primary text-white text-xs font-black uppercase tracking-wider rounded-xl shadow-md shadow-primary/25 hover:brightness-105 active:scale-95 transition-all"
-                  >
-                    <Camera className="w-4 h-4 stroke-[2.5]" /> Start Photobooth
-                  </Link>
+                
                 </div>
               ) : (
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 sm:gap-3">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
                   {savedMemories.map((memory) => {
                     const isOnWall = postedStripIds.includes(memory.id);
                     return (
                       <div
                         key={memory.id}
                         onClick={() => handleTogglePostToWall(memory.id)}
-                        className={`group relative rounded-2xl p-2 transition-all cursor-pointer select-none border-2 flex flex-col justify-between active:scale-[0.98] ${
+                        className={`group relative rounded-xl sm:rounded-2xl p-1.5 sm:p-2 transition-all cursor-pointer select-none border-2 flex flex-col justify-between active:scale-[0.98] ${
                           isOnWall
                             ? 'bg-primary/[0.04] border-primary shadow-sm ring-1 ring-primary/25'
                             : 'bg-white border-pink-100/90 hover:border-pink-200 shadow-xs'
                         }`}
                       >
                         {/* Thumbnail Container */}
-                        <div className="aspect-[3/4] w-full rounded-xl overflow-hidden bg-black/5 relative mb-2">
+                        <div className="aspect-[3/4] w-full rounded-lg sm:rounded-xl overflow-hidden bg-black/5 relative mb-1.5 sm:mb-2">
                           <img
                             src={memory.url}
                             alt="Strip preview"
@@ -1066,22 +1070,22 @@ export default function ProfilePage() {
                           />
 
                           {/* Selection Badge in Corner */}
-                          <div className="absolute top-2 right-2">
+                          <div className="absolute top-1.5 right-1.5 sm:top-2 sm:right-2">
                             {isOnWall ? (
-                              <div className="w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center shadow-md shadow-primary/30">
-                                <Check className="w-3.5 h-3.5 stroke-[3]" />
+                              <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-primary text-white flex items-center justify-center shadow-md shadow-primary/30">
+                                <Check className="w-3 h-3 sm:w-3.5 sm:h-3.5 stroke-[3]" />
                               </div>
                             ) : (
-                              <div className="w-6 h-6 rounded-full bg-black/35 backdrop-blur-sm border border-white/60 text-white/90 flex items-center justify-center group-hover:bg-primary/80 transition-colors">
-                                <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
+                              <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-black/35 backdrop-blur-sm border border-white/60 text-white/90 flex items-center justify-center group-hover:bg-primary/80 transition-colors">
+                                <Plus className="w-3 h-3 sm:w-3.5 sm:h-3.5 stroke-[2.5]" />
                               </div>
                             )}
                           </div>
                         </div>
 
                         {/* Footer Info */}
-                        <div className="flex items-center justify-between px-1 text-[11px]">
-                          <span className="font-semibold text-foreground/50 text-[10px] truncate">
+                        <div className="flex items-center justify-between px-0.5 sm:px-1 text-[10px] sm:text-[11px]">
+                          <span className="font-semibold text-foreground/50 text-[9px] sm:text-[10px] truncate">
                             {new Date(memory.date).toLocaleDateString(undefined, {
                               month: 'short',
                               day: 'numeric',
@@ -1103,17 +1107,17 @@ export default function ProfilePage() {
             </div>
 
             {/* Modal Footer */}
-            <div className="px-5 py-3.5 sm:py-4 border-t border-pink-100 bg-white flex items-center justify-between gap-3 pb-[max(0.875rem,env(safe-area-inset-bottom))]">
-              <div className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-primary" />
-                <p className="text-xs font-bold text-foreground/70">
+            <div className="px-3.5 sm:px-5 py-2.5 sm:py-3.5 border-t border-pink-100 bg-white flex items-center justify-between gap-2 sm:gap-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-primary" />
+                <p className="text-[11px] sm:text-xs font-bold text-foreground/70">
                   <span className="text-primary font-black">{postedStripIds.length}</span> of {savedMemories.length} on wall
                 </p>
               </div>
               <button
                 type="button"
                 onClick={() => setShowPostModal(false)}
-                className="px-6 py-2.5 bg-primary text-white text-xs font-black uppercase tracking-wider rounded-xl shadow-md shadow-primary/25 hover:brightness-105 active:scale-95 transition-all cursor-pointer"
+                className="px-5 py-2 sm:px-6 sm:py-2.5 bg-primary text-white text-xs font-black uppercase tracking-wider rounded-xl shadow-md shadow-primary/25 hover:brightness-105 active:scale-95 transition-all cursor-pointer"
               >
                 Done
               </button>

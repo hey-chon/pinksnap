@@ -145,7 +145,7 @@ export default function Credits() {
             {/* Role Badge */}
             <div className="mb-4">
               <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-white text-[#201b2c] text-[11px] font-black uppercase tracking-wider shadow-sm">
-                ⚡ Collaborator
+                ⚡ Contributor
               </span>
             </div>
 

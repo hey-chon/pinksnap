@@ -301,6 +301,11 @@ export default function CommunityChat() {
                             DEVELOPER
                           </span>
                         )}
+                        {m.author.role === 'contributor' && (
+                          <span className="px-1.5 py-0.5 rounded bg-emerald-600 text-white text-[8px] font-black tracking-widest leading-none">
+                            CONTRIBUTOR
+                          </span>
+                        )}
                       </div>
                       <span className="pixel-time">{formatTime(m.createdAt)}</span>
                     </div>

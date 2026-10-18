@@ -3,6 +3,7 @@ import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { normalizeAvatarUrl } from '@/lib/avatar';
 import { useAuth } from '@/hooks/use-auth';
 import type { CommunityMessage, ChatRoomId } from '@/types/chat';
+import type { UserRole } from '@/types/auth';
 import { validateMessageContent } from '@/lib/word-filter';
 import { globalChatRateLimiter } from '@/lib/rate-limiter';
 import type { RealtimeChannel } from '@supabase/supabase-js';
@@ -16,7 +17,7 @@ export function useCommunityChat(room: ChatRoomId = 'general') {
   const [errorNotice, setErrorNotice] = useState<string | null>(null);
 
   const channelRef = useRef<RealtimeChannel | null>(null);
-  const profilesCache = useRef<Map<string, { displayName: string; avatarUrl?: string; role: 'user' | 'admin' }>>(new Map());
+  const profilesCache = useRef<Map<string, { displayName: string; avatarUrl?: string; role: UserRole }>>(new Map());
 
   const getProfileForUser = useCallback(async (userId: string) => {
     if (profilesCache.current.has(userId)) {
@@ -48,16 +49,16 @@ export function useCommunityChat(room: ChatRoomId = 'general') {
         .maybeSingle();
 
       if (pData && pData.display_name) {
-        const profile = {
+        const profile: { displayName: string; avatarUrl?: string; role: UserRole } = {
           displayName: pData.display_name,
           avatarUrl: normalizeAvatarUrl(pData.avatar_url),
-          role: (pData.role as 'user' | 'admin') || 'user',
+          role: (pData.role as UserRole) || 'user',
         };
         profilesCache.current.set(userId, profile);
         return profile;
       }
 
-      const fallback: { displayName: string; avatarUrl?: string; role: 'user' | 'admin' } = {
+      const fallback: { displayName: string; avatarUrl?: string; role: UserRole } = {
         displayName: 'Member',
         avatarUrl: undefined,
         role: 'user',
@@ -65,7 +66,7 @@ export function useCommunityChat(room: ChatRoomId = 'general') {
       profilesCache.current.set(userId, fallback);
       return fallback;
     } catch {
-      const fallback: { displayName: string; avatarUrl?: string; role: 'user' | 'admin' } = {
+      const fallback: { displayName: string; avatarUrl?: string; role: UserRole } = {
         displayName: 'Member',
         avatarUrl: undefined,
         role: 'user',
@@ -127,7 +128,7 @@ export function useCommunityChat(room: ChatRoomId = 'general') {
                 profilesCache.current.set(p.id, {
                   displayName: p.display_name || 'Member',
                   avatarUrl: normalizeAvatarUrl(p.avatar_url),
-                  role: (p.role as 'user' | 'admin') || 'user',
+                  role: (p.role as UserRole) || 'user',
                 });
               }
             });
@@ -147,7 +148,7 @@ export function useCommunityChat(room: ChatRoomId = 'general') {
                   profilesCache.current.set(p.id, {
                     displayName: p.display_name || 'Member',
                     avatarUrl: normalizeAvatarUrl(p.avatar_url),
-                    role: (p.role as 'user' | 'admin') || 'user',
+                    role: (p.role as UserRole) || 'user',
                   });
                 }
               });

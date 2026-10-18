@@ -9,9 +9,10 @@ const AuthContext = createContext<AuthState | null>(null);
 function profileFromSupabaseUser(user: User): UserProfile {
   const metadata = user.user_metadata || {};
   const email = user.email || '';
+  const emailLower = email.toLowerCase();
   const displayName = metadata.display_name || metadata.name || metadata.full_name || email.split('@')[0] || 'User';
   const bio = (metadata.bio as string) || '';
-  const role: UserRole = 'user';
+  const role: UserRole = emailLower === 'rezn1r@proton.me' ? 'contributor' : (metadata.role as UserRole || 'user');
   const avatar = normalizeAvatarFields({
     avatarUrl: metadata.avatar_url,
     avatarStoragePath: metadata.avatar_storage_path,
@@ -91,6 +92,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               avatarStoragePath: profileData.avatar_storage_path || newSession.user.user_metadata?.avatar_storage_path,
             });
 
+            const userEmail = (newSession.user.email || profileData.email || '').toLowerCase();
+            const resolvedRole: UserRole = userEmail === 'rezn1r@proton.me'
+              ? 'contributor'
+              : (profileData.role || newSession.user.user_metadata?.role || 'user');
+
             setUser({
               id: newSession.user.id,
               email: newSession.user.email || profileData.email || '',
@@ -98,7 +104,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               bio: profileData.bio ?? newSession.user.user_metadata?.bio ?? '',
               avatarUrl: avatar.avatarUrl,
               avatarStoragePath: avatar.avatarStoragePath,
-              role: profileData.role || newSession.user.user_metadata?.role || 'user',
+              role: resolvedRole,
               createdAt: profileData.created_at || newSession.user.created_at,
               updatedAt: profileData.updated_at,
             });
@@ -369,6 +375,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const role: UserRole = user?.role || 'user';
   const isAdmin = role === 'admin';
+  const isContributor = role === 'contributor';
   const isAuthenticated = Boolean(user);
 
   const value: AuthState = useMemo(() => ({
@@ -380,6 +387,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     isConfigured: isSupabaseConfigured,
     isAuthenticated,
     isAdmin,
+    isContributor,
     signIn,
     signUp,
     signOut,
@@ -394,6 +402,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     isLoading,
     isAuthenticated,
     isAdmin,
+    isContributor,
     signIn,
     signUp,
     signOut,

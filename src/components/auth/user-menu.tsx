@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 
 export function UserMenu() {
-  const { user, isAuthenticated, signOut, role, isAdmin } = useAuth();
+  const { user, isAuthenticated, signOut, role, isAdmin, isContributor } = useAuth();
   const { toast } = useToast();
   const [, setLocation] = useLocation();
   const [isOpen, setIsOpen] = useState(false);
@@ -96,8 +96,8 @@ export function UserMenu() {
           <span className="text-[11px] font-bold text-white max-w-[90px] truncate">
             {user.displayName}
           </span>
-          <span className="text-[9px] font-black tracking-wider uppercase text-primary">
-            {isAdmin ? 'ADMIN' : 'MEMBER+'}
+          <span className={`text-[9px] font-black tracking-wider uppercase ${isContributor ? 'text-emerald-400' : 'text-primary'}`}>
+            {isAdmin ? 'ADMIN' : isContributor ? 'CONTRIBUTOR' : 'MEMBER+'}
           </span>
         </div>
 
@@ -114,6 +114,11 @@ export function UserMenu() {
               {isAdmin && (
                 <span className="px-1.5 py-0.5 rounded-full bg-purple-100 text-purple-700 text-[9px] font-black tracking-wider uppercase">
                   ADMIN
+                </span>
+              )}
+              {isContributor && (
+                <span className="px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-[9px] font-black tracking-wider uppercase">
+                  CONTRIBUTOR
                 </span>
               )}
             </div>
