@@ -478,6 +478,7 @@ export default function ProfilePage() {
   const joinedDate = user.createdAt
     ? new Date(user.createdAt).toLocaleDateString(undefined, { month: 'short', year: 'numeric' })
     : 'Member';
+  const [emailName = '', emailDomain = ''] = (user.email || '').split('@');
 
   return (
     <div className="flex flex-col h-dvh bg-[#fff7fa] relative overflow-hidden">
@@ -737,15 +738,52 @@ export default function ProfilePage() {
                 </span>
               </div>
 
-              {/* Metadata without the username handle — Untouchable and non-clickable */}
-              <div className="flex flex-wrap items-center gap-x-3.5 gap-y-1 text-xs text-foreground/55 font-medium select-none pointer-events-none">
-                <span className="flex items-center gap-1 truncate max-w-full select-none pointer-events-none cursor-default" aria-label="Account email">
+              {/* Metadata without the username handle — 100% untouchable & unclickable on iOS/Android */}
+              <div
+                className="flex flex-wrap items-center gap-x-3.5 gap-y-1 text-xs text-foreground/55 font-medium select-none pointer-events-none"
+                style={{
+                  pointerEvents: 'none',
+                  WebkitUserSelect: 'none',
+                  userSelect: 'none',
+                  touchAction: 'none',
+                }}
+              >
+                <span
+                  className="flex items-center gap-1 truncate max-w-full select-none pointer-events-none cursor-default"
+                  style={{
+                    pointerEvents: 'none',
+                    WebkitUserSelect: 'none',
+                    userSelect: 'none',
+                    touchAction: 'none',
+                  }}
+                  aria-label="Account email"
+                >
                   <Mail className="w-3 h-3 text-primary/70 shrink-0 select-none pointer-events-none" />
-                  <span className="truncate select-none pointer-events-none cursor-default no-underline text-foreground/55 font-medium" style={{ textDecoration: 'none', WebkitUserSelect: 'none', userSelect: 'none' }}>
-                    {user.email.replace('@', '@\u200B')}
+                  <span
+                    className="truncate select-none pointer-events-none cursor-default no-underline text-foreground/55 font-medium inline-flex items-center"
+                    style={{
+                      pointerEvents: 'none',
+                      WebkitUserSelect: 'none',
+                      userSelect: 'none',
+                      touchAction: 'none',
+                      textDecoration: 'none',
+                    }}
+                  >
+                    <span>{emailName}</span>
+                    <span aria-hidden="true" style={{ display: 'none' }}>__</span>
+                    <span aria-hidden="true">@</span>
+                    <span aria-hidden="true" style={{ display: 'none' }}>__</span>
+                    <span>{emailDomain}</span>
                   </span>
                 </span>
-                <span className="flex items-center gap-1 shrink-0 select-none pointer-events-none cursor-default">
+                <span
+                  className="flex items-center gap-1 shrink-0 select-none pointer-events-none cursor-default"
+                  style={{
+                    pointerEvents: 'none',
+                    WebkitUserSelect: 'none',
+                    userSelect: 'none',
+                  }}
+                >
                   <Calendar className="w-3 h-3 text-primary/70 shrink-0" />
                   <span>Joined {joinedDate}</span>
                 </span>
@@ -761,6 +799,52 @@ export default function ProfilePage() {
                   No bio yet. Tap &ldquo;Settings&rdquo; to add your bio!
                 </p>
               )}
+            </div>
+
+            {/* ROW 3: Social Media Stats Counters with Cute Pastel Badges */}
+            <div className="mt-5 pt-4 border-t border-black/[0.06] grid grid-cols-3 gap-2 text-center">
+              <button
+                type="button"
+                onClick={() => setActiveTab('strips')}
+                className="p-2 sm:p-3 rounded-2xl bg-pink-50/40 hover:bg-pink-100/50 border border-pink-100/60 transition-colors group cursor-pointer flex flex-col items-center justify-center"
+              >
+                <p className="text-lg sm:text-2xl font-black text-foreground group-hover:text-primary transition-colors leading-none">
+                  {postedStrips.length}
+                </p>
+                <p className="text-[9px] sm:text-[10px] font-bold text-foreground/50 uppercase tracking-wider mt-1">
+                  Photo Strips
+                </p>
+              </button>
+
+              {/* Booth Role */}
+              {isAdmin ? (
+                <div className="p-2 sm:p-3 rounded-2xl bg-pink-50/40 border border-pink-100/60 flex flex-col items-center justify-center">
+                  <p className="text-lg sm:text-2xl font-black text-orange-500 leading-none">
+                    Creator+
+                  </p>
+                  <p className="text-[9px] sm:text-[10px] font-bold text-foreground/50 uppercase tracking-wider mt-1">
+                    Booth Role
+                  </p>
+                </div>
+              ) : (
+                <div className="p-2 sm:p-3 rounded-2xl bg-pink-50/40 border border-pink-100/60 flex flex-col items-center justify-center">
+                  <p className="text-lg sm:text-2xl font-black text-foreground leading-none">
+                    {isContributor ? 'Contributor+' : 'Member+'}
+                  </p>
+                  <p className="text-[9px] sm:text-[10px] font-bold text-foreground/50 uppercase tracking-wider mt-1">
+                    Booth Role
+                  </p>
+                </div>
+              )}
+
+              <div className="p-2 sm:p-3 rounded-2xl bg-pink-50/40 border border-pink-100/60 flex flex-col items-center justify-center">
+                <p className="text-lg sm:text-2xl font-black text-pink-600 leading-none">
+                  Active
+                </p>
+                <p className="text-[9px] sm:text-[10px] font-bold text-foreground/50 uppercase tracking-wider mt-1">
+                  Community
+                </p>
+              </div>
             </div>
 
 
