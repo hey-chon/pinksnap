@@ -877,13 +877,6 @@ export default function ProfilePage() {
                   <p className="text-foreground/60 text-xs sm:text-sm max-w-sm mx-auto mb-5 sm:mb-6 leading-relaxed">
                     Strips in your gallery are private by default. Pick your favorite snapshots to showcase here on your public wall.
                   </p>
-                  <button
-                    type="button"
-                    onClick={() => setShowPostModal(true)}
-                    className="w-full sm:w-auto px-5 py-3 sm:px-7 sm:py-3.5 bg-primary text-white font-black text-xs uppercase tracking-wider rounded-2xl shadow-lg shadow-primary/25 inline-flex items-center justify-center gap-2 hover:brightness-105 active:scale-95 transition-all cursor-pointer"
-                  >
-                    <Plus className="w-4 h-4 stroke-[2.5]" /> Choose Strips to Post
-                  </button>
                 </div>
               ) : (
                 /* Wall Strips Grid */
@@ -1083,12 +1076,17 @@ export default function ProfilePage() {
 
             <div className="space-y-2 pt-1">
               <label
-                htmlFor="avatar-file-input"
-                onClick={() => setShowAvatarMenu(false)}
-                className="w-full py-2.5 px-3.5 rounded-xl bg-neutral-900 hover:bg-black text-white text-xs font-semibold flex items-center justify-center gap-2 active:scale-98 transition-all cursor-pointer select-none"
+                className="relative w-full py-2.5 px-3.5 rounded-xl bg-neutral-900 hover:bg-black text-white text-xs font-semibold flex items-center justify-center gap-2 active:scale-98 transition-all cursor-pointer select-none overflow-hidden"
               >
-                <Upload className="w-3.5 h-3.5 text-neutral-300" />
-                <span>Choose from Library</span>
+                <Upload className="w-3.5 h-3.5 text-neutral-300 pointer-events-none" />
+                <span className="pointer-events-none">Choose from Library</span>
+                <input
+                  type="file"
+                  accept={AVATAR_ACCEPT_ATTRIBUTE}
+                  onChange={handleDirectAvatarUpload}
+                  className="absolute inset-0 opacity-0 w-full h-full cursor-pointer z-10 block"
+                  title="Choose profile photo"
+                />
               </label>
 
               {(user.avatarUrl || user.avatarStoragePath) && (
