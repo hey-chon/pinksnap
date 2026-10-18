@@ -1,4 +1,5 @@
 import type { Session, User } from '@supabase/supabase-js';
+import { error } from 'node:console';
 
 export type UserRole = 'user' | 'admin' | 'contributor';
 
@@ -40,6 +41,6 @@ export interface AuthState {
     avatarStoragePath?: string | null;
     wallStripIds?: string[];
   }) => Promise<{ error?: string }>;
-  refreshProfile: () => Promise<void>;
+  refreshProfile: (force?: boolean) => Promise<void>;
   hasRole: (roles: UserRole | UserRole[]) => boolean;
 }

@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState, useCallback, useMemo } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import type { Session, User } from '@supabase/supabase-js';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { normalizeAvatarFields } from '@/lib/avatar';
@@ -184,7 +184,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  const refreshProfile = useCallback(async (): Promise<void> => {
+  const isRefreshingRef = useRef<boolean>(false);
+  const lastRefreshTimeRef = useRef<number>(0);
+
+  const refreshProfile = useCallback(async (force = false): Promise<void> => {
+    const now = Date.now();
+    if (!force && (isRefreshingRef.current || now - lastRefreshTimeRef.current < 2000)) {
+      return;
+    }
+    isRefreshingRef.current = true;
+    lastRefreshTimeRef.current = now;
+
     try {
       const { data: { user: freshAuthUser } } = await supabase.auth.getUser();
       let targetUser = freshAuthUser;
@@ -196,9 +206,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       setSupabaseUser(targetUser);
       const prof = await resolveUserProfile(targetUser);
-      setUser(prof);
+      setUser(prev => {
+        if (
+          prev &&
+          prev.id === prof.id &&
+          prev.displayName === prof.displayName &&
+          prev.bio === prof.bio &&
+          prev.avatarUrl === prof.avatarUrl &&
+          prev.avatarStoragePath === prof.avatarStoragePath &&
+          prev.role === prof.role &&
+          JSON.stringify(prev.wallStripIds || []) === JSON.stringify(prof.wallStripIds || [])
+        ) {
+          return prev;
+        }
+        return prof;
+      });
     } catch (err) {
       console.warn('[Supabase Auth] refreshProfile notice:', err);
+    } finally {
+      isRefreshingRef.current = false;
     }
   }, []);
 
@@ -594,7 +620,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } : null);
 
       // Refresh from cloud so state is 100% verified against cloud truth
-      await refreshProfile();
+      await refreshProfile(true);
 
       return {};
     } catch (err: unknown) {

@@ -54,7 +54,7 @@ const MAX_AVATAR_MB = Math.round(AVATAR_MAX_FILE_BYTES / (1024 * 1024));
 
 export default function ProfilePage() {
   const [, setLocation] = useLocation();
-  const { user, updateProfile, refreshProfile, signOut, resetPassword, isAdmin, isContributor } = useAuth();
+  const { user, updateProfile, signOut, resetPassword, isAdmin, isContributor } = useAuth();
   const { savedMemories, deleteMemory } = useAppContext();
   const { toast } = useToast();
 
@@ -96,17 +96,16 @@ export default function ProfilePage() {
     }
   }, [user?.bio]);
 
-  // Sync wall strips from cloud profile or localStorage across all devices
+  // Sync wall strips from user profile or localStorage
+  const wallStripIdsKey = JSON.stringify(user?.wallStripIds || []);
   useEffect(() => {
-    if (!user?.id) return;
-    if (showPostModal) return; // Do not overwrite while user is picking strips in modal
+    if (!user?.id || showPostModal) return;
 
     if (Array.isArray(user.wallStripIds)) {
       setPostedStripIds(user.wallStripIds);
       try {
         localStorage.setItem(`pinksnap_wall_strips_${user.id}`, JSON.stringify(user.wallStripIds));
-      } catch {
-      }
+      } catch {}
     } else if (typeof window !== 'undefined') {
       try {
         const stored = localStorage.getItem(`pinksnap_wall_strips_${user.id}`);
@@ -115,37 +114,7 @@ export default function ProfilePage() {
         setPostedStripIds([]);
       }
     }
-
-    // Actively sync from cloud on focus or tab visibility change (syncing phone & laptop)
-    const syncFromCloud = async () => {
-      if (showPostModal) return;
-      try {
-        await refreshProfile();
-        const { data: { user: freshUser } } = await supabase.auth.getUser();
-        const cloudIds = freshUser?.user_metadata?.wall_strip_ids;
-        if (Array.isArray(cloudIds)) {
-          setPostedStripIds(cloudIds);
-          try {
-            localStorage.setItem(`pinksnap_wall_strips_${user.id}`, JSON.stringify(cloudIds));
-          } catch {
-          }
-        }
-      } catch {
-      }
-    };
-
-    syncFromCloud();
-    window.addEventListener('focus', syncFromCloud);
-    const handleVisibility = () => {
-      if (document.visibilityState === 'visible') syncFromCloud();
-    };
-    document.addEventListener('visibilitychange', handleVisibility);
-
-    return () => {
-      window.removeEventListener('focus', syncFromCloud);
-      document.removeEventListener('visibilitychange', handleVisibility);
-    };
-  }, [user?.id, user?.wallStripIds, showPostModal, refreshProfile]);
+  }, [user?.id, wallStripIdsKey, showPostModal]);
 
   const postedStrips = savedMemories.filter((m) => postedStripIds.includes(m.id));
 
@@ -768,13 +737,15 @@ export default function ProfilePage() {
                 </span>
               </div>
 
-              {/* Metadata without the username handle */}
-              <div className="flex flex-wrap items-center gap-x-3.5 gap-y-1 text-xs text-foreground/55 font-medium">
-                <span className="flex items-center gap-1 truncate max-w-full">
-                  <Mail className="w-3 h-3 text-primary/70 shrink-0" />
-                  <span className="truncate">{user.email}</span>
+              {/* Metadata without the username handle — Untouchable and non-clickable */}
+              <div className="flex flex-wrap items-center gap-x-3.5 gap-y-1 text-xs text-foreground/55 font-medium select-none pointer-events-none">
+                <span className="flex items-center gap-1 truncate max-w-full select-none pointer-events-none cursor-default" aria-label="Account email">
+                  <Mail className="w-3 h-3 text-primary/70 shrink-0 select-none pointer-events-none" />
+                  <span className="truncate select-none pointer-events-none cursor-default no-underline text-foreground/55 font-medium" style={{ textDecoration: 'none', WebkitUserSelect: 'none', userSelect: 'none' }}>
+                    {user.email.replace('@', '@\u200B')}
+                  </span>
                 </span>
-                <span className="flex items-center gap-1 shrink-0">
+                <span className="flex items-center gap-1 shrink-0 select-none pointer-events-none cursor-default">
                   <Calendar className="w-3 h-3 text-primary/70 shrink-0" />
                   <span>Joined {joinedDate}</span>
                 </span>
@@ -792,53 +763,7 @@ export default function ProfilePage() {
               )}
             </div>
 
-            {/* ROW 3: Social Media Stats Counters with Cute Pastel Badges */}
-            <div className="mt-5 pt-4 border-t border-black/[0.06] grid grid-cols-3 gap-2 text-center">
-              <button
-                type="button"
-                onClick={() => setActiveTab('strips')}
-                className="p-2 sm:p-3 rounded-2xl bg-pink-50/40 hover:bg-pink-100/50 border border-pink-100/60 transition-colors group cursor-pointer flex flex-col items-center justify-center"
-              >
-            
-                <p className="text-lg sm:text-2xl font-black text-foreground group-hover:text-primary transition-colors leading-none">
-                  {postedStrips.length}
-                </p>
-                <p className="text-[9px] sm:text-[10px] font-bold text-foreground/50 uppercase tracking-wider mt-1">
-                  Photo Strips
-                </p>
-              </button>
 
-              {/* Booth Role */}
-              {isAdmin ? (
-                <div className="p-2 sm:p-3 rounded-2xl bg-pink-50/40 border border-pink-100/60 flex flex-col items-center justify-center">
-                  <p className="text-lg sm:text-2xl font-black text-orange-500 leading-none">
-                    Creator+
-                  </p>
-                  <p className="text-[9px] sm:text-[10px] font-bold text-foreground/50 uppercase tracking-wider mt-1">
-                    Booth Role
-                  </p>
-                </div>
-              ) : (
-                <div className="p-2 sm:p-3 rounded-2xl bg-pink-50/40 border border-pink-100/60 flex flex-col items-center justify-center">
-          
-                  <p className="text-lg sm:text-2xl font-black text-foreground leading-none">
-                    {isContributor ? 'Contributor+' : 'Member+'}
-                  </p>
-                  <p className="text-[9px] sm:text-[10px] font-bold text-foreground/50 uppercase tracking-wider mt-1">
-                    Booth Role
-                  </p>
-                </div>
-              )}
-
-              <div className="p-2 sm:p-3 rounded-2xl bg-pink-50/40 border border-pink-100/60 flex flex-col items-center justify-center">
-                <p className="text-lg sm:text-2xl font-black text-pink-600 leading-none">
-                  Active
-                </p>
-                <p className="text-[9px] sm:text-[10px] font-bold text-foreground/50 uppercase tracking-wider mt-1">
-                  Community
-                </p>
-              </div>
-            </div>
           </div>
 
           {/* ── Social Profile Feed Tabs ── */}
