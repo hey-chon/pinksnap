@@ -753,7 +753,7 @@ export default function ProfilePage() {
                   {isAdmin ? (
                     <>
                       <Flame className="creator-flame w-3 h-3 stroke-[2.5] fill-none text-orange-500" aria-hidden="true" />
-                      <span>CREATOR+</span>
+                      <span>CREATOR</span>
                     </>
                   ) : isContributor ? (
                     <>
@@ -806,15 +806,27 @@ export default function ProfilePage() {
                 </p>
               </button>
 
-              <div className="p-2 sm:p-3 rounded-2xl bg-pink-50/40 border border-pink-100/60 flex flex-col items-center justify-center">
+              {/* Booth Role */}
+              {isAdmin ? (
+                <div className="p-2 sm:p-3 rounded-2xl bg-pink-50/40 border border-pink-100/60 flex flex-col items-center justify-center">
+                  <p className="text-lg sm:text-2xl font-black text-orange-500 leading-none">
+                    Creator+
+                  </p>
+                  <p className="text-[9px] sm:text-[10px] font-bold text-foreground/50 uppercase tracking-wider mt-1">
+                    Booth Role
+                  </p>
+                </div>
+              ) : (
+                <div className="p-2 sm:p-3 rounded-2xl bg-pink-50/40 border border-pink-100/60 flex flex-col items-center justify-center">
           
-                <p className="text-lg sm:text-2xl font-black text-foreground leading-none">
-                  {isAdmin ? 'Creator+' : isContributor ? 'Contributor+' : 'Member+'}
-                </p>
-                <p className="text-[9px] sm:text-[10px] font-bold text-foreground/50 uppercase tracking-wider mt-1">
-                  Booth Role
-                </p>
-              </div>
+                  <p className="text-lg sm:text-2xl font-black text-foreground leading-none">
+                    {isContributor ? 'Contributor+' : 'Member+'}
+                  </p>
+                  <p className="text-[9px] sm:text-[10px] font-bold text-foreground/50 uppercase tracking-wider mt-1">
+                    Booth Role
+                  </p>
+                </div>
+              )}
 
               <div className="p-2 sm:p-3 rounded-2xl bg-pink-50/40 border border-pink-100/60 flex flex-col items-center justify-center">
                 <p className="text-lg sm:text-2xl font-black text-pink-600 leading-none">

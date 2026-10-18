@@ -89,10 +89,11 @@ async function resolveUserProfile(sbUser: User): Promise<UserProfile> {
     console.warn('[Supabase Auth] profiles fetch notice:', err);
   }
 
-  // Priority: Local saved profile edits > database profile row > JWT metadata > email handle fallback
+  // Priority: Database profile row > local saved profile edits > JWT metadata > email handle fallback
+  // Database is the source of truth so cloud changes take precedence over stale localStorage cache.
   const resolvedDisplayName =
-    localCache?.displayName ||
     dbProfile?.display_name ||
+    localCache?.displayName ||
     metadata.display_name ||
     metadata.name ||
     metadata.full_name ||
@@ -100,8 +101,8 @@ async function resolveUserProfile(sbUser: User): Promise<UserProfile> {
     'User';
 
   const resolvedBio =
-    (localCache?.bio !== undefined ? localCache.bio : undefined) ??
     dbProfile?.bio ??
+    (localCache?.bio !== undefined ? localCache.bio : undefined) ??
     metadata.bio ??
     '';
 
@@ -431,18 +432,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
 
       // 2. Update Supabase Auth user metadata
+      let authUpdateError: string | undefined;
       try {
-        const { data: authUpdateRes } = await supabase.auth.updateUser({
+        const { data: authUpdateRes, error: auErr } = await supabase.auth.updateUser({
           data: authDataUpdate,
         });
+        if (auErr) authUpdateError = auErr.message;
         if (authUpdateRes?.user) {
           setSupabaseUser(authUpdateRes.user);
         }
       } catch (authErr: any) {
-        console.warn('[Supabase Auth] updateUser notice:', authErr?.message);
+        authUpdateError = authErr?.message;
+        console.warn('[Supabase Auth] updateUser error:', authUpdateError);
       }
 
       // 3. Upsert into Supabase 'profiles' table with both display_name and bio
+      let profileUpsertError: string | undefined;
       try {
         const profileUpsert: Record<string, any> = {
           id: user.id,
@@ -456,11 +461,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (hasWallStripIdsUpdate) {
           profileUpsert.wall_strip_ids = nextWallStripIds;
         }
-        await supabase
+        const { error: profErr } = await supabase
           .from('profiles')
           .upsert(profileUpsert, { onConflict: 'id' });
+        if (profErr) profileUpsertError = profErr.message;
+        if (profErr) console.warn('[Supabase Profiles] upsert error:', profileUpsertError);
       } catch (profErr: any) {
-        console.warn('[Supabase Profiles] update notice:', profErr?.message);
+        profileUpsertError = profErr?.message;
+        console.warn('[Supabase Profiles] upsert exception:', profileUpsertError);
+      }
+
+      // If both cloud writes failed, return the error so the caller can surface it
+      if (authUpdateError && profileUpsertError) {
+        return { error: `Save failed: ${profileUpsertError}` };
       }
 
       setUser(prev => prev ? {
@@ -473,10 +486,43 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         updatedAt: new Date().toISOString(),
       } : null);
 
+      // ── Refresh user state from cloud so the UI stays in sync ──
+      // After writing to auth metadata + profiles table, re-fetch from Supabase
+      // so the `user` state reflects cloud truth (not just local cache).
+      try {
+        const { data: { user: freshAuthUser }, error: getUserErr } = await supabase.auth.getUser();
+        if (getUserErr) throw getUserErr;
+        if (freshAuthUser && freshAuthUser.id === user.id) {
+          const { data: dbProfile, error: dbErr } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', freshAuthUser.id)
+            .maybeSingle();
+          if (dbErr) throw dbErr;
+
+          setSupabaseUser(freshAuthUser);
+          setUser(prev => prev ? {
+            ...prev,
+            id: freshAuthUser.id,
+            email: freshAuthUser.email || '',
+            displayName: dbProfile?.display_name || freshAuthUser.user_metadata?.display_name || prev.displayName,
+            bio: (dbProfile?.bio ?? freshAuthUser.user_metadata?.bio ?? prev.bio) || '',
+            avatarUrl: dbProfile?.avatar_url || freshAuthUser.user_metadata?.avatar_url || prev.avatarUrl,
+            avatarStoragePath: dbProfile?.avatar_storage_path || freshAuthUser.user_metadata?.avatar_storage_path || prev.avatarStoragePath,
+            role: freshAuthUser.user_metadata?.role || prev.role,
+            wallStripIds: Array.isArray(dbProfile?.wall_strip_ids) ? dbProfile.wall_strip_ids : (Array.isArray(freshAuthUser.user_metadata?.wall_strip_ids) ? freshAuthUser.user_metadata.wall_strip_ids : prev.wallStripIds),
+            updatedAt: new Date().toISOString(),
+          } : null);
+        }
+      } catch (refreshErr) {
+        console.warn('[Auth] refresh after update notice:', refreshErr);
+        // Non-fatal: optimistic state was already set above
+      }
+
       return {};
     } catch (err: unknown) {
-      console.warn('updateProfile notice:', err);
-      return {};
+      const message = err instanceof Error ? err.message : 'Unknown error';
+      return { error: message };
     }
   }, [user]);
 
