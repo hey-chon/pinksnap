@@ -38,6 +38,7 @@ import {
   Loader2,
   Heart,
   ImageIcon,
+  Images,
   Settings,
   Settings2,
   Lock,
@@ -60,7 +61,7 @@ export default function ProfilePage() {
   const [showAvatarMenu, setShowAvatarMenu] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isSendingReset, setIsSendingReset] = useState(false);
-  const [activeTab, setActiveTab] = useState<'strips' | 'edit' | 'badges'>('strips');
+  const [activeTab, setActiveTab] = useState<'strips' | 'edit'>('strips');
   const [selectedMemory, setSelectedMemory] = useState<{ id: string; url: string; date: number; frame: string } | null>(null);
   const [showPostModal, setShowPostModal] = useState(false);
 
@@ -682,18 +683,14 @@ export default function ProfilePage() {
                 </p>
               </button>
 
-              <button
-                type="button"
-                onClick={() => setActiveTab('badges')}
-                className="p-2 rounded-2xl hover:bg-foreground/[0.02] transition-colors group cursor-pointer"
-              >
-                <p className="text-lg sm:text-2xl font-black text-foreground group-hover:text-primary transition-colors leading-none">
+              <div className="p-2 rounded-2xl">
+                <p className="text-lg sm:text-2xl font-black text-foreground leading-none">
                   {isAdmin ? 'Creator+' : 'Member+'}
                 </p>
                 <p className="text-[9px] sm:text-[10px] font-bold text-foreground/50 uppercase tracking-wider mt-1">
                   Booth Tier
                 </p>
-              </button>
+              </div>
 
               <div className="p-2 rounded-2xl">
                 <p className="text-lg sm:text-2xl font-black text-emerald-600 leading-none">
@@ -736,79 +733,34 @@ export default function ProfilePage() {
 
             <button
               type="button"
-              onClick={() => setActiveTab('badges')}
-              className={`flex-1 py-2.5 px-3 rounded-xl text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 transition-all ${
-                activeTab === 'badges'
-                  ? 'bg-primary text-white shadow-md shadow-primary/25'
-                  : 'text-foreground/60 hover:text-foreground hover:bg-foreground/[0.03]'
-              }`}
+              onClick={() => setShowPostModal(true)}
+              className="flex-1 py-2.5 px-3 rounded-xl text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 transition-all text-foreground/60 hover:text-foreground hover:bg-foreground/[0.03] cursor-pointer"
             >
-              <Award className="w-4 h-4" />
-              <span>Badges</span>
+              <PlusCircle className="w-4 h-4" />
+              <span>Post a Strip</span>
             </button>
           </div>
 
-          {/* ── TAB 1: Profile Wall (Private by default, user-selected showcase) ── */}
+          {/* ── TAB 1: Profile Wall ── */}
           {activeTab === 'strips' && (
-            <div className="space-y-4">
-              {/* Privacy Notice & Post Action Header Bar */}
-              <div className="bg-gradient-to-r from-pink-50/80 via-white to-pink-50/60 rounded-2xl p-3 sm:p-4 border border-pink-100/90 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
-                    <Shield className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-xs font-black uppercase tracking-wider text-foreground">
-                        Profile Wall
-                      </span>
-                      <span className="inline-flex items-center gap-1 text-[9px] font-black uppercase px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">
-                        <Lock className="w-2.5 h-2.5" /> Private by default
-                      </span>
-                    </div>
-                    <p className="text-[11px] text-foreground/50 font-medium leading-tight mt-0.5">
-                      Only strips you choose to post appear here. Your booth gallery stays private.
-                    </p>
-                  </div>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => setShowPostModal(true)}
-                  className="px-4 py-2.5 bg-primary text-white text-xs font-black uppercase tracking-wider rounded-xl shadow-md shadow-primary/25 hover:brightness-105 active:scale-95 transition-all inline-flex items-center justify-center gap-1.5 shrink-0 cursor-pointer"
-                >
-                  <Plus className="w-4 h-4" /> Post a Strip
-                </button>
-              </div>
-
+            <div>
               {postedStrips.length === 0 ? (
                 /* Empty Wall State */
-                <div className="bg-white rounded-3xl p-8 sm:p-12 text-center border border-pink-100 shadow-sm">
-                  <div className="w-20 h-20 mx-auto mb-4 rounded-3xl bg-pink-50 flex items-center justify-center text-primary border border-pink-100 shadow-inner">
-                    <Lock className="w-10 h-10 stroke-[1.5]" />
+                <div className="bg-white rounded-3xl p-6 sm:p-10 text-center border border-pink-100 shadow-[0_10px_30px_-15px_rgba(245,61,137,0.12)]">
+                  <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-4 rounded-3xl bg-gradient-to-tr from-pink-100 to-pink-50 flex items-center justify-center text-primary border border-pink-200/60 shadow-sm">
+                    <Images className="w-8 h-8 sm:w-10 sm:h-10 stroke-[1.75]" />
                   </div>
-                  <h3 className="font-hero text-2xl text-foreground mb-2">YOUR PROFILE WALL IS PRIVATE</h3>
-                  <p className="text-foreground/65 text-xs sm:text-sm max-w-sm mx-auto mb-6 leading-relaxed">
-                    {savedMemories.length === 0
-                      ? 'Step into the photobooth to snap your first memory! Once saved in your private gallery, you can pick what to post on your wall.'
-                      : `You have ${savedMemories.length} strip${savedMemories.length > 1 ? 's' : ''} in your private gallery. PinkSnap keeps them private until you choose which ones to showcase on your wall.`}
+                  <h3 className="font-hero text-xl sm:text-2xl text-foreground mb-2">YOUR PROFILE WALL</h3>
+                  <p className="text-foreground/60 text-xs sm:text-sm max-w-sm mx-auto mb-6 leading-relaxed">
+                    Strips in your gallery are private by default. Pick your favorite snapshots to showcase here on your public wall.
                   </p>
-                  {savedMemories.length === 0 ? (
-                    <Link
-                      href="/loading"
-                      className="px-6 py-3.5 bg-primary text-white font-black text-xs uppercase tracking-wider rounded-2xl shadow-lg shadow-primary/30 inline-flex items-center gap-2 hover:scale-105 active:scale-95 transition-all"
-                    >
-                      <Camera className="w-4 h-4" /> Start Snapping
-                    </Link>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => setShowPostModal(true)}
-                      className="px-6 py-3.5 bg-primary text-white font-black text-xs uppercase tracking-wider rounded-2xl shadow-lg shadow-primary/30 inline-flex items-center gap-2 hover:scale-105 active:scale-95 transition-all cursor-pointer"
-                    >
-                      <Plus className="w-4 h-4" /> Choose Strips to Post
-                    </button>
-                  )}
+                  <button
+                    type="button"
+                    onClick={() => setShowPostModal(true)}
+                    className="w-full sm:w-auto px-7 py-3.5 bg-primary text-white font-black text-xs uppercase tracking-wider rounded-2xl shadow-lg shadow-primary/25 inline-flex items-center justify-center gap-2 hover:brightness-105 active:scale-95 transition-all cursor-pointer"
+                  >
+                    <Plus className="w-4 h-4 stroke-[2.5]" /> Choose Strips to Post
+                  </button>
                 </div>
               ) : (
                 /* Wall Strips Grid */
@@ -881,7 +833,7 @@ export default function ProfilePage() {
                 </div>
                 <div>
                   <h2 className="text-base font-black uppercase tracking-wider text-foreground">Profile Settings</h2>
-                  <p className="text-[11px] text-foreground/50 font-medium">Update your public name and profile picture</p>
+                  <p className="text-[11px] text-foreground/50 font-medium">Update your public name and bio</p>
                 </div>
               </div>
 
@@ -980,78 +932,7 @@ export default function ProfilePage() {
             </div>
           )}
 
-          {/* ── TAB 3: Badges & Perks ── */}
-          {activeTab === 'badges' && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                {/* Badge 1 */}
-                <div className="bg-white rounded-2xl p-4 border border-pink-100 shadow-sm flex items-start gap-3.5">
-                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-pink-500 to-rose-400 text-white flex items-center justify-center shadow-md shadow-pink-500/20 shrink-0">
-                    <Sparkles className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <h4 className="text-sm font-black text-foreground">Booth Pioneer</h4>
-                      <span className="text-[9px] font-black uppercase bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full">Unlocked</span>
-                    </div>
-                    <p className="text-xs text-foreground/60 font-medium mt-1 leading-relaxed">
-                      Official PinkSnap member with cloud profile & photo synchronization.
-                    </p>
-                  </div>
-                </div>
 
-                {/* Badge 2 */}
-                <div className="bg-white rounded-2xl p-4 border border-pink-100 shadow-sm flex items-start gap-3.5">
-                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-purple-500 to-indigo-400 text-white flex items-center justify-center shadow-md shadow-purple-500/20 shrink-0">
-                    <Camera className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <h4 className="text-sm font-black text-foreground">Memory Keeper</h4>
-                      <span className="text-[9px] font-black uppercase bg-pink-100 text-primary px-2 py-0.5 rounded-full">
-                        {savedMemories.length} Strips
-                      </span>
-                    </div>
-                    <p className="text-xs text-foreground/60 font-medium mt-1 leading-relaxed">
-                      Captured aesthetic snapshots and archived them in your cloud feed.
-                    </p>
-                  </div>
-                </div>
-
-                {/* Badge 3 */}
-                <div className="bg-white rounded-2xl p-4 border border-pink-100 shadow-sm flex items-start gap-3.5">
-                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-400 to-rose-400 text-white flex items-center justify-center shadow-md shadow-amber-500/20 shrink-0">
-                    <Award className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <h4 className="text-sm font-black text-foreground">Custom Star</h4>
-                      <span className="text-[9px] font-black uppercase bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full">Unlocked</span>
-                    </div>
-                    <p className="text-xs text-foreground/60 font-medium mt-1 leading-relaxed">
-                      Personalized avatar & booth handle for community chat and prints.
-                    </p>
-                  </div>
-                </div>
-
-                {/* Badge 4 */}
-                <div className="bg-white rounded-2xl p-4 border border-pink-100 shadow-sm flex items-start gap-3.5">
-                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-rose-400 to-pink-600 text-white flex items-center justify-center shadow-md shadow-rose-500/20 shrink-0">
-                    <Heart className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <h4 className="text-sm font-black text-foreground">Member+ Tier</h4>
-                      <span className="text-[9px] font-black uppercase bg-pink-100 text-primary px-2 py-0.5 rounded-full">Active</span>
-                    </div>
-                    <p className="text-xs text-foreground/60 font-medium mt-1 leading-relaxed">
-                      Full access to Member+ photobooth perks, cloud strip saves & artisan frame templates.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
 
           {/* ── Sign Out Button ── */}
           <div className="mt-8 pt-4 text-center">
@@ -1114,120 +995,125 @@ export default function ProfilePage() {
       {/* ── Post to Wall Modal (Select strips from private gallery) ── */}
       {showPostModal && (
         <div
-          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center animate-in fade-in duration-150"
+          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center animate-in fade-in duration-150 p-0 sm:p-4"
           onClick={() => setShowPostModal(false)}
         >
           <div
-            className="bg-white w-full max-w-lg max-h-[85dvh] sm:max-h-[80dvh] rounded-t-3xl sm:rounded-3xl shadow-2xl border border-pink-100 flex flex-col animate-in slide-in-from-bottom-4 sm:zoom-in-95 duration-200"
+            className="bg-white w-full max-w-lg max-h-[90dvh] sm:max-h-[85dvh] rounded-t-[28px] sm:rounded-3xl shadow-2xl border border-pink-100 flex flex-col animate-in slide-in-from-bottom-5 sm:zoom-in-95 duration-200 overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
+            {/* Mobile Sheet Drag Indicator */}
+            <div className="w-12 h-1.5 rounded-full bg-foreground/15 mx-auto mt-3 sm:hidden" />
+
             {/* Modal Header */}
-            <div className="flex items-center justify-between p-4 sm:p-5 border-b border-pink-100/80">
+            <div className="flex items-center justify-between px-5 pt-3 sm:pt-5 pb-4 border-b border-pink-100">
               <div>
-                <h3 className="font-hero text-lg text-foreground">POST TO WALL</h3>
-                <p className="text-[11px] text-foreground/50 font-medium mt-0.5">
-                  Choose which strips to showcase on your public profile wall
+                <h3 className="font-hero text-lg sm:text-xl text-foreground tracking-tight">CHOOSE STRIPS TO POST</h3>
+                <p className="text-[11px] sm:text-xs text-foreground/50 font-medium mt-0.5">
+                  Tap any photo strip to toggle it on or off your wall
                 </p>
               </div>
               <button
                 type="button"
                 onClick={() => setShowPostModal(false)}
-                className="p-2 rounded-full hover:bg-foreground/[0.06] text-foreground/50 transition-colors"
+                className="w-8 h-8 rounded-full bg-foreground/[0.04] hover:bg-foreground/[0.08] active:scale-90 text-foreground/60 flex items-center justify-center transition-all cursor-pointer"
+                aria-label="Close"
               >
-                <X className="w-5 h-5" />
+                <X className="w-4 h-4 stroke-[2.5]" />
               </button>
             </div>
 
-            {/* Modal Body — Gallery strip list */}
-            <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-2.5">
+            {/* Modal Body — Gallery strip grid */}
+            <div className="flex-1 overflow-y-auto p-4 sm:p-5 overscroll-contain">
               {savedMemories.length === 0 ? (
-                <div className="text-center py-10">
-                  <div className="w-16 h-16 mx-auto mb-3 rounded-2xl bg-pink-50 flex items-center justify-center text-primary border border-pink-100">
-                    <ImageIcon className="w-8 h-8 stroke-[1.5]" />
+                <div className="text-center py-12 px-4">
+                  <div className="w-16 h-16 mx-auto mb-3.5 rounded-3xl bg-pink-50 flex items-center justify-center text-primary border border-pink-100/80 shadow-sm">
+                    <Camera className="w-8 h-8 stroke-[1.75]" />
                   </div>
-                  <p className="text-xs text-foreground/50 font-medium">
-                    No photo strips in your gallery yet. Start snapping to build your collection!
+                  <h4 className="font-hero text-lg text-foreground mb-1">NO STRIPS IN GALLERY</h4>
+                  <p className="text-xs text-foreground/55 max-w-xs mx-auto mb-5 font-medium leading-relaxed">
+                    You haven't saved any photobooth strips yet. Start snapping to build your collection!
                   </p>
+                  <Link
+                    href="/loading"
+                    onClick={() => setShowPostModal(false)}
+                    className="inline-flex items-center gap-2 px-5 py-3 bg-primary text-white text-xs font-black uppercase tracking-wider rounded-xl shadow-md shadow-primary/25 hover:brightness-105 active:scale-95 transition-all"
+                  >
+                    <Camera className="w-4 h-4 stroke-[2.5]" /> Start Photobooth
+                  </Link>
                 </div>
               ) : (
-                savedMemories.map((memory) => {
-                  const isOnWall = postedStripIds.includes(memory.id);
-                  return (
-                    <div
-                      key={memory.id}
-                      className={`flex items-center gap-3 p-2.5 rounded-2xl border transition-all ${
-                        isOnWall
-                          ? 'bg-primary/[0.04] border-primary/30 shadow-sm'
-                          : 'bg-white border-pink-100/80 hover:border-primary/20'
-                      }`}
-                    >
-                      {/* Thumbnail */}
-                      <div className="w-14 h-[72px] rounded-xl overflow-hidden bg-black/5 shrink-0">
-                        <img
-                          src={memory.url}
-                          alt="Strip thumbnail"
-                          className="w-full h-full object-cover select-none"
-                          loading="lazy"
-                        />
-                      </div>
-
-                      {/* Strip Info */}
-                      <div className="flex-1 min-w-0">
-                        <p className="text-xs font-bold text-foreground truncate">
-                          {new Date(memory.date).toLocaleDateString(undefined, {
-                            year: 'numeric',
-                            month: 'short',
-                            day: 'numeric',
-                          })}
-                        </p>
-                        <p className="text-[10px] text-foreground/45 font-medium mt-0.5">
-                          {isOnWall ? (
-                            <span className="inline-flex items-center gap-1 text-primary font-bold">
-                              <Eye className="w-3 h-3" /> On your wall
-                            </span>
-                          ) : (
-                            <span className="inline-flex items-center gap-1">
-                              <Lock className="w-3 h-3" /> Private
-                            </span>
-                          )}
-                        </p>
-                      </div>
-
-                      {/* Toggle Button */}
-                      <button
-                        type="button"
-                        onClick={(e) => handleTogglePostToWall(memory.id, e)}
-                        className={`px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all active:scale-95 shrink-0 cursor-pointer ${
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 sm:gap-3">
+                  {savedMemories.map((memory) => {
+                    const isOnWall = postedStripIds.includes(memory.id);
+                    return (
+                      <div
+                        key={memory.id}
+                        onClick={() => handleTogglePostToWall(memory.id)}
+                        className={`group relative rounded-2xl p-2 transition-all cursor-pointer select-none border-2 flex flex-col justify-between active:scale-[0.98] ${
                           isOnWall
-                            ? 'bg-foreground/[0.06] text-foreground/70 hover:bg-destructive/10 hover:text-destructive'
-                            : 'bg-primary text-white shadow-sm shadow-primary/20 hover:brightness-105'
+                            ? 'bg-primary/[0.04] border-primary shadow-sm ring-1 ring-primary/25'
+                            : 'bg-white border-pink-100/90 hover:border-pink-200 shadow-xs'
                         }`}
                       >
-                        {isOnWall ? (
-                          <span className="flex items-center gap-1">
-                            <EyeOff className="w-3 h-3" /> Unpost
+                        {/* Thumbnail Container */}
+                        <div className="aspect-[3/4] w-full rounded-xl overflow-hidden bg-black/5 relative mb-2">
+                          <img
+                            src={memory.url}
+                            alt="Strip preview"
+                            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-102"
+                            loading="lazy"
+                          />
+
+                          {/* Selection Badge in Corner */}
+                          <div className="absolute top-2 right-2">
+                            {isOnWall ? (
+                              <div className="w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center shadow-md shadow-primary/30">
+                                <Check className="w-3.5 h-3.5 stroke-[3]" />
+                              </div>
+                            ) : (
+                              <div className="w-6 h-6 rounded-full bg-black/35 backdrop-blur-sm border border-white/60 text-white/90 flex items-center justify-center group-hover:bg-primary/80 transition-colors">
+                                <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Footer Info */}
+                        <div className="flex items-center justify-between px-1 text-[11px]">
+                          <span className="font-semibold text-foreground/50 text-[10px] truncate">
+                            {new Date(memory.date).toLocaleDateString(undefined, {
+                              month: 'short',
+                              day: 'numeric',
+                            })}
                           </span>
-                        ) : (
-                          <span className="flex items-center gap-1">
-                            <Plus className="w-3 h-3" /> Post
+                          <span
+                            className={`text-[9px] font-black uppercase tracking-wider ${
+                              isOnWall ? 'text-primary' : 'text-foreground/40'
+                            }`}
+                          >
+                            {isOnWall ? 'On Wall' : 'Private'}
                           </span>
-                        )}
-                      </button>
-                    </div>
-                  );
-                })
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               )}
             </div>
 
             {/* Modal Footer */}
-            <div className="p-4 sm:p-5 border-t border-pink-100/80 flex items-center justify-between gap-3">
-              <p className="text-[10px] text-foreground/40 font-medium">
-                {postedStripIds.length} of {savedMemories.length} strips on wall
-              </p>
+            <div className="px-5 py-3.5 sm:py-4 border-t border-pink-100 bg-white flex items-center justify-between gap-3 pb-[max(0.875rem,env(safe-area-inset-bottom))]">
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-primary" />
+                <p className="text-xs font-bold text-foreground/70">
+                  <span className="text-primary font-black">{postedStripIds.length}</span> of {savedMemories.length} on wall
+                </p>
+              </div>
               <button
                 type="button"
                 onClick={() => setShowPostModal(false)}
-                className="px-5 py-2.5 bg-primary text-white text-xs font-black uppercase tracking-wider rounded-xl shadow-md shadow-primary/25 hover:brightness-105 active:scale-95 transition-all cursor-pointer"
+                className="px-6 py-2.5 bg-primary text-white text-xs font-black uppercase tracking-wider rounded-xl shadow-md shadow-primary/25 hover:brightness-105 active:scale-95 transition-all cursor-pointer"
               >
                 Done
               </button>

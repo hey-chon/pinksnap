@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'wouter';
-import { Camera, ChevronLeft, HelpCircle, Images, MessageCircle, UserRound, Compass } from 'lucide-react';
+import { Camera, ChevronLeft, HelpCircle, Images, MessageCircle, UserRound, Home } from 'lucide-react';
 import { UserMenu } from '@/components/auth/user-menu';
 import { resetAppFlow } from '@/App';
 
@@ -43,7 +43,7 @@ export function TopNav({ backTo, title }: { backTo?: string, title?: string }) {
         ) : (
           <Link href="/" onClick={resetAppFlow} data-testid="link-brand" aria-label="PinkSnap home" className="flex items-center gap-2 sm:gap-2.5 group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-xl cursor-pointer">
             <div className="bg-primary text-primary-foreground p-2 sm:p-2.5 rounded-[13px] group-hover:rotate-[-4deg] group-hover:scale-105 transition-transform shadow-[0_7px_20px_rgba(245,61,137,.5)]">
-              <Compass className="w-5 h-5 sm:w-6 sm:h-6 stroke-[2.5]" />
+              <Home className="w-5 h-5 sm:w-6 sm:h-6 stroke-[2.5]" />
             </div>
             <div className="flex flex-col leading-[.78]">
               <span className="font-display text-[22px] sm:text-[26px] text-white">PINK</span>
