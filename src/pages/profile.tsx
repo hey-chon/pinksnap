@@ -29,6 +29,7 @@ import {
   Camera,
   Share2,
   Check,
+  Flame,
   Grid,
   Award,
   Calendar,
@@ -739,11 +740,11 @@ export default function ProfilePage() {
                   </span>
                 )}
 
-                {/* Role Badge */}
+                {/* Role Badge — CREATOR+ glows with an animated flame */}
                 <span
-                  className={`shrink-0 inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] sm:text-[10px] font-black uppercase tracking-wider ${
+                  className={`shrink-0 inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[9px] sm:text-[10px] font-black uppercase tracking-wider border ${
                     isAdmin
-                      ? 'bg-purple-100 text-purple-700 border border-purple-200'
+                      ? 'creator-plus-badge text-white border-transparent bg-black/40'
                       : isContributor
                       ? 'bg-amber-100 text-amber-900 border border-amber-300/80 shadow-xs'
                       : 'bg-primary/10 text-primary border border-primary/20'
@@ -751,8 +752,8 @@ export default function ProfilePage() {
                 >
                   {isAdmin ? (
                     <>
-                      <Crown className="w-3 h-3 stroke-[2.5]" aria-hidden="true" />
-                      <span>CREATOR</span>
+                      <Flame className="creator-flame w-3 h-3 stroke-[2.5] fill-none text-orange-500" aria-hidden="true" />
+                      <span>CREATOR+</span>
                     </>
                   ) : isContributor ? (
                     <>

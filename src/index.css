@@ -1415,6 +1415,83 @@ html, body { overflow-x: hidden; }
   transform: translateY(-1px);
 }
 
+/* ── CREATOR+ badge — clean flame glow (no fluff) ── */
+.creator-plus-badge {
+  position: relative;
+  background: #0b0c10;
+  border: 1px solid rgba(255, 69, 0, 0.45);
+  color: #fff;
+  box-shadow:
+    0 0 12px rgba(245, 61, 137, 0.35),
+    0 0 24px rgba(255, 69, 0, 0.18);
+  animation: creator-badge-glow 3s ease-in-out infinite;
+}
+
+.creator-plus-badge .creator-flame {
+  color: #ff4500;
+  filter: drop-shadow(0 0 5px rgba(255, 69, 0, 0.7));
+  animation: creator-flame-flicker 0.45s ease-in-out infinite alternate;
+}
+
+@keyframes creator-badge-glow {
+  0%,
+  100% {
+    border-color: rgba(255, 69, 0, 0.45);
+    box-shadow:
+      0 0 12px rgba(245, 61, 137, 0.35),
+      0 0 24px rgba(255, 69, 0, 0.18);
+  }
+  50% {
+    border-color: rgba(255, 107, 0, 0.7);
+    box-shadow:
+      0 0 18px rgba(245, 61, 137, 0.55),
+      0 0 40px rgba(255, 69, 0, 0.35);
+  }
+}
+
+@keyframes creator-flame-flicker {
+  0% {
+    transform: scale(1) rotate(-1deg);
+  }
+  100% {
+    transform: scale(1.12) rotate(2deg);
+  }
+}
+
+/* ── Creator booth role display — glow + flame (creator role only) ── */
+.creator-role-card {
+  position: relative;
+  background: #0b0c10;
+  border: 1px solid rgba(255, 69, 0, 0.45);
+  box-shadow:
+    0 0 14px rgba(245, 61, 137, 0.3),
+    0 0 28px rgba(255, 69, 0, 0.18);
+  animation: creator-badge-glow 3s ease-in-out infinite;
+  overflow: hidden;
+}
+
+.creator-role-card .creator-role-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.7rem;
+  border-radius: 9999px;
+  background: rgba(255, 69, 0, 0.2);
+  border: 1px solid rgba(255, 69, 0, 0.45);
+  color: #ffaf4d;
+  font-size: 10px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+.creator-role-card .creator-role-flame {
+  color: #ff4500;
+  filter: drop-shadow(0 0 5px rgba(255, 69, 0, 0.7));
+  animation: creator-flame-flicker 0.45s ease-in-out infinite alternate;
+}
+
 /* ---------- Universal Mobile Phone Responsiveness ---------- */
 /* Applies to all narrow screens (Android, small iPhones, etc) to ensure the UI breathes */
 
