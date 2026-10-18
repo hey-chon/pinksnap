@@ -63,6 +63,12 @@ export default function ProfilePage() {
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const [showAvatarMenu, setShowAvatarMenu] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [avatarLoadError, setAvatarLoadError] = useState(false);
+  const safeAvatarSrc = normalizeAvatarUrl(user?.avatarUrl);
+
+  useEffect(() => {
+    setAvatarLoadError(false);
+  }, [user?.avatarUrl]);
   const [isSendingReset, setIsSendingReset] = useState(false);
   const [activeTab, setActiveTab] = useState<'strips' | 'edit'>('strips');
   const [selectedMemory, setSelectedMemory] = useState<{ id: string; url: string; date: number; frame: string } | null>(null);
@@ -619,11 +625,12 @@ export default function ProfilePage() {
                   className="group relative block rounded-full focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/40 active:scale-95 transition-transform cursor-pointer"
                 >
                   <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-white border-4 border-white shadow-xl flex items-center justify-center text-primary font-display text-4xl sm:text-5xl overflow-hidden ring-4 ring-pink-500/10">
-                    {user.avatarUrl ? (
+                    {safeAvatarSrc && !avatarLoadError ? (
                       <img
                         key={user.avatarUrl}
-                        src={normalizeAvatarUrl(user.avatarUrl)}
+                        src={safeAvatarSrc}
                         alt={user.displayName}
+                        onError={() => setAvatarLoadError(true)}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         referrerPolicy="no-referrer"
                       />
@@ -801,50 +808,122 @@ export default function ProfilePage() {
               )}
             </div>
 
-            {/* ROW 3: Social Media Stats Counters with Cute Pastel Badges */}
+            {/* ROW 3: Social Media Stats Counters — Customized By Role */}
             <div className="mt-5 pt-4 border-t border-black/[0.06] grid grid-cols-3 gap-2 text-center">
-              <button
-                type="button"
-                onClick={() => setActiveTab('strips')}
-                className="p-2 sm:p-3 rounded-2xl bg-pink-50/40 hover:bg-pink-100/50 border border-pink-100/60 transition-colors group cursor-pointer flex flex-col items-center justify-center"
-              >
-                <p className="text-lg sm:text-2xl font-black text-foreground group-hover:text-primary transition-colors leading-none">
-                  {postedStrips.length}
-                </p>
-                <p className="text-[9px] sm:text-[10px] font-bold text-foreground/50 uppercase tracking-wider mt-1">
-                  Photo Strips
-                </p>
-              </button>
-
-              {/* Booth Role */}
               {isAdmin ? (
-                <div className="p-2 sm:p-3 rounded-2xl bg-pink-50/40 border border-pink-100/60 flex flex-col items-center justify-center">
-                  <p className="text-lg sm:text-2xl font-black text-orange-500 leading-none">
-                    Creator+
-                  </p>
-                  <p className="text-[9px] sm:text-[10px] font-bold text-foreground/50 uppercase tracking-wider mt-1">
-                    Booth Role
-                  </p>
-                </div>
-              ) : (
-                <div className="p-2 sm:p-3 rounded-2xl bg-pink-50/40 border border-pink-100/60 flex flex-col items-center justify-center">
-                  <p className="text-lg sm:text-2xl font-black text-foreground leading-none">
-                    {isContributor ? 'Contributor+' : 'Member+'}
-                  </p>
-                  <p className="text-[9px] sm:text-[10px] font-bold text-foreground/50 uppercase tracking-wider mt-1">
-                    Booth Role
-                  </p>
-                </div>
-              )}
+                /* ── CREATOR ROLE: Obsidian fire card glow with flame and crown accents ── */
+                <>
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('strips')}
+                    className="p-2 sm:p-3 rounded-2xl creator-role-card flex flex-col items-center justify-center transition-all group cursor-pointer"
+                  >
+                    <div className="flex items-center gap-1">
+                      <p className="text-lg sm:text-2xl font-black text-orange-400 group-hover:text-orange-300 transition-colors leading-none drop-shadow-[0_0_8px_rgba(255,140,0,0.6)]">
+                        {postedStrips.length}
+                      </p>
+                      <Flame className="w-3.5 h-3.5 creator-flame text-orange-500 fill-none" aria-hidden="true" />
+                    </div>
+                    <p className="text-[9px] sm:text-[10px] font-bold text-orange-200/90 uppercase tracking-wider mt-1">
+                      Photo Strips
+                    </p>
+                  </button>
 
-              <div className="p-2 sm:p-3 rounded-2xl bg-pink-50/40 border border-pink-100/60 flex flex-col items-center justify-center">
-                <p className="text-lg sm:text-2xl font-black text-pink-600 leading-none">
-                  Active
-                </p>
-                <p className="text-[9px] sm:text-[10px] font-bold text-foreground/50 uppercase tracking-wider mt-1">
-                  Community
-                </p>
-              </div>
+                  <div className="p-2 sm:p-3 rounded-2xl creator-role-card flex flex-col items-center justify-center">
+                    <div className="flex items-center gap-1">
+                      <p className="text-lg sm:text-2xl font-black text-orange-500 leading-none drop-shadow-[0_0_8px_rgba(255,69,0,0.8)]">
+                        Creator+
+                      </p>
+  
+                    </div>
+                    <p className="text-[9px] sm:text-[10px] font-bold text-orange-200/90 uppercase tracking-wider mt-1">
+                      Booth Role
+                    </p>
+                  </div>
+
+                  <div className="p-2 sm:p-3 rounded-2xl creator-role-card flex flex-col items-center justify-center">
+                    <div className="flex items-center gap-1">
+                      <p className="text-lg sm:text-2xl font-black text-orange-400 leading-none drop-shadow-[0_0_8px_rgba(255,140,0,0.6)]">
+                        Active
+                      </p>
+                    </div>
+                    <p className="text-[9px] sm:text-[10px] font-bold text-orange-200/90 uppercase tracking-wider mt-1">
+                      Community
+                    </p>
+                  </div>
+                </>
+              ) : isContributor ? (
+                /* ── CONTRIBUTOR ROLE: Basic clean amber look ── */
+                <>
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('strips')}
+                    className="p-2 sm:p-3 rounded-2xl bg-amber-50/50 hover:bg-amber-100/60 border border-amber-200/70 transition-colors group cursor-pointer flex flex-col items-center justify-center"
+                  >
+                    <p className="text-lg sm:text-2xl font-black text-foreground group-hover:text-amber-700 transition-colors leading-none">
+                      {postedStrips.length}
+                    </p>
+                    <p className="text-[9px] sm:text-[10px] font-bold text-foreground/50 uppercase tracking-wider mt-1">
+                      Photo Strips
+                    </p>
+                  </button>
+
+                  <div className="p-2 sm:p-3 rounded-2xl bg-amber-50/50 border border-amber-200/70 flex flex-col items-center justify-center">
+                    <div className="flex items-center gap-1">
+                      <p className="text-lg sm:text-2xl font-black text-amber-700 leading-none">
+                        Contributor+
+                      </p>
+                      <Zap className="w-3 h-3 fill-amber-500 text-amber-500" aria-hidden="true" />
+                    </div>
+                    <p className="text-[9px] sm:text-[10px] font-bold text-foreground/50 uppercase tracking-wider mt-1">
+                      Booth Role
+                    </p>
+                  </div>
+
+                  <div className="p-2 sm:p-3 rounded-2xl bg-amber-50/50 border border-amber-200/70 flex flex-col items-center justify-center">
+                    <p className="text-lg sm:text-2xl font-black text-amber-600 leading-none">
+                      Active
+                    </p>
+                    <p className="text-[9px] sm:text-[10px] font-bold text-foreground/50 uppercase tracking-wider mt-1">
+                      Community
+                    </p>
+                  </div>
+                </>
+              ) : (
+                /* ── MEMBER ROLE: Basic clean pastel pink look ── */
+                <>
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('strips')}
+                    className="p-2 sm:p-3 rounded-2xl bg-pink-50/40 hover:bg-pink-100/50 border border-pink-100/60 transition-colors group cursor-pointer flex flex-col items-center justify-center"
+                  >
+                    <p className="text-lg sm:text-2xl font-black text-foreground group-hover:text-primary transition-colors leading-none">
+                      {postedStrips.length}
+                    </p>
+                    <p className="text-[9px] sm:text-[10px] font-bold text-foreground/50 uppercase tracking-wider mt-1">
+                      Photo Strips
+                    </p>
+                  </button>
+
+                  <div className="p-2 sm:p-3 rounded-2xl bg-pink-50/40 border border-pink-100/60 flex flex-col items-center justify-center">
+                    <p className="text-lg sm:text-2xl font-black text-foreground leading-none">
+                      Member+
+                    </p>
+                    <p className="text-[9px] sm:text-[10px] font-bold text-foreground/50 uppercase tracking-wider mt-1">
+                      Booth Role
+                    </p>
+                  </div>
+
+                  <div className="p-2 sm:p-3 rounded-2xl bg-pink-50/40 border border-pink-100/60 flex flex-col items-center justify-center">
+                    <p className="text-lg sm:text-2xl font-black text-pink-600 leading-none">
+                      Active
+                    </p>
+                    <p className="text-[9px] sm:text-[10px] font-bold text-foreground/50 uppercase tracking-wider mt-1">
+                      Community
+                    </p>
+                  </div>
+                </>
+              )}
             </div>
 
 

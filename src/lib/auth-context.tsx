@@ -552,12 +552,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         console.warn('[Supabase Auth] updateUser error:', authUpdateError);
       }
 
-      // 3. Upsert into Supabase 'profiles' table with guaranteed core columns fallback
-      let profileUpsertError: string | undefined;
+      // 3. Update Supabase 'profiles' table with guaranteed core columns fallback
+      let profileUpdateError: string | undefined;
       try {
-        const profileUpsert: Record<string, any> = {
-          id: user.id,
-          email: user.email,
+        const profileUpdate: Record<string, any> = {
           display_name: newDisplayName,
           bio: newBio,
           avatar_url: nextAvatar.avatarUrl ?? null,
@@ -565,19 +563,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           updated_at: new Date().toISOString(),
         };
         if (hasWallStripIdsUpdate) {
-          profileUpsert.wall_strip_ids = nextWallStripIds;
+          profileUpdate.wall_strip_ids = nextWallStripIds;
         }
 
-        let { error: profErr } = await supabase
+        // Try update first (does not trigger default column evaluation or RLS role checks)
+        let { error: updateErr } = await supabase
           .from('profiles')
-          .upsert(profileUpsert, { onConflict: 'id' });
+          .update(profileUpdate)
+          .eq('id', user.id);
 
         // If unknown columns (like bio or wall_strip_ids) caused an error, retry with core schema columns
-        if (profErr && (profErr.message?.includes('column') || profErr.code === 'PGRST204' || profErr.code === '42703')) {
-          console.warn('[Supabase Profiles] Retrying upsert with core schema columns only:', profErr.message);
-          const coreUpsert: Record<string, any> = {
-            id: user.id,
-            email: user.email,
+        if (updateErr && (updateErr.message?.includes('column') || updateErr.code === 'PGRST204' || updateErr.code === '42703')) {
+          console.warn('[Supabase Profiles] Retrying update with core schema columns only:', updateErr.message);
+          const coreUpdate = {
             display_name: newDisplayName,
             avatar_url: nextAvatar.avatarUrl ?? null,
             avatar_storage_path: nextAvatar.avatarStoragePath ?? null,
@@ -585,27 +583,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           };
           const { error: retryErr } = await supabase
             .from('profiles')
-            .upsert(coreUpsert, { onConflict: 'id' });
+            .update(coreUpdate)
+            .eq('id', user.id);
           if (!retryErr) {
-            profErr = null;
+            updateErr = null;
           } else {
-            profileUpsertError = retryErr.message;
+            profileUpdateError = retryErr.message;
           }
-        } else if (profErr) {
-          profileUpsertError = profErr.message;
+        } else if (updateErr) {
+          profileUpdateError = updateErr.message;
         }
 
-        if (profileUpsertError) {
-          console.warn('[Supabase Profiles] upsert error:', profileUpsertError);
+        if (profileUpdateError) {
+          console.warn('[Supabase Profiles] update notice:', profileUpdateError);
         }
       } catch (profErr: any) {
-        profileUpsertError = profErr?.message;
-        console.warn('[Supabase Profiles] upsert exception:', profileUpsertError);
+        profileUpdateError = profErr?.message;
+        console.warn('[Supabase Profiles] update exception:', profileUpdateError);
       }
 
       // If both cloud writes failed, return the error so the caller can surface it
-      if (authUpdateError && profileUpsertError) {
-        return { error: `Save failed: ${profileUpsertError}` };
+      if (authUpdateError && profileUpdateError) {
+        return { error: `Save failed: ${profileUpdateError}` };
       }
 
       // Optimistic update of local user state
