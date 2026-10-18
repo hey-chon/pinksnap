@@ -54,7 +54,7 @@ const MAX_AVATAR_MB = Math.round(AVATAR_MAX_FILE_BYTES / (1024 * 1024));
 
 export default function ProfilePage() {
   const [, setLocation] = useLocation();
-  const { user, updateProfile, signOut, resetPassword, isAdmin, isContributor } = useAuth();
+  const { user, updateProfile, refreshProfile, signOut, resetPassword, isAdmin, isContributor } = useAuth();
   const { savedMemories, deleteMemory } = useAppContext();
   const { toast } = useToast();
 
@@ -120,6 +120,7 @@ export default function ProfilePage() {
     const syncFromCloud = async () => {
       if (showPostModal) return;
       try {
+        await refreshProfile();
         const { data: { user: freshUser } } = await supabase.auth.getUser();
         const cloudIds = freshUser?.user_metadata?.wall_strip_ids;
         if (Array.isArray(cloudIds)) {
@@ -144,7 +145,7 @@ export default function ProfilePage() {
       window.removeEventListener('focus', syncFromCloud);
       document.removeEventListener('visibilitychange', handleVisibility);
     };
-  }, [user?.id, user?.wallStripIds, showPostModal]);
+  }, [user?.id, user?.wallStripIds, showPostModal, refreshProfile]);
 
   const postedStrips = savedMemories.filter((m) => postedStripIds.includes(m.id));
 
@@ -650,6 +651,7 @@ export default function ProfilePage() {
                   <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-white border-4 border-white shadow-xl flex items-center justify-center text-primary font-display text-4xl sm:text-5xl overflow-hidden ring-4 ring-pink-500/10">
                     {user.avatarUrl ? (
                       <img
+                        key={user.avatarUrl}
                         src={normalizeAvatarUrl(user.avatarUrl)}
                         alt={user.displayName}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
