@@ -128,7 +128,7 @@ export default function Setup() {
             Every layout prints a different keepsake.
           </p>
         </div>
-
+    
         <div className="w-full max-w-3xl booth-plate p-4 sm:p-7">
           <div className="flex items-center justify-between gap-3 mb-5">
             <h2 className="flex items-center gap-2 text-[11px] sm:text-xs font-black uppercase tracking-[.16em] sm:tracking-[.2em] text-foreground/70">
