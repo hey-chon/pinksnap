@@ -722,7 +722,9 @@ export type ArtisanTemplateId =
   | 'the-1975'
   | 'director-cut'
   | 'love-stamp'
-  | 'newspaper';
+  | 'newspaper'
+  | 'wave-navy'
+  | 'wave-pink';
 
 export interface ArtisanSlot {
   /** Absolute pixel position at 1× scale */
@@ -1312,6 +1314,43 @@ export const ARTISAN_TEMPLATES: ArtisanTemplate[] = [
       { x: 24, y: 460, w: 358, h: 227, r: 8 },
       { x: 24, y: 762, w: 358, h: 225, r: 8 },
     ], 15),
+  },
+  // LINE 3
+  {
+    id: 'wave-navy',
+    label: 'Wave Navy',
+    note: 'Music player · dark blue · 4 shots',
+    nw: 358, nh: 1165,
+    slots: [
+      { x: 37, y: 44,  w: 283, h: 160, r: 12 },
+      { x: 37, y: 272, w: 283, h: 163, r: 12 },
+      { x: 37, y: 501, w: 283, h: 148, r: 12 },
+      { x: 37, y: 712, w: 283, h: 142, r: 12 },
+    ],
+    ...makeImageTemplate('/templates/A9hsW.jpg', [
+      { x: 37, y: 44,  w: 283, h: 160, r: 12 },
+      { x: 37, y: 272, w: 283, h: 163, r: 12 },
+      { x: 37, y: 501, w: 283, h: 148, r: 12 },
+      { x: 37, y: 712, w: 283, h: 142, r: 12 },
+    ], 45),
+  },
+  {
+    id: 'wave-pink',
+    label: 'Wave Pink',
+    note: 'Music player · pastel pink · 4 shots',
+    nw: 359, nh: 1178,
+    slots: [
+      { x: 40, y: 45,  w: 282, h: 213, r: 14 },
+      { x: 40, y: 276, w: 282, h: 215, r: 14 },
+      { x: 40, y: 506, w: 282, h: 198, r: 14 },
+      { x: 40, y: 720, w: 282, h: 189, r: 14 },
+    ],
+    ...makeImageTemplate('/templates/r3PiC.jpg', [
+      { x: 40, y: 45,  w: 282, h: 213, r: 14 },
+      { x: 40, y: 276, w: 282, h: 215, r: 14 },
+      { x: 40, y: 506, w: 282, h: 198, r: 14 },
+      { x: 40, y: 720, w: 282, h: 189, r: 14 },
+    ], 45),
   },
 ];
 
