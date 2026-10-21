@@ -1327,7 +1327,7 @@ export const ARTISAN_TEMPLATES: ArtisanTemplate[] = [
       { x: 37, y: 501, w: 283, h: 197, r: 12 },
       { x: 37, y: 712, w: 283, h: 189, r: 12 },
     ],
-    ...makeImageTemplate('/templates/A9hsW.jpg', [
+    ...makeImageTemplate('/templates/A9hsW.jpg?v=2', [
       { x: 37, y: 44,  w: 283, h: 212, r: 12 },
       { x: 37, y: 272, w: 283, h: 215, r: 12 },
       { x: 37, y: 501, w: 283, h: 197, r: 12 },
@@ -1348,7 +1348,7 @@ export const ARTISAN_TEMPLATES: ArtisanTemplate[] = [
       { x: 40, y: 506, w: 282, h: 198, r: 14 },
       { x: 40, y: 720, w: 282, h: 189, r: 14 },
     ],
-    ...makeImageTemplate('/templates/r3PiC.jpg', [
+    ...makeImageTemplate('/templates/r3PiC.jpg?v=2', [
       { x: 40, y: 45,  w: 282, h: 213, r: 14 },
       { x: 40, y: 276, w: 282, h: 215, r: 14 },
       { x: 40, y: 506, w: 282, h: 198, r: 14 },
