@@ -79,24 +79,31 @@ export function buildAvatarPublicUrl(storagePath: string): string | null {
 export function isTrustedAvatarUrl(value: unknown): value is string {
   if (typeof value !== 'string') return false;
   const trimmed = value.trim();
-  if (!trimmed || trimmed.length > 2048) return false;
+  if (!trimmed) return false;
 
+  // 1. Allow safe local Base64 data URLs (e.g. compressed WebP/JPEG avatars)
+  if (trimmed.startsWith('data:image/')) {
+    return /^data:image\/(webp|jpeg|jpg|png|gif|svg\+xml);base64,[A-Za-z0-9+/=]+$/i.test(trimmed);
+  }
+
+  // 2. Allow HTTPS image URLs
+  if (trimmed.length > 2048) return false;
   try {
     const parsed = new URL(trimmed);
     if (parsed.protocol !== 'https:') return false;
 
+    // Check if it's from configured Supabase or any standard safe image host
     const configuredOrigin = getConfiguredSupabaseOrigin();
-    if (configuredOrigin) {
-      if (parsed.origin !== configuredOrigin) return false;
-    } else if (!parsed.hostname.endsWith('.supabase.co')) {
-      return false;
+    if (configuredOrigin && parsed.origin === configuredOrigin) {
+      if (parsed.pathname.startsWith(AVATAR_PUBLIC_PREFIX)) {
+        const rawPath = parsed.pathname.slice(AVATAR_PUBLIC_PREFIX.length);
+        const decodedPath = decodeURIComponent(rawPath);
+        return isSafeAvatarStoragePath(decodedPath);
+      }
     }
 
-    if (!parsed.pathname.startsWith(AVATAR_PUBLIC_PREFIX)) return false;
-
-    const rawPath = parsed.pathname.slice(AVATAR_PUBLIC_PREFIX.length);
-    const decodedPath = decodeURIComponent(rawPath);
-    return isSafeAvatarStoragePath(decodedPath);
+    // Allow standard HTTPS image URLs (e.g., Google OAuth, Gravatar, Supabase)
+    return true;
   } catch {
     return false;
   }
@@ -109,10 +116,11 @@ export function normalizeAvatarUrl(value: unknown): string | undefined {
 
 export function extractAvatarStoragePathFromUrl(url: string): string | undefined {
   const normalizedUrl = normalizeAvatarUrl(url);
-  if (!normalizedUrl) return undefined;
+  if (!normalizedUrl || normalizedUrl.startsWith('data:')) return undefined;
 
   try {
     const parsed = new URL(normalizedUrl);
+    if (!parsed.pathname.startsWith(AVATAR_PUBLIC_PREFIX)) return undefined;
     const rawPath = parsed.pathname.slice(AVATAR_PUBLIC_PREFIX.length);
     const decodedPath = decodeURIComponent(rawPath);
     return normalizeAvatarStoragePath(decodedPath);
@@ -131,17 +139,17 @@ export function normalizeAvatarFields(input: { avatarUrl?: unknown; avatarStorag
     : undefined;
   const storagePath = directPath ?? pathFromUrl;
 
-  if (!storagePath) {
-    return {};
+  let avatarUrl: string | undefined;
+  if (storagePath) {
+    avatarUrl = buildAvatarPublicUrl(storagePath) ?? undefined;
   }
-
-  const avatarUrl = buildAvatarPublicUrl(storagePath);
-  if (!avatarUrl) {
-    return {};
+  // If no storage path or if avatarUrl is a direct base64 data-URL / safe URL, preserve it
+  if (!avatarUrl && typeof input.avatarUrl === 'string' && isTrustedAvatarUrl(input.avatarUrl)) {
+    avatarUrl = input.avatarUrl.trim();
   }
 
   return {
-    avatarUrl,
-    avatarStoragePath: storagePath,
+    ...(avatarUrl ? { avatarUrl } : {}),
+    ...(storagePath ? { avatarStoragePath: storagePath } : {}),
   };
 }

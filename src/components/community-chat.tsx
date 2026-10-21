@@ -288,6 +288,7 @@ export default function CommunityChat() {
                         className="w-full h-full object-cover"
                         loading="lazy"
                         referrerPolicy="no-referrer"
+                        onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
                       />
                     ) : (
                       nameDisplay.slice(0, 1).toUpperCase()

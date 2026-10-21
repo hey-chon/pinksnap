@@ -135,3 +135,41 @@ export async function sanitizeAvatarForUpload(file: File): Promise<File> {
 
   return new File([sanitizedBlob], `avatar.${ext}`, { type: mimeType });
 }
+
+export async function fileToAvatarDataUrl(file: File, maxDimension = 320): Promise<string> {
+  const validation = validateAvatarFile(file);
+  if (!validation.isValid) {
+    throw new Error(validation.error || 'Invalid avatar file.');
+  }
+
+  const image = await loadImageFromFile(file);
+  const sourceWidth = image.naturalWidth;
+  const sourceHeight = image.naturalHeight;
+
+  const cropSize = Math.min(sourceWidth, sourceHeight);
+  const targetSize = Math.min(maxDimension, cropSize);
+  const sx = Math.floor((sourceWidth - cropSize) / 2);
+  const sy = Math.floor((sourceHeight - cropSize) / 2);
+
+  const canvas = document.createElement('canvas');
+  canvas.width = targetSize;
+  canvas.height = targetSize;
+
+  const context = canvas.getContext('2d');
+  if (!context) {
+    throw new Error('Unable to process avatar image.');
+  }
+
+  context.imageSmoothingEnabled = true;
+  context.imageSmoothingQuality = 'high';
+  context.drawImage(image, sx, sy, cropSize, cropSize, 0, 0, targetSize, targetSize);
+
+  try {
+    const webpUrl = canvas.toDataURL('image/webp', 0.85);
+    if (webpUrl && webpUrl.startsWith('data:image/webp')) {
+      return webpUrl;
+    }
+  } catch {}
+  return canvas.toDataURL('image/jpeg', 0.85);
+}
+

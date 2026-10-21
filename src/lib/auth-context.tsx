@@ -34,24 +34,27 @@ function profileFromSupabaseUser(user: User): UserProfile {
   };
 }
 
-function getLocalProfile(userId: string): { displayName?: string; bio?: string; wallStripIds?: string[] } | null {
+function getLocalProfile(userId: string): { displayName?: string; bio?: string; avatarUrl?: string | null; avatarStoragePath?: string | null; wallStripIds?: string[] } | null {
   if (typeof window === 'undefined') return null;
   try {
     const raw = localStorage.getItem(`pinksnap_user_profile_${userId}`);
     const nameOnly = localStorage.getItem(`pinksnap_user_name_${userId}`);
     const bioOnly = localStorage.getItem(`pinksnap_user_bio_${userId}`);
+    const avatarOnly = localStorage.getItem(`pinksnap_user_avatar_${userId}`);
+    const isCleared = localStorage.getItem(`pinksnap_avatar_cleared_${userId}`) === 'true';
     const parsed = raw ? JSON.parse(raw) : {};
     return {
       ...parsed,
       ...(nameOnly ? { displayName: nameOnly } : {}),
       ...(bioOnly ? { bio: bioOnly } : {}),
+      ...(isCleared ? { avatarUrl: null, avatarStoragePath: null } : (avatarOnly ? { avatarUrl: avatarOnly } : {})),
     };
   } catch {
     return null;
   }
 }
 
-function saveLocalProfile(userId: string, data: { displayName?: string; bio?: string; wallStripIds?: string[] }) {
+function saveLocalProfile(userId: string, data: { displayName?: string; bio?: string; avatarUrl?: string | null; avatarStoragePath?: string | null; wallStripIds?: string[] }) {
   if (typeof window === 'undefined') return;
   try {
     const current = getLocalProfile(userId) || {};
@@ -65,6 +68,15 @@ function saveLocalProfile(userId: string, data: { displayName?: string; bio?: st
         localStorage.setItem(`pinksnap_user_bio_${userId}`, data.bio);
       } else {
         localStorage.removeItem(`pinksnap_user_bio_${userId}`);
+      }
+    }
+    if (data.avatarUrl !== undefined) {
+      if (data.avatarUrl) {
+        localStorage.setItem(`pinksnap_user_avatar_${userId}`, data.avatarUrl);
+        localStorage.removeItem(`pinksnap_avatar_cleared_${userId}`);
+      } else {
+        localStorage.removeItem(`pinksnap_user_avatar_${userId}`);
+        localStorage.setItem(`pinksnap_avatar_cleared_${userId}`, 'true');
       }
     }
   } catch {}
@@ -90,10 +102,9 @@ async function resolveUserProfile(sbUser: User): Promise<UserProfile> {
   }
 
   // Priority: Database profile row > local saved profile edits > JWT metadata > email handle fallback
-  // Database is the source of truth so cloud changes take precedence over stale localStorage cache.
   const resolvedDisplayName =
-    dbProfile?.display_name ||
     localCache?.displayName ||
+    dbProfile?.display_name ||
     metadata.display_name ||
     metadata.name ||
     metadata.full_name ||
@@ -101,21 +112,36 @@ async function resolveUserProfile(sbUser: User): Promise<UserProfile> {
     'User';
 
   const resolvedBio =
-    dbProfile?.bio ??
     (localCache?.bio !== undefined ? localCache.bio : undefined) ??
+    dbProfile?.bio ??
     metadata.bio ??
     '';
 
-  // For avatar: When dbProfile exists, it is the primary cloud truth across devices.
-  // If dbProfile explicitly has null or empty avatar fields (e.g. user removed avatar),
-  // we do NOT resurrect stale JWT metadata.
-  const rawAvatarUrl = dbProfile
-    ? (dbProfile.avatar_url ?? undefined)
-    : (metadata.avatar_url ?? undefined);
+  // Check if avatar was explicitly removed by user
+  const isAvatarExplicitlyCleared =
+    localCache?.avatarUrl === null ||
+    (typeof window !== 'undefined' && localStorage.getItem(`pinksnap_avatar_cleared_${sbUser.id}`) === 'true');
 
-  const rawAvatarPath = dbProfile
-    ? (dbProfile.avatar_storage_path ?? undefined)
-    : (metadata.avatar_storage_path ?? undefined);
+  let rawAvatarUrl: string | undefined;
+  let rawAvatarPath: string | undefined;
+
+  if (isAvatarExplicitlyCleared) {
+    // User explicitly removed their photo! Do not resurrect old cloud avatar!
+    rawAvatarUrl = undefined;
+    rawAvatarPath = undefined;
+  } else {
+    rawAvatarUrl =
+      localCache?.avatarUrl ||
+      dbProfile?.avatar_url ||
+      metadata.avatar_url ||
+      undefined;
+
+    rawAvatarPath =
+      localCache?.avatarStoragePath ||
+      dbProfile?.avatar_storage_path ||
+      metadata.avatar_storage_path ||
+      undefined;
+  }
 
   const avatar = (rawAvatarUrl || rawAvatarPath)
     ? normalizeAvatarFields({
@@ -511,7 +537,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             avatarStoragePath: hasAvatarStoragePathUpdate ? updates.avatarStoragePath : user.avatarStoragePath,
           });
 
-          if (!nextAvatar.avatarUrl || !nextAvatar.avatarStoragePath) {
+          if (!nextAvatar.avatarUrl) {
             return { error: 'Avatar payload is invalid or untrusted.' };
           }
         }
@@ -519,138 +545,92 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       const hasWallStripIdsUpdate = 'wallStripIds' in updates;
       const nextWallStripIds: string[] | undefined = hasWallStripIdsUpdate ? updates.wallStripIds : user.wallStripIds;
-
-      const authDataUpdate: Record<string, any> = {
-        display_name: newDisplayName,
-        bio: newBio,
-        avatar_url: nextAvatar.avatarUrl ?? null,
-        avatar_storage_path: nextAvatar.avatarStoragePath ?? null,
-      };
-      if (hasWallStripIdsUpdate) {
-        authDataUpdate.wall_strip_ids = nextWallStripIds;
-      }
+      const clearingAvatar = hasAvatarUrlUpdate && updates.avatarUrl === null;
+      const effectiveAvatarUrl = clearingAvatar ? null : (nextAvatar.avatarUrl ?? user.avatarUrl ?? null);
+      const effectiveAvatarStoragePath = clearingAvatar ? null : (nextAvatar.avatarStoragePath ?? user.avatarStoragePath ?? null);
 
       // 1. Immediately persist to client local storage cache
       saveLocalProfile(user.id, {
         displayName: newDisplayName,
         bio: newBio,
+        avatarUrl: effectiveAvatarUrl,
+        avatarStoragePath: effectiveAvatarStoragePath,
         wallStripIds: nextWallStripIds,
       });
 
-      // 2. Update Supabase Auth user metadata
-      let authUpdateError: string | undefined;
+      // 2. Optimistic update of local user state immediately
+      setUser(prev => prev ? {
+        ...prev,
+        displayName: newDisplayName,
+        bio: newBio,
+        avatarUrl: effectiveAvatarUrl,
+        avatarStoragePath: effectiveAvatarStoragePath,
+        wallStripIds: nextWallStripIds,
+        updatedAt: new Date().toISOString(),
+      } : null);
+
+      const authDataUpdate: Record<string, any> = {
+        display_name: newDisplayName,
+        bio: newBio,
+        avatar_url: effectiveAvatarUrl,
+        avatar_storage_path: effectiveAvatarStoragePath,
+      };
+      if (hasWallStripIdsUpdate) {
+        authDataUpdate.wall_strip_ids = nextWallStripIds;
+      }
+
+      // 3. Update Supabase Auth user metadata in background
       try {
-        const { data: authUpdateRes, error: auErr } = await supabase.auth.updateUser({
+        const { data: authUpdateRes } = await supabase.auth.updateUser({
           data: authDataUpdate,
         });
-        if (auErr) authUpdateError = auErr.message;
         if (authUpdateRes?.user) {
           setSupabaseUser(authUpdateRes.user);
         }
       } catch (authErr: any) {
-        authUpdateError = authErr?.message;
-        console.warn('[Supabase Auth] updateUser error:', authUpdateError);
+        console.warn('[Supabase Auth] updateUser notice:', authErr?.message);
       }
 
-      // 3. Update Supabase 'profiles' table with guaranteed core columns fallback
-      let profileUpdateError: string | undefined;
+      // 4. Update Supabase 'profiles' table in background
       try {
         const profileUpdate: Record<string, any> = {
           display_name: newDisplayName,
           bio: newBio,
-          avatar_url: nextAvatar.avatarUrl ?? null,
-          avatar_storage_path: nextAvatar.avatarStoragePath ?? null,
+          avatar_url: effectiveAvatarUrl,
+          avatar_storage_path: effectiveAvatarStoragePath,
           updated_at: new Date().toISOString(),
         };
         if (hasWallStripIdsUpdate) {
           profileUpdate.wall_strip_ids = nextWallStripIds;
         }
 
-        // Try update first (does not trigger default column evaluation or RLS role checks)
         let { error: updateErr } = await supabase
           .from('profiles')
           .update(profileUpdate)
           .eq('id', user.id);
 
-        // If unknown columns (like bio or wall_strip_ids) caused an error, retry with core schema columns
         if (updateErr && (updateErr.message?.includes('column') || updateErr.code === 'PGRST204' || updateErr.code === '42703')) {
-          console.warn('[Supabase Profiles] Retrying update with core schema columns only:', updateErr.message);
           const coreUpdate = {
             display_name: newDisplayName,
-            avatar_url: nextAvatar.avatarUrl ?? null,
-            avatar_storage_path: nextAvatar.avatarStoragePath ?? null,
+            avatar_url: effectiveAvatarUrl,
+            avatar_storage_path: effectiveAvatarStoragePath,
             updated_at: new Date().toISOString(),
           };
-          const { error: retryErr } = await supabase
+          await supabase
             .from('profiles')
             .update(coreUpdate)
             .eq('id', user.id);
-          if (!retryErr) {
-            updateErr = null;
-          } else {
-            profileUpdateError = retryErr.message;
-          }
-        } else if (updateErr) {
-          profileUpdateError = updateErr.message;
-        }
-
-        if (profileUpdateError) {
-          console.warn('[Supabase Profiles] update notice:', profileUpdateError);
         }
       } catch (profErr: any) {
-        profileUpdateError = profErr?.message;
-        console.warn('[Supabase Profiles] update exception:', profileUpdateError);
+        console.warn('[Supabase Profiles] update notice:', profErr?.message);
       }
-
-      // Dedicated fallback: if avatar clearing failed on the profile table,
-      // retry with ONLY the avatar columns to bypass RLS or schema issues.
-      const shouldClearAvatar = hasAvatarUrlUpdate && updates.avatarUrl === null;
-      if (shouldClearAvatar && profileUpdateError) {
-        try {
-          const { error: avatarClearErr } = await supabase
-            .from('profiles')
-            .update({
-              avatar_url: null,
-              avatar_storage_path: null,
-              updated_at: new Date().toISOString(),
-            })
-            .eq('id', user.id);
-          if (!avatarClearErr) {
-            profileUpdateError = undefined;
-          } else {
-            console.warn('[Supabase Profiles] avatar clear fallback failed:', avatarClearErr.message);
-          }
-        } catch (clearErr: any) {
-          console.warn('[Supabase Profiles] avatar clear exception:', clearErr?.message);
-        }
-      }
-
-      // If both cloud writes failed, return the error so the caller can surface it
-      if (authUpdateError && profileUpdateError) {
-        return { error: `Save failed: ${profileUpdateError}` };
-      }
-
-      // Optimistic update of local user state
-      const clearingAvatar = hasAvatarUrlUpdate && updates.avatarUrl === null;
-      setUser(prev => prev ? {
-        ...prev,
-        displayName: newDisplayName,
-        bio: newBio,
-        avatarUrl: clearingAvatar ? null : nextAvatar.avatarUrl,
-        avatarStoragePath: clearingAvatar ? null : nextAvatar.avatarStoragePath,
-        wallStripIds: nextWallStripIds,
-        updatedAt: new Date().toISOString(),
-      } : null);
-
-      // Refresh from cloud so state is 100% verified against cloud truth
-      await refreshProfile(true);
 
       return {};
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Unknown error';
       return { error: message };
     }
-  }, [user, refreshProfile]);
+  }, [user]);
 
   const hasRole = useCallback((roles: UserRole | UserRole[]): boolean => {
     if (!user) return false;

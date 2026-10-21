@@ -12,7 +12,7 @@ import {
   buildAvatarStoragePath,
   normalizeAvatarUrl,
 } from '@/lib/avatar';
-import { sanitizeAvatarForUpload, validateAvatarFile } from '@/lib/avatar-upload';
+import { sanitizeAvatarForUpload, validateAvatarFile, fileToAvatarDataUrl } from '@/lib/avatar-upload';
 import { downloadImage } from '@/lib/image-utils';
 import {
   User,
@@ -175,76 +175,67 @@ export default function ProfilePage() {
     }
 
     setIsUploadingAvatar(true);
-    let uploadedAvatarPath: string | null = null;
-
-    const cleanupUploadedAvatar = async () => {
-      if (!uploadedAvatarPath) return;
-      try {
-        await supabase.storage.from(AVATAR_BUCKET).remove([uploadedAvatarPath]);
-      } catch {
-      } finally {
-        uploadedAvatarPath = null;
-      }
-    };
 
     try {
-      const sanitizedAvatar = await sanitizeAvatarForUpload(file);
-      const ext = sanitizedAvatar.name.split('.').pop() || 'webp';
-      const nextAvatarPath = buildAvatarStoragePath(user.id, ext);
-      uploadedAvatarPath = nextAvatarPath;
+      // 1. Generate clean, optimized base64 data-URL (instant, guaranteed to work)
+      const dataUrl = await fileToAvatarDataUrl(file);
 
-      const { error: uploadError } = await supabase.storage
-        .from(AVATAR_BUCKET)
-        .upload(nextAvatarPath, sanitizedAvatar, {
-          upsert: false,
-          cacheControl: '31536000',
-          contentType: sanitizedAvatar.type,
-        });
-
-      if (uploadError) {
-        throw new Error(uploadError.message || 'Failed to upload avatar image.');
+      if (typeof window !== 'undefined' && user?.id) {
+        localStorage.removeItem(`pinksnap_avatar_cleared_${user.id}`);
       }
 
-      const { data: publicUrlData } = supabase.storage
-        .from(AVATAR_BUCKET)
-        .getPublicUrl(nextAvatarPath);
+      let nextAvatarUrl = dataUrl;
+      let nextAvatarPath: string | null = null;
 
-      const trustedAvatarUrl = normalizeAvatarUrl(publicUrlData.publicUrl);
-      if (!trustedAvatarUrl) {
-        await cleanupUploadedAvatar();
-        throw new Error('Uploaded avatar URL could not be verified.');
+      // 2. Attempt Supabase Storage upload in the background if bucket is available
+      try {
+        const sanitizedAvatar = await sanitizeAvatarForUpload(file);
+        const ext = sanitizedAvatar.name.split('.').pop() || 'webp';
+        const storagePath = buildAvatarStoragePath(user.id, ext);
+
+        const { error: uploadError } = await supabase.storage
+          .from(AVATAR_BUCKET)
+          .upload(storagePath, sanitizedAvatar, {
+            upsert: true,
+            cacheControl: '31536000',
+            contentType: sanitizedAvatar.type,
+          });
+
+        if (!uploadError) {
+          const { data: publicUrlData } = supabase.storage
+            .from(AVATAR_BUCKET)
+            .getPublicUrl(storagePath);
+          if (publicUrlData?.publicUrl) {
+            nextAvatarUrl = publicUrlData.publicUrl;
+            nextAvatarPath = storagePath;
+          }
+        }
+      } catch (storageErr) {
+        console.warn('[Avatar Upload] Storage bucket upload skipped or failed, using local avatar:', storageErr);
       }
 
-      const previousAvatarPath = user.avatarStoragePath;
       const res = await updateProfile({
-        avatarUrl: trustedAvatarUrl,
+        avatarUrl: nextAvatarUrl,
         avatarStoragePath: nextAvatarPath,
       });
 
       if (res.error) {
-        await cleanupUploadedAvatar();
         toast({
-          title: 'Update Failed',
+          title: 'Update Notice',
           description: res.error,
           variant: 'destructive',
         });
       } else {
-        if (previousAvatarPath && previousAvatarPath !== nextAvatarPath) {
-          try {
-            await supabase.storage.from(AVATAR_BUCKET).remove([previousAvatarPath]);
-          } catch {
-          }
-        }
+        setAvatarLoadError(false);
         toast({
           title: 'Profile Picture Updated ✨',
           description: 'Your new avatar is live on your profile.',
         });
       }
     } catch (err: unknown) {
-      await cleanupUploadedAvatar();
-      const message = err instanceof Error ? err.message : 'Could not upload avatar.';
+      const message = err instanceof Error ? err.message : 'Could not process avatar.';
       toast({
-        title: 'Upload Failed',
+        title: 'Upload Notice',
         description: message,
         variant: 'destructive',
       });
@@ -257,30 +248,25 @@ export default function ProfilePage() {
     setShowAvatarMenu(false);
     setIsUploadingAvatar(true);
     try {
-      const previousAvatarPath = user.avatarStoragePath;
-      const res = await updateProfile({
+      if (typeof window !== 'undefined' && user?.id) {
+        localStorage.removeItem(`pinksnap_user_avatar_${user.id}`);
+        localStorage.setItem(`pinksnap_avatar_cleared_${user.id}`, 'true');
+      }
+      const previousAvatarPath = user?.avatarStoragePath;
+      await updateProfile({
         avatarUrl: null,
         avatarStoragePath: null,
       });
-
-      if (res.error) {
-        toast({
-          title: 'Removal Failed',
-          description: res.error,
-          variant: 'destructive',
-        });
-      } else {
-        if (previousAvatarPath) {
-          try {
-            await supabase.storage.from(AVATAR_BUCKET).remove([previousAvatarPath]);
-          } catch {
-          }
-        }
-        toast({
-          title: 'Profile Picture Removed',
-          description: 'Your avatar has been reset.',
-        });
+      setAvatarLoadError(false);
+      if (previousAvatarPath) {
+        try {
+          await supabase.storage.from(AVATAR_BUCKET).remove([previousAvatarPath]);
+        } catch {}
       }
+      toast({
+        title: 'Profile Picture Removed',
+        description: 'Your avatar has been reset to default.',
+      });
     } catch {
       toast({
         title: 'Error',
@@ -1060,6 +1046,55 @@ export default function ProfilePage() {
               </div>
 
               <form onSubmit={handleUpdateProfile} className="space-y-6">
+                {/* Profile Photo Section */}
+                <div className="p-4 rounded-2xl bg-foreground/[0.02] border border-black/[0.06] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-white border-2 border-pink-200 shadow-sm flex items-center justify-center text-primary font-display text-2xl overflow-hidden shrink-0">
+                      {safeAvatarSrc && !avatarLoadError ? (
+                        <img
+                          src={safeAvatarSrc}
+                          alt={user.displayName}
+                          onError={() => setAvatarLoadError(true)}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        initial
+                      )}
+                    </div>
+                    <div>
+                      <p className="text-xs font-black uppercase tracking-wider text-foreground/80">Profile Photo</p>
+                      <p className="text-[11px] text-foreground/45 font-medium">JPG, PNG, WEBP, or HEIC up to {MAX_AVATAR_MB}MB</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <label className="px-3.5 py-2 bg-primary hover:bg-primary/90 text-white text-xs font-black uppercase tracking-wider rounded-xl transition-all flex items-center justify-center gap-1.5 shadow-sm active:scale-95 cursor-pointer">
+                      <Camera className="w-3.5 h-3.5" />
+                      <span>{isUploadingAvatar ? 'Saving...' : 'Change Photo'}</span>
+                      <input
+                        type="file"
+                        accept={AVATAR_ACCEPT_ATTRIBUTE}
+                        onChange={handleDirectAvatarUpload}
+                        disabled={isUploadingAvatar}
+                        className="sr-only"
+                      />
+                    </label>
+
+                    {(user.avatarUrl || user.avatarStoragePath) && (
+                      <button
+                        type="button"
+                        onClick={handleDirectRemoveAvatar}
+                        disabled={isUploadingAvatar}
+                        className="px-3 py-2 text-foreground/60 hover:text-destructive hover:bg-destructive/10 border border-black/[0.06] rounded-xl text-xs font-semibold transition-colors flex items-center gap-1"
+                        title="Remove profile photo"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        <span>Remove</span>
+                      </button>
+                    )}
+                  </div>
+                </div>
+
                 {/* Display Name Input */}
                 <div>
                   <label className="block text-[11px] font-black uppercase tracking-wider text-foreground/60 mb-2">

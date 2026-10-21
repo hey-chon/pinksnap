@@ -68,6 +68,11 @@ export function UserMenu() {
 
   const initial = (user.displayName || user.email || 'U').charAt(0).toUpperCase();
   const safeAvatarUrl = normalizeAvatarUrl(user.avatarUrl);
+  const [imgError, setImgError] = useState(false);
+
+  useEffect(() => {
+    setImgError(false);
+  }, [user.avatarUrl]);
 
   return (
     <div className="relative" ref={menuRef}>
@@ -80,11 +85,12 @@ export function UserMenu() {
         aria-haspopup="true"
       >
         {/* Avatar */}
-        <div className="w-7 h-7 rounded-full bg-primary text-white font-black text-xs flex items-center justify-center shadow-[0_0_10px_rgba(245,61,137,0.6)]">
-          {safeAvatarUrl ? (
+        <div className="w-7 h-7 rounded-full bg-primary text-white font-black text-xs flex items-center justify-center shadow-[0_0_10px_rgba(245,61,137,0.6)] overflow-hidden">
+          {safeAvatarUrl && !imgError ? (
             <img
               src={safeAvatarUrl}
               alt={user.displayName}
+              onError={() => setImgError(true)}
               className="w-full h-full rounded-full object-cover"
               referrerPolicy="no-referrer"
             />
