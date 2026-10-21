@@ -1322,17 +1322,20 @@ export const ARTISAN_TEMPLATES: ArtisanTemplate[] = [
     note: 'Music player · dark blue · 4 shots',
     nw: 358, nh: 1165,
     slots: [
-      { x: 37, y: 44,  w: 283, h: 160, r: 12 },
-      { x: 37, y: 272, w: 283, h: 163, r: 12 },
-      { x: 37, y: 501, w: 283, h: 148, r: 12 },
-      { x: 37, y: 712, w: 283, h: 142, r: 12 },
+      { x: 37, y: 44,  w: 283, h: 212, r: 12 },
+      { x: 37, y: 272, w: 283, h: 215, r: 12 },
+      { x: 37, y: 501, w: 283, h: 197, r: 12 },
+      { x: 37, y: 712, w: 283, h: 189, r: 12 },
     ],
     ...makeImageTemplate('/templates/A9hsW.jpg', [
-      { x: 37, y: 44,  w: 283, h: 160, r: 12 },
-      { x: 37, y: 272, w: 283, h: 163, r: 12 },
-      { x: 37, y: 501, w: 283, h: 148, r: 12 },
-      { x: 37, y: 712, w: 283, h: 142, r: 12 },
+      { x: 37, y: 44,  w: 283, h: 212, r: 12 },
+      { x: 37, y: 272, w: 283, h: 215, r: 12 },
+      { x: 37, y: 501, w: 283, h: 197, r: 12 },
+      { x: 37, y: 712, w: 283, h: 189, r: 12 },
     ], 45),
+    // Skip foreground overlay — photos cover placeholders directly, no chroma-key needed
+    paintFg() {},
+    async paintFgAsync() {},
   },
   {
     id: 'wave-pink',
@@ -1351,6 +1354,9 @@ export const ARTISAN_TEMPLATES: ArtisanTemplate[] = [
       { x: 40, y: 506, w: 282, h: 198, r: 14 },
       { x: 40, y: 720, w: 282, h: 189, r: 14 },
     ], 45),
+    // Skip foreground overlay — photos cover placeholders directly, no chroma-key needed
+    paintFg() {},
+    async paintFgAsync() {},
   },
 ];
 
