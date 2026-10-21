@@ -563,8 +563,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         ...prev,
         displayName: newDisplayName,
         bio: newBio,
-        avatarUrl: effectiveAvatarUrl,
-        avatarStoragePath: effectiveAvatarStoragePath,
+        avatarUrl: effectiveAvatarUrl ?? undefined,
+        avatarStoragePath: effectiveAvatarStoragePath ?? undefined,
         wallStripIds: nextWallStripIds,
         updatedAt: new Date().toISOString(),
       } : null);

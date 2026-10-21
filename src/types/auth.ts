@@ -1,5 +1,4 @@
 import type { Session, User } from '@supabase/supabase-js';
-import { error } from 'node:console';
 
 export type UserRole = 'user' | 'admin' | 'contributor';
 
