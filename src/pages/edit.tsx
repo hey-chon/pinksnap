@@ -901,7 +901,7 @@ export default function Edit() {
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-24 h-1 rounded-full bg-gradient-to-r from-primary/60 via-primary to-primary/60 -translate-y-0.5" />
 
             {/* PINKSNAP wordmark */}
-            <div className="mb-2 flex items-center justify-center gap-1 bg-foreground/[0.02] rounded-2xl p-3 max-w-max mx-auto border border-foreground/5 shadow-inner">
+            <div className="mb-2 flex items-center justify-center bg-foreground/[0.02] rounded-2xl p-3 max-w-max mx-auto border border-foreground/5 shadow-inner">
               <span className="font-black text-[22px] tracking-tight text-[#2a1520]">PINK</span>
               <span className="font-black text-[22px] tracking-tight text-[#f53d89]">SNAP</span>
             </div>
@@ -977,7 +977,7 @@ export default function Edit() {
             {/* Footer note */}
             <div className="mt-5 bg-foreground/[0.03] rounded-xl border border-foreground/8 px-4 py-3">
               <p className="text-black text-[11px] leading-relaxed">
-                <span className="font-black">Heads up:</span> This is a <span className="font-black text-primary">one-time choice</span>. Once you confirm, the same skipped photo will apply to all 3-photo Artisan strips so you won't have to pick again.
+                <span className="font-black">Heads up:</span> This is a <span className="font-black text-primary">one-time choice</span>. Once you confirm, the same skipped photo will apply to all 3-shots Artisan strips so you won't have to pick again.
               </p>
             </div>
           </div>
