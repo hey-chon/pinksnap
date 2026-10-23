@@ -46,9 +46,21 @@ export default function Studio() {
   
   const maxShots = layout === 'horizontal-3' ? 3 : 4;
 
+  // Detect if we're in retake mode (came from /edit retake flow)
+  const [isRetaking] = useState(() => sessionStorage.getItem('ps_retaking') === '1');
+
+  useEffect(() => {
+    // If shots are already completed, redirect to /edit
+    if (shots.length >= maxShots) {
+      sessionStorage.removeItem('ps_retaking');
+      setLocation('/edit', { replace: true });
+    }
+  }, [shots.length, maxShots, setLocation]);
+
+  // Start camera only once on mount — NOT on every shots.length change
   useEffect(() => {
     startCamera();
-  }, []);
+  }, [startCamera]);
 
   const cancelSequence = useCallback(() => {
     if (timerRef.current) clearInterval(timerRef.current);
@@ -139,7 +151,7 @@ export default function Studio() {
     <div ref={studioRef} className="flex flex-col h-[100dvh]">
       <div id="camera-flash" className="fixed inset-0 bg-white z-[100] opacity-0 pointer-events-none transition-opacity duration-150 ease-out" />
       
-      <TopNav backTo="/setup" />
+      <TopNav backTo={isRetaking ? undefined : '/setup'} onBack={isRetaking ? () => window.location.reload() : undefined} />
       
       <main className="flex-1 overflow-hidden flex flex-col items-center px-2 py-3 sm:px-6 sm:py-6">
         <div className="studio-heading text-center mb-8 sm:mb-10 w-full max-w-2xl shrink-0">

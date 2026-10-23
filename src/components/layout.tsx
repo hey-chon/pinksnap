@@ -11,17 +11,31 @@ function Bulbs({ count = 10 }: { count?: number }) {
   );
 }
 
-export function TopNav({ backTo, title }: { backTo?: string, title?: string }) {
+export function TopNav({
+  backTo,
+  onBack,
+  title,
+}: {
+  backTo?: string;
+  onBack?: () => void;
+  title?: string;
+}) {
   const [location] = useLocation();
   const isHome = location === '/';
 
   return (
     <header className="booth-marquee w-full flex min-h-[68px] sm:min-h-[76px] items-center justify-between gap-2 px-3 py-2.5 sm:px-4 sm:py-3 md:px-6 shrink-0 relative z-50 pt-[calc(.75rem+env(safe-area-inset-top))]">
       <div className="flex items-center gap-2 sm:gap-4 min-w-0">
-        {backTo && (
+        {(backTo || onBack) && (
           <button
             type="button"
-            onClick={() => window.history.back()}
+            onClick={() => {
+              if (onBack) {
+                onBack();
+              } else {
+                window.history.back();
+              }
+            }}
             data-testid="button-back"
             className="p-2 sm:p-2.5 bg-white/10 hover:bg-white/20 rounded-full transition-all border border-white/15 backdrop-blur-sm active:scale-95 cursor-pointer"
             aria-label="Go back"

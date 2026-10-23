@@ -24,6 +24,7 @@ interface AppState {
   shots: string[];
   addShot: (shot: string) => void;
   removeShot: (index: number) => void;
+  removeShots: (indexes: number[]) => void;
   clearShots: () => void;
   savedMemories: Memory[];
   saveMemory: (memory: Memory) => Promise<boolean>;
@@ -233,6 +234,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setShots(prev => prev.filter((_, i) => i !== index));
   };
 
+  const removeShots = (indexes: number[]) => {
+    setShots(prev => prev.filter((_, i) => !indexes.includes(i)));
+  };
+
   const clearShots = () => setShots([]);
 
   const saveMemory = useCallback(async (memory: Memory): Promise<boolean> => {
@@ -289,7 +294,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     layout, setLayout,
     frame, setFrame,
     filter, setFilter,
-    shots, addShot, removeShot, clearShots,
+    shots, addShot, removeShot, removeShots, clearShots,
     savedMemories, saveMemory, deleteMemory,
     isLoadingMemories, isSavingMemory,
   };

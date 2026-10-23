@@ -22,7 +22,7 @@ import {
   getArtisanTemplate,
   renderArtisanStrip,
 } from '@/lib/customization';
-import { RefreshCw, Download, Share2, Check, Sparkles, ImageIcon } from 'lucide-react';
+import { RefreshCw, Download, Share2, Check, Sparkles, ImageIcon, X, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast.tsx';
 import { createGalleryPreview, createMemoryId, dataUrlToBlob, downloadImage } from '@/lib/image-utils';
 
@@ -221,7 +221,7 @@ export default function Edit() {
   const { toast } = useToast();
   const {
     shots, addShot, layout, frame, setFrame, filter, setFilter,
-    saveMemory, clearShots,
+    saveMemory, clearShots, removeShots,
   } = useAppContext();
 
 
@@ -229,6 +229,8 @@ export default function Edit() {
   const [category, setCategory] = useState<TabMode>(() => (sessionStorage.getItem('ps_edit_category') as TabMode) || 'booth');
   const [artisanId, setArtisanId] = useState<ArtisanTemplateId>(() => (sessionStorage.getItem('ps_edit_artisan') as ArtisanTemplateId) || 'port-archive');
   const [showArtisanWarning, setShowArtisanWarning] = useState(false);
+  const [showRetakeModal, setShowRetakeModal] = useState(false);
+  const [selectedRetakeIndexes, setSelectedRetakeIndexes] = useState<number[]>([]);
   const [excludedShotIndex, setExcludedShotIndex] = useState<number>(() => {
     const s = sessionStorage.getItem('ps_edit_excluded');
     return s ? parseInt(s, 10) : 3;
@@ -239,6 +241,20 @@ export default function Edit() {
   useEffect(() => sessionStorage.setItem('ps_edit_artisan', artisanId), [artisanId]);
   useEffect(() => sessionStorage.setItem('ps_edit_excluded', excludedShotIndex.toString()), [excludedShotIndex]);
   useEffect(() => sessionStorage.setItem('ps_edit_picked', hasPickedExclusion.toString()), [hasPickedExclusion]);
+
+  useEffect(() => {
+    // Prevent accidental back navigation from escaping /edit to /studio
+    window.history.pushState(null, '', window.location.href);
+    const handlePopState = () => {
+      window.history.pushState(null, '', window.location.href);
+      window.location.reload();
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, []);
+
   const artisanCanvasRef = useRef<HTMLCanvasElement>(null);
   const stripRef = useRef<HTMLDivElement>(null);
   const sessionDate = useMemo(() => Date.now(), []);
@@ -354,8 +370,33 @@ export default function Edit() {
     };
   }, [isArtisan, artisanId, activeShots, filter, sessionDate]);
 
-  const handleRetake = () => {
+  const handleOpenRetakeModal = () => {
+    setSelectedRetakeIndexes([]);
+    setShowRetakeModal(true);
+  };
+
+  const toggleRetakeIndex = (index: number) => {
+    setSelectedRetakeIndexes((prev) =>
+      prev.includes(index) ? prev.filter((i) => i !== index) : [...prev, index]
+    );
+  };
+
+  const handleConfirmRetakeSelected = () => {
+    if (selectedRetakeIndexes.length === 0) return;
+    if (selectedRetakeIndexes.length === shots.length) {
+      clearShots();
+    } else {
+      removeShots(selectedRetakeIndexes);
+    }
+    setShowRetakeModal(false);
+    sessionStorage.setItem('ps_retaking', '1');
+    setLocation('/studio');
+  };
+
+  const handleRetakeAll = () => {
     clearShots();
+    setShowRetakeModal(false);
+    sessionStorage.setItem('ps_retaking', '1');
     setLocation('/studio');
   };
 
@@ -598,7 +639,7 @@ export default function Edit() {
 
   return (
     <div className="flex flex-col h-dvh">
-      <TopNav backTo="/studio" />
+      <TopNav onBack={() => window.location.reload()} />
 
       <main className="flex-1 overflow-y-auto flex flex-col items-center px-4 py-6 sm:px-6 sm:py-8">
         <div className="edit-heading text-center mb-6 sm:mb-8 w-full max-w-4xl">
@@ -792,11 +833,11 @@ export default function Edit() {
             {/* Action buttons — same for both modes */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <button
-                onClick={handleRetake}
+                onClick={handleOpenRetakeModal}
                 data-testid="button-retake"
-                className="col-span-1 sm:col-span-2 py-4 bg-foreground/5 hover:bg-foreground/10 text-foreground font-black rounded-2xl flex items-center justify-center gap-2 transition-all active:scale-[0.98] border border-foreground/10 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/40"
+                className="col-span-1 sm:col-span-2 py-4 bg-foreground/5 hover:bg-foreground/10 text-foreground font-black rounded-2xl flex items-center justify-center gap-2 transition-all active:scale-[0.98] border border-foreground/10 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/40 cursor-pointer"
               >
-                <RefreshCw className="w-5 h-5" /> RETAKE SESSION
+                <RefreshCw className="w-5 h-5 text-primary" /> RETAKE SESSION
               </button>
 
               <button
@@ -938,6 +979,109 @@ export default function Edit() {
               <p className="text-black text-[11px] leading-relaxed">
                 <span className="font-black">Heads up:</span> This is a <span className="font-black text-primary">one-time choice</span>. Once you confirm, the same skipped photo will apply to all 3-photo Artisan strips so you won't have to pick again.
               </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Retake Selection Modal ─────────────────────────────────────── */}
+      {showRetakeModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60">
+          <div
+            className="absolute inset-0"
+            onClick={() => setShowRetakeModal(false)}
+          />
+
+          <div className="relative bg-white rounded-2xl w-full max-w-md p-5 border border-black/10 shadow-2xl z-10 flex flex-col">
+            <div className="flex items-start justify-between gap-3 mb-1">
+              <div>
+                <h2 className="text-lg font-bold text-black">
+                  Which shot do you want to replace?
+                </h2>
+                <p className="text-xs text-black/60 mt-0.5">
+                  Tap the photo(s) to remove and retake. The rest will be kept.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowRetakeModal(false)}
+                className="p-1.5 -mr-1.5 -mt-1 text-black/40 hover:text-black rounded-lg transition-colors cursor-pointer"
+                aria-label="Close"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2.5 my-4">
+              {shots.map((shot, i) => {
+                const isSelectedForRetake = selectedRetakeIndexes.includes(i);
+                return (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => toggleRetakeIndex(i)}
+                    className={`relative aspect-[4/3] rounded-xl overflow-hidden text-left cursor-pointer transition-colors ${
+                      isSelectedForRetake
+                        ? 'border-2 border-black ring-2 ring-black/20'
+                        : 'border border-black/15 hover:border-black/40'
+                    }`}
+                  >
+                    <img
+                      src={shot}
+                      alt={`Shot ${i + 1}`}
+                      className={`w-full h-full object-cover ${
+                        isSelectedForRetake ? 'opacity-40 grayscale' : 'opacity-100'
+                      }`}
+                    />
+
+                    {isSelectedForRetake ? (
+                      <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/10">
+                        <span className="bg-black text-white text-[11px] font-bold px-2.5 py-1 rounded-md shadow-sm">
+                          Remove
+                        </span>
+                      </div>
+                    ) : (
+                      <div className="absolute bottom-2 left-2 bg-black/60 text-white text-[10px] font-semibold px-2 py-0.5 rounded">
+                        Shot {i + 1}
+                      </div>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="flex flex-col gap-2 mt-1">
+              <button
+                type="button"
+                onClick={handleConfirmRetakeSelected}
+                disabled={selectedRetakeIndexes.length === 0}
+                className={`w-full py-2.5 px-4 font-bold text-sm rounded-xl transition-colors ${
+                  selectedRetakeIndexes.length > 0
+                    ? 'bg-black hover:bg-black/80 text-white cursor-pointer shadow-sm'
+                    : 'bg-black/5 text-black/40 border border-black/10 cursor-not-allowed'
+                }`}
+              >
+                {selectedRetakeIndexes.length === 0
+                  ? 'Select a photo to retake'
+                  : `Retake ${selectedRetakeIndexes.length} selected ${selectedRetakeIndexes.length === 1 ? 'shot' : 'shots'}`}
+              </button>
+
+              <div className="flex items-center justify-between text-xs pt-1 px-1">
+                <button
+                  type="button"
+                  onClick={handleRetakeAll}
+                  className="text-black/50 hover:text-black font-medium py-1 cursor-pointer transition-colors"
+                >
+                  Retake all shots
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowRetakeModal(false)}
+                  className="text-black/50 hover:text-black font-medium py-1 cursor-pointer transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
             </div>
           </div>
         </div>

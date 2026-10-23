@@ -27,11 +27,24 @@ export function useCamera() {
         },
         audio: false
       });
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        await videoRef.current.play().catch(() => undefined);
-      }
       streamRef.current = stream;
+
+      // Attach stream to video element, retry briefly if element isn't mounted yet
+      const attach = () => {
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+          videoRef.current.play().catch(() => undefined);
+          return true;
+        }
+        return false;
+      };
+
+      if (!attach()) {
+        // Video element not ready yet — retry after a short delay
+        await new Promise(resolve => setTimeout(resolve, 100));
+        attach();
+      }
+
       setError(null);
     } catch (err) {
       const name = err instanceof DOMException ? err.name : '';
