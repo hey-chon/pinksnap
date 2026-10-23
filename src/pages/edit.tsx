@@ -713,9 +713,9 @@ export default function Edit() {
                 onClick={() => setCategory('artisan')}
                 aria-pressed={category === 'artisan'}
                 data-testid="button-category-artisan"
-                className={`ctrl-seg-btn flex items-center gap-1 ${category === 'artisan' ? 'ctrl-seg-active' : ''}`}
+                className={`ctrl-seg-btn ${category === 'artisan' ? 'ctrl-seg-active' : ''}`}
               >
-                <ImageIcon className="w-3 h-3" /> Artisan
+                ARTISAN
               </button>
             </div>
 
