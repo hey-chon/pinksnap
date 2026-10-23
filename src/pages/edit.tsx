@@ -855,7 +855,7 @@ export default function Edit() {
                 data-testid="button-save"
                 className="py-4 bg-primary text-white font-black rounded-2xl flex items-center justify-center gap-2 shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/50"
               >
-                <Download className="w-5 h-5" /> {isSaving ? 'SAVING...' : 'SAVE & EXIT'}
+                <Download className="w-5 h-5" /> {isSaving ? 'SAVING...' : 'PRINT & SAVE'}
               </button>
             </div>
 
