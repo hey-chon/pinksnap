@@ -21,6 +21,7 @@ export function UserMenu() {
   const { toast } = useToast();
   const [, setLocation] = useLocation();
   const [isOpen, setIsOpen] = useState(false);
+  const [imgError, setImgError] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -32,6 +33,10 @@ export function UserMenu() {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  useEffect(() => {
+    setImgError(false);
+  }, [user?.avatarUrl]);
 
   const handleSignOut = async () => {
     setIsOpen(false);
@@ -68,11 +73,6 @@ export function UserMenu() {
 
   const initial = (user.displayName || user.email || 'U').charAt(0).toUpperCase();
   const safeAvatarUrl = normalizeAvatarUrl(user.avatarUrl);
-  const [imgError, setImgError] = useState(false);
-
-  useEffect(() => {
-    setImgError(false);
-  }, [user.avatarUrl]);
 
   return (
     <div className="relative" ref={menuRef}>
