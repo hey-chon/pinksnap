@@ -227,7 +227,7 @@ export default function Edit() {
 
   const [isSaving, setIsSaving] = useState(false);
   const [category, setCategory] = useState<TabMode>(() => (sessionStorage.getItem('ps_edit_category') as TabMode) || 'booth');
-  const [artisanId, setArtisanId] = useState<ArtisanTemplateId>(() => (sessionStorage.getItem('ps_edit_artisan') as ArtisanTemplateId) || 'theater-show');
+  const [artisanId, setArtisanId] = useState<ArtisanTemplateId>(() => (sessionStorage.getItem('ps_edit_artisan') as ArtisanTemplateId) || 'port-archive');
   const [showArtisanWarning, setShowArtisanWarning] = useState(false);
   const [excludedShotIndex, setExcludedShotIndex] = useState<number>(() => {
     const s = sessionStorage.getItem('ps_edit_excluded');

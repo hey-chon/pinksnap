@@ -716,6 +716,7 @@ export function drawFrameBackground(
 // ─── Artisan Template System (Programmatic Canvas) ────────────────────────
 
 export type ArtisanTemplateId =
+  | 'port-archive'
   | 'theater-show'
   | 'every-moment-up'
   | 'retro-tv'
@@ -1202,6 +1203,27 @@ function everyFg(
 // ── Template registry ──────────────────────────────────────────────────────
 
 export const ARTISAN_TEMPLATES: ArtisanTemplate[] = [
+  {
+    id: 'port-archive',
+    label: 'Port Archive',
+    note: 'The Archive of Art · 4 shots',
+    nw: 396, nh: 1194,
+    slots: [
+      { x: 30, y: 116, w: 335, h: 235, r: 0 },
+      { x: 30, y: 373, w: 335, h: 239, r: 0 },
+      { x: 30, y: 634, w: 335, h: 238, r: 0 },
+      { x: 30, y: 894, w: 335, h: 238, r: 0 },
+    ],
+    ...makeImageTemplate('/templates/image.jpg', [
+      { x: 30, y: 116, w: 335, h: 235, r: 0 },
+      { x: 30, y: 373, w: 335, h: 239, r: 0 },
+      { x: 30, y: 634, w: 335, h: 238, r: 0 },
+      { x: 30, y: 894, w: 335, h: 238, r: 0 },
+    ], 45),
+    paintBg(ctx, w, h) { ctx.fillStyle = '#0c0c0c'; ctx.fillRect(0, 0, w, h); },
+    paintFg() {},
+    async paintFgAsync() {},
+  },
   // LINE 1
   {
     id: 'the-1975',
