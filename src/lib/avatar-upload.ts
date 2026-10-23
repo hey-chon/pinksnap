@@ -136,7 +136,7 @@ export async function sanitizeAvatarForUpload(file: File): Promise<File> {
   return new File([sanitizedBlob], `avatar.${ext}`, { type: mimeType });
 }
 
-export async function fileToAvatarDataUrl(file: File, maxDimension = 320): Promise<string> {
+export async function fileToAvatarDataUrl(file: File, maxDimension = 256): Promise<string> {
   const validation = validateAvatarFile(file);
   if (!validation.isValid) {
     throw new Error(validation.error || 'Invalid avatar file.');
@@ -164,12 +164,21 @@ export async function fileToAvatarDataUrl(file: File, maxDimension = 320): Promi
   context.imageSmoothingQuality = 'high';
   context.drawImage(image, sx, sy, cropSize, cropSize, 0, 0, targetSize, targetSize);
 
+  // Try WebP first (better compression), fall back to JPEG for iOS Safari < 14.3
   try {
-    const webpUrl = canvas.toDataURL('image/webp', 0.85);
-    if (webpUrl && webpUrl.startsWith('data:image/webp')) {
+    const webpUrl = canvas.toDataURL('image/webp', 0.82);
+    if (webpUrl && webpUrl.startsWith('data:image/webp') && webpUrl.length > 100) {
       return webpUrl;
     }
-  } catch {}
-  return canvas.toDataURL('image/jpeg', 0.85);
+  } catch { /* iOS Safari may not support WebP canvas export */ }
+
+  // JPEG fallback — always works on iOS Safari
+  const jpegUrl = canvas.toDataURL('image/jpeg', 0.82);
+  if (jpegUrl && jpegUrl.startsWith('data:image/jpeg') && jpegUrl.length > 100) {
+    return jpegUrl;
+  }
+
+  // Last resort: PNG (larger but universally supported)
+  return canvas.toDataURL('image/png');
 }
 

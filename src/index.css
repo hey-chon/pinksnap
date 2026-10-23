@@ -1419,71 +1419,28 @@ html, body { overflow-x: hidden; }
 .creator-plus-badge {
   position: relative;
   background: #0a0b0f;
-  border: 1px solid rgba(255, 69, 0, 0.5);
+  border: 1px solid rgba(255, 120, 50, 0.4);
   color: #fff;
-  box-shadow:
-    0 0 10px rgba(255, 69, 0, 0.35),
-    0 0 20px rgba(255, 140, 0, 0.25);
-  animation: creator-fire-glow 3s ease-in-out infinite;
 }
 
 .creator-plus-badge .creator-flame {
-  color: #ff4500;
-  filter: drop-shadow(0 0 6px rgba(255, 69, 0, 0.8));
-  animation: creator-fire-flicker 0.5s ease-in-out infinite alternate;
+  color: #ff6b35;
+  filter: drop-shadow(0 0 4px rgba(255, 100, 30, 0.5));
 }
 
-@keyframes creator-fire-glow {
-  0%,
-  100% {
-    border-color: rgba(255, 69, 0, 0.5);
-    box-shadow:
-      0 0 10px rgba(255, 69, 0, 0.35),
-      0 0 20px rgba(255, 140, 0, 0.25);
-  }
-  33% {
-    border-color: rgba(255, 140, 0, 0.7);
-    box-shadow:
-      0 0 16px rgba(255, 69, 0, 0.55),
-      0 0 32px rgba(255, 140, 0, 0.45);
-  }
-  66% {
-    border-color: rgba(255, 69, 0, 0.6);
-    box-shadow:
-      0 0 14px rgba(255, 69, 0, 0.45),
-      0 0 28px rgba(255, 215, 0, 0.35);
-  }
-}
-
-@keyframes creator-fire-flicker {
-  0% {
-    transform: scale(1) rotate(-2deg);
-    filter: drop-shadow(0 0 6px rgba(255, 69, 0, 0.8));
-  }
-  33% {
-    transform: scale(1.15) rotate(3deg);
-    filter: drop-shadow(0 0 10px rgba(255, 140, 0, 0.9));
-  }
-  66% {
-    transform: scale(0.95) rotate(-1deg);
-    filter: drop-shadow(0 0 8px rgba(255, 69, 0, 0.7));
-  }
-  100% {
-    transform: scale(1.05) rotate(2deg);
-    filter: drop-shadow(0 0 12px rgba(255, 140, 0, 0.85));
-  }
-}
-
-/* ── Creator booth role card — flame glow (creator role only) ── */
+/* ── Creator booth role card — subtle static ember glow (no animation) ── */
 .creator-role-card {
   position: relative;
-  background: #0a0b0f;
-  border: 1px solid rgba(255, 69, 0, 0.5);
-  box-shadow:
-    0 0 12px rgba(255, 69, 0, 0.35),
-    0 0 24px rgba(255, 140, 0, 0.25);
-  animation: creator-fire-glow 3s ease-in-out infinite;
+  background: rgba(255, 80, 20, 0.06);
+  border: 1px solid rgba(255, 120, 50, 0.25);
+  box-shadow: 0 0 12px rgba(255, 100, 30, 0.12);
   overflow: hidden;
+  transition: box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.creator-role-card:hover {
+  border-color: rgba(255, 120, 50, 0.4);
+  box-shadow: 0 0 18px rgba(255, 100, 30, 0.2);
 }
 
 .creator-role-card .creator-role-kicker {
@@ -1492,9 +1449,9 @@ html, body { overflow-x: hidden; }
   gap: 0.5rem;
   padding: 0.35rem 0.7rem;
   border-radius: 9999px;
-  background: rgba(255, 69, 0, 0.25);
-  border: 1px solid rgba(255, 69, 0, 0.55);
-  color: #ffaf4d;
+  background: rgba(255, 69, 0, 0.15);
+  border: 1px solid rgba(255, 100, 50, 0.35);
+  color: #e8934a;
   font-size: 10px;
   font-weight: 900;
   text-transform: uppercase;
@@ -1503,15 +1460,12 @@ html, body { overflow-x: hidden; }
 }
 
 .creator-role-card .creator-role-flame {
-  color: #ff4500;
-  filter: drop-shadow(0 0 6px rgba(255, 69, 0, 0.8));
-  animation: creator-fire-flicker 0.5s ease-in-out infinite alternate;
+  color: #ff6b35;
+  filter: drop-shadow(0 0 3px rgba(255, 100, 30, 0.45));
 }
 
 .creator-role-card .creator-role-label {
   color: #fff;
-  filter: drop-shadow(0 0 6px rgba(255, 69, 0, 0.5));
-  animation: creator-fire-flicker 0.5s ease-in-out infinite alternate;
 }
 
 /* ---------- Universal Mobile Phone Responsiveness ---------- */

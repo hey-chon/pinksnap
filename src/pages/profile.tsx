@@ -154,14 +154,24 @@ export default function ProfilePage() {
     if (user?.avatarUrl || user?.avatarStoragePath) {
       setShowAvatarMenu(true);
     } else {
-      fileInputRef.current?.click();
+      // iOS Safari: trigger file input synchronously within the user gesture
+      // Using setTimeout(0) ensures the click fires in the same gesture context on iOS
+      const input = fileInputRef.current;
+      if (input) {
+        // Reset value first so re-selecting the same file still triggers onChange
+        input.value = '';
+        input.click();
+      }
     }
   };
 
   const handleDirectAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
-    event.target.value = '';
+
+    // iOS Safari: clear the file input value synchronously to allow re-selection
+    // of the same photo. Use try/catch because some iOS versions throw on assignment.
+    try { event.target.value = ''; } catch { /* iOS quirk - ignore */ }
     setShowAvatarMenu(false);
 
     const validation = validateAvatarFile(file);
@@ -245,24 +255,38 @@ export default function ProfilePage() {
   };
 
   const handleDirectRemoveAvatar = async () => {
+    // iOS Safari: close menu & clear state SYNCHRONOUSLY in the same gesture frame
+    // This prevents stale state from re-rendering the old avatar before the async work completes
     setShowAvatarMenu(false);
     setIsUploadingAvatar(true);
-    try {
-      if (typeof window !== 'undefined' && user?.id) {
+    setAvatarLoadError(false);
+
+    // Immediately clear all local caches so avatar disappears instantly on iOS
+    if (typeof window !== 'undefined' && user?.id) {
+      try {
         localStorage.removeItem(`pinksnap_user_avatar_${user.id}`);
         localStorage.setItem(`pinksnap_avatar_cleared_${user.id}`, 'true');
-      }
-      const previousAvatarPath = user?.avatarStoragePath;
+      } catch { /* iOS private browsing may throw */ }
+    }
+
+    // Also reset the hidden file input so iOS doesn't cache the old selection
+    if (fileInputRef.current) {
+      try { fileInputRef.current.value = ''; } catch { /* iOS quirk */ }
+    }
+
+    const previousAvatarPath = user?.avatarStoragePath;
+
+    try {
       await updateProfile({
         avatarUrl: null,
         avatarStoragePath: null,
       });
-      setAvatarLoadError(false);
+
+      // Clean up remote storage in background (non-blocking)
       if (previousAvatarPath) {
-        try {
-          await supabase.storage.from(AVATAR_BUCKET).remove([previousAvatarPath]);
-        } catch {}
+        supabase.storage.from(AVATAR_BUCKET).remove([previousAvatarPath]).catch(() => {});
       }
+
       toast({
         title: 'Profile Picture Removed',
         description: 'Your avatar has been reset to default.',
@@ -609,6 +633,7 @@ export default function ProfilePage() {
                   disabled={isUploadingAvatar}
                   title="Change profile photo"
                   className="group relative block rounded-full focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/40 active:scale-95 transition-transform cursor-pointer"
+                  style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
                 >
                   <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-white border-4 border-white shadow-xl flex items-center justify-center text-primary font-display text-4xl sm:text-5xl overflow-hidden ring-4 ring-pink-500/10">
                     {safeAvatarSrc && !avatarLoadError ? (
@@ -619,6 +644,7 @@ export default function ProfilePage() {
                         onError={() => setAvatarLoadError(true)}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         referrerPolicy="no-referrer"
+                        crossOrigin="anonymous"
                       />
                     ) : (
                       initial
@@ -797,7 +823,7 @@ export default function ProfilePage() {
             {/* ROW 3: Social Media Stats Counters — Customized By Role */}
             <div className={`mt-5 pt-4 border-t grid grid-cols-3 gap-2 text-center ${isAdmin ? 'border-white/[0.06]' : 'border-black/[0.06]'}`}>
               {isAdmin ? (
-                /* ── CREATOR ROLE: Obsidian fire card glow with flame and crown accents ── */
+                /* ── CREATOR ROLE: Clean, refined dark card with subtle accent ── */
                 <>
                   <button
                     type="button"
@@ -805,35 +831,34 @@ export default function ProfilePage() {
                     className="p-2 sm:p-3 rounded-2xl creator-role-card flex flex-col items-center justify-center transition-all group cursor-pointer"
                   >
                     <div className="flex items-center gap-1">
-                      <p className="text-sm sm:text-base font-black text-orange-400 group-hover:text-orange-300 transition-colors leading-none drop-shadow-[0_0_8px_rgba(255,140,0,0.6)]">
+                      <p className="text-sm sm:text-base font-black text-orange-400 group-hover:text-orange-300 transition-colors leading-none">
                         {postedStrips.length}
                       </p>
-                      <Flame className="w-3 h-3 creator-flame text-orange-500 fill-none" aria-hidden="true" />
+                      <Flame className="w-3 h-3 text-orange-400/70 fill-none" aria-hidden="true" />
                     </div>
-                    <p className="text-[9px] sm:text-[10px] font-bold text-orange-200/90 uppercase tracking-wider mt-1">
+                    <p className="text-[9px] sm:text-[10px] font-bold text-white/50 uppercase tracking-wider mt-1">
                       Photo Strips
                     </p>
                   </button>
 
                   <div className="p-2 sm:p-3 rounded-2xl creator-role-card flex flex-col items-center justify-center">
                     <div className="flex items-center gap-1">
-                      <p className="text-sm sm:text-base font-black text-orange-500 leading-none drop-shadow-[0_0_8px_rgba(255,69,0,0.8)]">
+                      <p className="text-sm sm:text-base font-black text-orange-400 leading-none">
                         Creator+
                       </p>
-  
                     </div>
-                    <p className="text-[9px] sm:text-[10px] font-bold text-orange-200/90 uppercase tracking-wider mt-1">
+                    <p className="text-[9px] sm:text-[10px] font-bold text-white/50 uppercase tracking-wider mt-1">
                       Booth Role
                     </p>
                   </div>
 
                   <div className="p-2 sm:p-3 rounded-2xl creator-role-card flex flex-col items-center justify-center">
                     <div className="flex items-center gap-1">
-                      <p className="text-sm sm:text-base font-black text-orange-400 leading-none drop-shadow-[0_0_8px_rgba(255,140,0,0.6)]">
+                      <p className="text-sm sm:text-base font-black text-orange-400 leading-none">
                         Active
                       </p>
                     </div>
-                    <p className="text-[9px] sm:text-[10px] font-bold text-orange-200/90 uppercase tracking-wider mt-1">
+                    <p className="text-[9px] sm:text-[10px] font-bold text-white/50 uppercase tracking-wider mt-1">
                       Community
                     </p>
                   </div>
@@ -1105,7 +1130,11 @@ export default function ProfilePage() {
                     value={displayName}
                     onChange={(e) => setDisplayName(e.target.value)}
                     placeholder="Your booth star name"
+                    enterKeyHint="done"
+                    autoComplete="name"
+                    autoCorrect="off"
                     className="w-full px-4 py-3 bg-foreground/[0.02] border border-black/[0.08] focus:border-primary/50 focus:ring-4 focus:ring-primary/10 rounded-2xl text-sm font-semibold outline-none transition-all placeholder:text-foreground/30"
+                    style={{ fontSize: '16px' }}
                   />
                   <p className="text-[11px] text-foreground/45 mt-1.5 font-medium">
                     This name appears on your profile and public chat.
@@ -1127,7 +1156,10 @@ export default function ProfilePage() {
                     onChange={(e) => setBio(e.target.value.slice(0, 160))}
                     placeholder="Write something about yourself, your booth style, favorite memories..."
                     rows={3}
+                    enterKeyHint="done"
+                    autoCorrect="on"
                     className="w-full px-4 py-3 bg-foreground/[0.02] border border-black/[0.08] focus:border-primary/50 focus:ring-4 focus:ring-primary/10 rounded-2xl text-sm font-medium outline-none transition-all placeholder:text-foreground/30 resize-none"
+                    style={{ fontSize: '16px' }}
                   />
                   <p className="text-[11px] text-foreground/45 mt-1.5 font-medium">
                     Share a personal description on your social profile. Visible to the community.
@@ -1213,16 +1245,21 @@ export default function ProfilePage() {
             </div>
 
             <div className="space-y-2 pt-1">
+              {/* iOS Safari: <label> wrapping <input type=file> is the most reliable way
+                  to trigger the Photo Library / Camera sheet. Never use programmatic .click() here. */}
               <label
                 className="relative w-full py-2.5 px-3.5 rounded-xl bg-neutral-900 hover:bg-black text-white text-xs font-semibold flex items-center justify-center gap-2 active:scale-98 transition-all cursor-pointer select-none overflow-hidden"
+                style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent', minHeight: '44px' }}
               >
                 <Upload className="w-3.5 h-3.5 text-neutral-300 pointer-events-none" />
                 <span className="pointer-events-none">Choose from Library</span>
                 <input
                   type="file"
                   accept={AVATAR_ACCEPT_ATTRIBUTE}
+                  capture={undefined}
                   onChange={handleDirectAvatarUpload}
                   className="absolute inset-0 opacity-0 w-full h-full cursor-pointer z-10 block"
+                  style={{ fontSize: '16px' }}
                   title="Choose profile photo"
                 />
               </label>
@@ -1232,6 +1269,7 @@ export default function ProfilePage() {
                   type="button"
                   onClick={handleDirectRemoveAvatar}
                   className="w-full py-2.5 px-3.5 rounded-xl border border-neutral-200 text-neutral-700 hover:text-red-600 hover:border-red-200 hover:bg-red-50/40 text-xs font-semibold flex items-center justify-center gap-2 active:scale-98 transition-all cursor-pointer"
+                  style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent', minHeight: '44px' }}
                 >
                   <Trash2 className="w-3.5 h-3.5" />
                   <span>Remove Photo</span>
@@ -1242,6 +1280,7 @@ export default function ProfilePage() {
                 type="button"
                 onClick={() => setShowAvatarMenu(false)}
                 className="w-full py-2 rounded-xl text-neutral-400 hover:text-neutral-700 text-xs font-medium transition-colors cursor-pointer"
+                style={{ touchAction: 'manipulation', minHeight: '44px' }}
               >
                 Cancel
               </button>
@@ -1384,14 +1423,18 @@ export default function ProfilePage() {
         </div>
       )}
 
-      {/* Native File Input for Photo Library and Camera Upload (Accessible to iOS Safari) */}
+      {/* Native File Input for Photo Library and Camera Upload (Accessible to iOS Safari)
+          iOS Safari requires the input to be in the DOM (not display:none) for .click() to work.
+          Using sr-only positions it off-screen but keeps it functional. */}
       <input
         id="avatar-file-input"
         ref={fileInputRef}
         type="file"
         accept={AVATAR_ACCEPT_ATTRIBUTE}
+        capture={undefined}
         onChange={handleDirectAvatarUpload}
         className="sr-only"
+        style={{ position: 'absolute', left: '-9999px', top: '-9999px', opacity: 0, fontSize: '16px' }}
         tabIndex={-1}
         aria-hidden="true"
       />
