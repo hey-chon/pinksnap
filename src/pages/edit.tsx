@@ -907,7 +907,7 @@ export default function Edit() {
             </div>
 
             <p className="text-black font-medium text-[13px] sm:text-sm mb-6 leading-relaxed max-w-[280px] mx-auto">
-              This strip only fits 3. Tap the one you'd like to <span className="font-black text-red-500">REMOVE</span>.
+              This strip only fits 3 shots. Tap the one you'd like to <span className="font-black text-red-500">REMOVE</span>.
             </p>
 
             {/* Photo grid — 2×2 */}
