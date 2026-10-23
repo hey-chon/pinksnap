@@ -1295,6 +1295,69 @@ export const ARTISAN_TEMPLATES: ArtisanTemplate[] = [
       { x: 75, y: 1305, w: 427, h: 330, r: 10 },
     ], 20),
   },
+  {
+    id: 'wave-navy',
+    label: 'Wave Navy',
+    note: 'Music player · dark blue · 4 shots',
+    nw: 358, nh: 1165,
+    slots: [
+      { x: 37, y: 44,  w: 283, h: 212, r: 12 },
+      { x: 37, y: 272, w: 283, h: 215, r: 12 },
+      { x: 37, y: 501, w: 283, h: 197, r: 12 },
+      { x: 37, y: 712, w: 283, h: 189, r: 12 },
+    ],
+    ...makeImageTemplate('/templates/A9hsW.jpg?v=2', [
+      { x: 37, y: 44,  w: 283, h: 212, r: 12 },
+      { x: 37, y: 272, w: 283, h: 215, r: 12 },
+      { x: 37, y: 501, w: 283, h: 197, r: 12 },
+      { x: 37, y: 712, w: 283, h: 189, r: 12 },
+    ], 45),
+    // Skip foreground overlay — photos cover placeholders directly, no chroma-key needed
+    paintFg() {},
+    async paintFgAsync() {},
+  },
+  {
+    id: 'wave-pink',
+    label: 'Wave Pink',
+    note: 'Music player · pastel pink · 4 shots',
+    nw: 359, nh: 1178,
+    slots: [
+      { x: 40, y: 45,  w: 282, h: 213, r: 14 },
+      { x: 40, y: 276, w: 282, h: 215, r: 14 },
+      { x: 40, y: 506, w: 282, h: 198, r: 14 },
+      { x: 40, y: 720, w: 282, h: 189, r: 14 },
+    ],
+    ...makeImageTemplate('/templates/r3PiC.jpg?v=3', [
+      { x: 40, y: 45,  w: 282, h: 213, r: 14 },
+      { x: 40, y: 276, w: 282, h: 215, r: 14 },
+      { x: 40, y: 506, w: 282, h: 198, r: 14 },
+      { x: 40, y: 720, w: 282, h: 189, r: 14 },
+    ], 45),
+    async paintBgAsync(ctx, w, h, s) {
+      try {
+        const img = await loadImg('/templates/r3PiC.jpg?v=3');
+        ctx.drawImage(img, 0, 0, w, h);
+        ctx.fillStyle = '#ffffff';
+        const slots = [
+          { x: 40, y: 45,  w: 282, h: 213, r: 14 },
+          { x: 40, y: 276, w: 282, h: 215, r: 14 },
+          { x: 40, y: 506, w: 282, h: 198, r: 14 },
+          { x: 40, y: 720, w: 282, h: 189, r: 14 },
+        ];
+        slots.forEach(slot => {
+          ctx.beginPath();
+          roundedRect(ctx, slot.x * s, slot.y * s, slot.w * s, slot.h * s, slot.r * s);
+          ctx.fill();
+        });
+      } catch {
+        ctx.fillStyle = '#fce4ec';
+        ctx.fillRect(0, 0, w, h);
+      }
+    },
+    // Skip foreground overlay — photos cover placeholders directly, no chroma-key needed
+    paintFg() {},
+    async paintFgAsync() {},
+  },
   // LINE 2
   {
     id: 'director-cut',
@@ -1336,49 +1399,6 @@ export const ARTISAN_TEMPLATES: ArtisanTemplate[] = [
       { x: 24, y: 460, w: 358, h: 227, r: 8 },
       { x: 24, y: 762, w: 358, h: 225, r: 8 },
     ], 15),
-  },
-  // LINE 3
-  {
-    id: 'wave-navy',
-    label: 'Wave Navy',
-    note: 'Music player · dark blue · 4 shots',
-    nw: 358, nh: 1165,
-    slots: [
-      { x: 37, y: 44,  w: 283, h: 212, r: 12 },
-      { x: 37, y: 272, w: 283, h: 215, r: 12 },
-      { x: 37, y: 501, w: 283, h: 197, r: 12 },
-      { x: 37, y: 712, w: 283, h: 189, r: 12 },
-    ],
-    ...makeImageTemplate('/templates/A9hsW.jpg?v=2', [
-      { x: 37, y: 44,  w: 283, h: 212, r: 12 },
-      { x: 37, y: 272, w: 283, h: 215, r: 12 },
-      { x: 37, y: 501, w: 283, h: 197, r: 12 },
-      { x: 37, y: 712, w: 283, h: 189, r: 12 },
-    ], 45),
-    // Skip foreground overlay — photos cover placeholders directly, no chroma-key needed
-    paintFg() {},
-    async paintFgAsync() {},
-  },
-  {
-    id: 'wave-pink',
-    label: 'Wave Pink',
-    note: 'Music player · pastel pink · 4 shots',
-    nw: 359, nh: 1178,
-    slots: [
-      { x: 40, y: 45,  w: 282, h: 213, r: 14 },
-      { x: 40, y: 276, w: 282, h: 215, r: 14 },
-      { x: 40, y: 506, w: 282, h: 198, r: 14 },
-      { x: 40, y: 720, w: 282, h: 189, r: 14 },
-    ],
-    ...makeImageTemplate('/templates/r3PiC.jpg?v=2', [
-      { x: 40, y: 45,  w: 282, h: 213, r: 14 },
-      { x: 40, y: 276, w: 282, h: 215, r: 14 },
-      { x: 40, y: 506, w: 282, h: 198, r: 14 },
-      { x: 40, y: 720, w: 282, h: 189, r: 14 },
-    ], 45),
-    // Skip foreground overlay — photos cover placeholders directly, no chroma-key needed
-    paintFg() {},
-    async paintFgAsync() {},
   },
 ];
 
