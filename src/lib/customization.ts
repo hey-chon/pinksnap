@@ -1318,7 +1318,7 @@ export const ARTISAN_TEMPLATES: ArtisanTemplate[] = [
   },
   {
     id: 'wave-pink',
-    label: 'Wave Pink',
+    label: 'Spotibai Pink',
     note: 'Music player · pastel pink · 4 shots',
     nw: 359, nh: 1178,
     slots: [
