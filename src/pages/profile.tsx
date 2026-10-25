@@ -855,7 +855,7 @@ export default function ProfilePage() {
                   <div className="p-2 sm:p-3 rounded-2xl creator-role-card flex flex-col items-center justify-center">
                     <div className="flex items-center gap-1">
                       <p className="text-sm sm:text-base font-black text-orange-400 leading-none">
-                        Active
+                        Activated
                       </p>
                     </div>
                     <p className="text-[9px] sm:text-[10px] font-bold text-white/50 uppercase tracking-wider mt-1">
@@ -1192,7 +1192,6 @@ export default function ProfilePage() {
                       disabled={isSendingReset}
                       className="px-3.5 py-2 bg-white hover:bg-foreground/[0.04] border border-black/[0.1] text-foreground/75 text-xs font-black uppercase tracking-wider rounded-xl transition-all flex items-center justify-center gap-1.5 shadow-sm active:scale-95 disabled:opacity-40"
                     >
-                      <KeyRound className="w-3.5 h-3.5 text-primary" />
                       {isSendingReset ? 'Sending...' : 'Reset Password'}
                     </button>
                   </div>
@@ -1212,7 +1211,7 @@ export default function ProfilePage() {
                       </>
                     ) : (
                       <>
-                        <Save className="w-4 h-4" /> Save Profile Changes
+                        <Save className="w-4 h-4" /> Save
                       </>
                     )}
                   </button>
