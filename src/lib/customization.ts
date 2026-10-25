@@ -1205,7 +1205,7 @@ function everyFg(
 export const ARTISAN_TEMPLATES: ArtisanTemplate[] = [
   {
     id: 'port-archive',
-    label: 'Port Archive',
+    label: 'The Archive',
     note: 'The Archive of Art · 4 shots',
     nw: 396, nh: 1194,
     slots: [
