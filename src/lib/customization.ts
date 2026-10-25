@@ -1377,7 +1377,7 @@ export const ARTISAN_TEMPLATES: ArtisanTemplate[] = [
   },
   {
     id: 'every-moment-up',
-    label: 'Moments',
+    label: 'The Moments',
     note: 'Bold blue · header top · 3 shots',
     nw: 520, nh: 1430,
     slots: EVERY_UP_SLOTS,
