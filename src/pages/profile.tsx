@@ -1211,7 +1211,7 @@ export default function ProfilePage() {
                       </>
                     ) : (
                       <>
-                        <Save className="w-4 h-4" /> Save
+                        <Save className="w-4 h-4" /> Save Changes
                       </>
                     )}
                   </button>
