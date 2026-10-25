@@ -671,24 +671,7 @@ export default function ProfilePage() {
                       </div>
                     </>
                   )}
-                </button>
-
-                {isAdmin && (
-                  <div
-                    title="Verified Creator"
-                    className="absolute -top-1 -right-1 p-1.5 rounded-full bg-purple-600 text-white shadow-md border-2 border-white"
-                  >
-                    <Shield className="w-3 h-3" />
-                  </div>
-                )}
-                {isContributor && !isAdmin && (
-                  <div
-                    title="Verified Contributor"
-                    className="absolute -top-1 -right-1 p-1.5 rounded-full bg-amber-500 text-white shadow-md border-2 border-white"
-                  >
-                    <Zap className="w-3 h-3 fill-white stroke-none" />
-                  </div>
-                )}
+                </button> 
               </div>
 
               {/* Action Buttons: Positioned cleanly opposite the avatar */}
