@@ -452,8 +452,8 @@ export default function ProfilePage() {
         }
 
         toast({
-          title: 'Profile Saved ✨',
-          description: 'Your changes have been saved.',
+          title: 'Profile Saved',
+          description: 'Your changes have been made.',
         });
       }
     } catch (err: unknown) {
