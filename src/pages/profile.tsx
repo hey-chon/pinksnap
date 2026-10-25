@@ -339,7 +339,7 @@ export default function ProfilePage() {
       await downloadImage(url, `pinksnap-${date}.png`);
       toast({
         title: 'Downloading...',
-        description: 'Your photo strip is downloading.',
+        description: 'The photo strip is downloading.',
       });
     } catch {
       toast({
