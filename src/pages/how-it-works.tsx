@@ -8,6 +8,7 @@ export default function HowItWorks() {
   const { isAuthenticated } = useAuth();
 
   const handleStartSnapping = () => {
+    sessionStorage.setItem('ps_has_entered_app', 'true');
     sessionStorage.setItem('ps_intent_start', 'true');
     if (isAuthenticated) {
       navigate('/loading');

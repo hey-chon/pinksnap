@@ -27,6 +27,8 @@ export default function Gallery() {
   const { toast } = useToast();
 
   const handleStartSession = () => {
+    sessionStorage.setItem('ps_has_entered_app', 'true');
+    sessionStorage.setItem('ps_intent_start', 'true');
     if (isAuthenticated) {
       navigate('/loading');
     } else {

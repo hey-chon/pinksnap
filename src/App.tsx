@@ -27,30 +27,41 @@ import { ProtectedRoute } from '@/components/auth/protected-route';
 
 // ── Flow Guard ──────────────────────────────────────────────────────────────
 // Prevents direct URL shortcuts to flow pages by requiring users to start at /
-let hasEnteredApp = false;
-
 export function resetAppFlow() {
-  hasEnteredApp = false;
-  sessionStorage.removeItem('ps_has_entered_app');
+  sessionStorage.setItem('ps_has_entered_app', 'true');
+  sessionStorage.removeItem('ps_has_loaded');
+  sessionStorage.removeItem('ps_intent_start');
 }
 
 function FlowGuard({ children }: { children: React.ReactNode }) {
   const [location, setLocation] = useLocation();
-  
+
   useEffect(() => {
+    // Whenever on home, ensure app entry is marked and clear previous completed loads
     if (location === '/') {
       sessionStorage.setItem('ps_has_entered_app', 'true');
       sessionStorage.removeItem('ps_has_loaded');
-    } else if (!sessionStorage.getItem('ps_has_entered_app')) {
-      const flowPages = ['/setup', '/styles', '/studio', '/edit', '/printing', '/receipt', '/admin'];
-      if (flowPages.includes(location) || location === '/loading') {
+      return;
+    }
+
+    // /loading is the entry point into the booth flow
+    if (location === '/loading') {
+      sessionStorage.setItem('ps_has_entered_app', 'true');
+      return;
+    }
+
+    // Guard internal booth flow pages: require entering the app
+    const flowPages = ['/setup', '/styles', '/studio', '/edit', '/printing', '/receipt'];
+    if (flowPages.includes(location)) {
+      if (!sessionStorage.getItem('ps_has_entered_app')) {
         setLocation('/', { replace: true });
+        return;
       }
-    } else if (location === '/loading' && sessionStorage.getItem('ps_intent_start') !== 'true') {
-      setLocation('/', { replace: true });
-    } else if (['/setup', '/styles', '/studio', '/edit'].includes(location) && !sessionStorage.getItem('ps_has_loaded')) {
-      // If they go directly to setup/studio without loading first
-      setLocation('/', { replace: true });
+      // Direct URL jump to setup/styles/studio/edit without passing through loading
+      if (['/setup', '/styles', '/studio', '/edit'].includes(location) && !sessionStorage.getItem('ps_has_loaded')) {
+        setLocation('/', { replace: true });
+        return;
+      }
     }
   }, [location, setLocation]);
 
@@ -80,7 +91,7 @@ function WelcomeGate({ children }: { children: React.ReactNode }) {
       timerRef.current = setTimeout(() => {
         setFading(true);
         setTimeout(() => setGating(false), 300);
-      }, 3000);
+      }, 3500);
     }
     return () => { if (timerRef.current) clearTimeout(timerRef.current); };
   }, [isAuthenticated, isLoading]);
@@ -114,8 +125,7 @@ function WelcomeGate({ children }: { children: React.ReactNode }) {
           </div>
 
           {/* Kicker */}
-          <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-[0.2em] bg-primary/10 text-primary border border-primary/20 mb-2.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+          <span className="booth-heading-kicker mb-2 text-primary">
             Authenticating
           </span>
 

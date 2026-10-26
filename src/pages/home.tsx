@@ -67,6 +67,7 @@ export default function Home() {
   const [activeStep, setActiveStep] = useState(0);
 
   const handleGetStarted = () => {
+    sessionStorage.setItem('ps_has_entered_app', 'true');
     sessionStorage.setItem('ps_intent_start', 'true');
     if (isAuthenticated) navigate('/loading');
     else navigate('/auth');

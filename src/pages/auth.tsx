@@ -83,9 +83,8 @@ export default function AuthPage() {
             </div>
           </div>
 
-          {/* Badge */}
-          <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-[0.2em] bg-primary/10 text-primary border border-primary/20 mb-2.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+          {/* Kicker */}
+          <span className="booth-heading-kicker mb-2 text-primary">
             Authenticated
           </span>
 

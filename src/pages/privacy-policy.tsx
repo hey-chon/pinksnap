@@ -27,6 +27,8 @@ export default function PrivacyPolicy() {
   const lastUpdated = 'August 2026';
 
   const handleStartSnapping = () => {
+    sessionStorage.setItem('ps_has_entered_app', 'true');
+    sessionStorage.setItem('ps_intent_start', 'true');
     if (isAuthenticated) {
       navigate('/loading');
     } else {
@@ -39,7 +41,12 @@ export default function PrivacyPolicy() {
       {showAuthGate && (
         <AuthGateModal
           onClose={() => setShowAuthGate(false)}
-          onSuccess={() => { setShowAuthGate(false); navigate('/loading'); }}
+          onSuccess={() => {
+            sessionStorage.setItem('ps_has_entered_app', 'true');
+            sessionStorage.setItem('ps_intent_start', 'true');
+            setShowAuthGate(false);
+            navigate('/loading');
+          }}
         />
       )}
       <TopNav backTo="/" title="PRIVACY POLICY" />
