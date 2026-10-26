@@ -29,7 +29,7 @@ export default function AuthPage() {
     setLocation('/profile', { replace: true });
   };
 
-  // Start countdown when user is authenticated
+  // Quick, smooth redirect when user is authenticated
   useEffect(() => {
     if (!isAuthenticated || !user) return;
     
@@ -38,24 +38,15 @@ export default function AuthPage() {
       return;
     }
 
-    // Mark WelcomeGate as done so it doesn't fire after this redirect
     sessionStorage.setItem('ps_welcome_gate_done', '1');
 
-    setCountdown(REDIRECT_DELAY);
-    timerRef.current = setInterval(() => {
-      setCountdown(prev => {
-        if (prev <= 1) {
-          clearInterval(timerRef.current!);
-          sessionStorage.setItem('ps_auth_splash_done', '1');
-          setLocation('/profile', { replace: true });
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 800);
-    return () => { if (timerRef.current) clearInterval(timerRef.current); };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isAuthenticated, user?.email]);
+    timerRef.current = setTimeout(() => {
+      sessionStorage.setItem('ps_auth_splash_done', '1');
+      setLocation('/profile', { replace: true });
+    }, 1250);
+
+    return () => { if (timerRef.current) clearTimeout(timerRef.current); };
+  }, [isAuthenticated, user?.email, setLocation]);
 
   // progress percentage for the bar (unused for dots but kept for future)
   const progressPct = Math.round(((REDIRECT_DELAY - countdown) / REDIRECT_DELAY) * 100);
@@ -68,81 +59,61 @@ export default function AuthPage() {
   }
 
   if (isAuthenticated && user) {
+    const rawName = user.displayName || user.email.split('@')[0] || '';
+    const firstName = rawName.trim().split(' ')[0] || 'there';
+
     return (
-      <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-white">
-        <style>{`
-          @keyframes authFadeIn {
-            from { opacity: 0; transform: scale(0.93) translateY(18px); }
-            to   { opacity: 1; transform: scale(1) translateY(0); }
-          }
-          @keyframes authIconPop {
-            0%   { transform: scale(0); opacity: 0; }
-            60%  { transform: scale(1.18); opacity: 1; }
-            100% { transform: scale(1); opacity: 1; }
-          }
-          @keyframes authSparkleFloat {
-            0%, 100% { transform: translateY(0) rotate(0deg); opacity: 0.8; }
-            50%       { transform: translateY(-8px) rotate(15deg); opacity: 1; }
-          }
-          @keyframes authPulseGlow {
-            0%, 100% { box-shadow: 0 0 20px rgba(245,61,137,0.3); }
-            50%       { box-shadow: 0 0 40px rgba(245,61,137,0.6); }
-          }
-          .auth-icon-pop   { animation: authIconPop 0.55s cubic-bezier(.36,.07,.19,.97) both; }
-          .auth-sparkle    { animation: authSparkleFloat 2s ease-in-out infinite; }
-          .auth-sparkle-d  { animation: authSparkleFloat 2s ease-in-out infinite 0.45s; }
-          .auth-pulse-glow { animation: authPulseGlow 2s ease-in-out infinite; }
-          @keyframes authDotBounce {
-            0%, 80%, 100% { transform: scale(0.6); opacity: 0.3; }
-            40%           { transform: scale(1.2); opacity: 1; }
-          }
-          .auth-dot-1 { animation: authDotBounce 1.2s ease-in-out infinite 0s; }
-          .auth-dot-2 { animation: authDotBounce 1.2s ease-in-out infinite 0.2s; }
-          .auth-dot-3 { animation: authDotBounce 1.2s ease-in-out infinite 0.4s; }
-          .auth-dot-4 { animation: authDotBounce 1.2s ease-in-out infinite 0.6s; }
-          .auth-dot-5 { animation: authDotBounce 1.2s ease-in-out infinite 0.8s; }
-        `}</style>
-        
-        <div className="flex flex-col items-center text-center px-4" style={{ animation: 'authFadeIn 0.45s cubic-bezier(.36,.07,.19,.97) both' }}>
-          <div className="flex flex-col items-center mb-8">
-            <div className="relative mb-5">
-              <div className="w-20 h-20 rounded-full bg-primary/15 border-2 border-primary/40 flex items-center justify-center text-primary font-display text-2xl auth-icon-pop auth-pulse-glow overflow-hidden">
-                {safeAvatarUrl ? (
-                  <img
-                    src={safeAvatarUrl}
-                    alt={user.displayName}
-                    className="w-full h-full object-cover"
-                    referrerPolicy="no-referrer"
-                  />
-                ) : (
-                  (user.displayName || user.email).charAt(0).toUpperCase()
-                )}
-              </div>
-              <span className="absolute -top-1 -right-1 text-xl auth-sparkle select-none">✨</span>
-              <span className="absolute -bottom-1 -left-2 text-lg auth-sparkle-d select-none">🌸</span>
+      <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-background/95 backdrop-blur-md">
+        <div className="flex flex-col items-center text-center px-6 max-w-sm w-full animate-in fade-in zoom-in-95 duration-200">
+          {/* Avatar */}
+          <div className="mb-5">
+            <div className="w-16 h-16 rounded-full bg-primary/10 ring-1 ring-primary/20 shadow-md shadow-primary/10 flex items-center justify-center overflow-hidden">
+              {safeAvatarUrl ? (
+                <img
+                  src={safeAvatarUrl}
+                  alt={user.displayName}
+                  className="w-full h-full object-cover"
+                  referrerPolicy="no-referrer"
+                />
+              ) : (
+                <span className="font-hero text-2xl text-primary tracking-wide">
+                  {firstName.charAt(0).toUpperCase()}
+                </span>
+              )}
             </div>
-
-            <span className="booth-heading-kicker mb-2">Authenticated</span>
-            <h1 className="font-hero text-[2rem] leading-[1] sm:text-4xl text-black mb-1">
-              WELCOME <span className="text-primary">BACK!</span>
-            </h1>
-            <p className="text-sm text-black/60 font-medium mt-1">
-              Hey {user.displayName || user.email.split('@')[0]} 👋 Great to see you again!
-            </p>
           </div>
 
-          <div className="flex flex-col items-center gap-4">
-            <div className="flex items-center gap-2.5">
-              <span className="w-3 h-3 rounded-full bg-primary auth-dot-1" />
-              <span className="w-3 h-3 rounded-full bg-primary/80 auth-dot-2" />
-              <span className="w-3 h-3 rounded-full bg-primary/60 auth-dot-3" />
-              <span className="w-3 h-3 rounded-full bg-primary/80 auth-dot-4" />
-              <span className="w-3 h-3 rounded-full bg-primary auth-dot-5" />
-            </div>
-            <p className="text-xs text-black/40 font-semibold uppercase tracking-wider">
-              Redirecting to your profile…
-            </p>
+          {/* Badge */}
+          <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-[0.2em] bg-primary/10 text-primary border border-primary/20 mb-2.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+            Authenticated
+          </span>
+
+          {/* Title */}
+          <h1 className="font-hero text-3xl sm:text-4xl text-foreground tracking-wide mb-1">
+            WELCOME <span className="text-primary">BACK</span>
+          </h1>
+
+          <p className="text-xs sm:text-sm text-foreground/60 font-medium mb-6">
+            Hey {firstName}, redirecting to your profile…
+          </p>
+
+          {/* Minimal hairline progress indicator */}
+          <div className="w-36 h-[2.5px] rounded-full bg-foreground/10 overflow-hidden relative">
+            <div
+              className="absolute inset-y-0 left-0 w-full"
+              style={{
+                background: 'linear-gradient(90deg, transparent, var(--color-primary, #f53d89), transparent)',
+                animation: 'authShimmer 1.1s cubic-bezier(0.4, 0, 0.2, 1) infinite'
+              }}
+            />
           </div>
+          <style>{`
+            @keyframes authShimmer {
+              0%   { transform: translateX(-100%); }
+              100% { transform: translateX(100%); }
+            }
+          `}</style>
         </div>
       </div>
     );

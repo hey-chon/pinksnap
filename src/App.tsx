@@ -58,105 +58,93 @@ function FlowGuard({ children }: { children: React.ReactNode }) {
 }
 
 // ── Welcome Gate ────────────────────────────────────────────────────────────
-// Shows a dot-loading splash for 8 s after authentication is detected for the
-// first time in this browser session. Prevents URL-bar bypassing.
+// Shows a smooth, elegant welcome transition when returning to PinkSnap
+// with an active authenticated session.
 const GATE_KEY = 'ps_welcome_gate_done';
-const GATE_DURATION = 4800; // ms
 
 function WelcomeGate({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading, user } = useAuth();
   const [gating, setGating] = useState(false);
+  const [fading, setFading] = useState(false);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    // Auth still initialising — wait
     if (isLoading) return;
 
     const alreadyShown = sessionStorage.getItem(GATE_KEY) === '1';
 
     if (isAuthenticated && !alreadyShown) {
-      // Mark immediately so re-renders don't retrigger
       sessionStorage.setItem(GATE_KEY, '1');
       setGating(true);
-      timerRef.current = setTimeout(() => setGating(false), GATE_DURATION);
+      setFading(false);
+      timerRef.current = setTimeout(() => {
+        setFading(true);
+        setTimeout(() => setGating(false), 280);
+      }, 1250);
     }
     return () => { if (timerRef.current) clearTimeout(timerRef.current); };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated, isLoading]);
 
   if (gating) {
-    const name = user?.displayName || user?.email?.split('@')[0] || '';
-    return (
-      <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-white">
-        <style>{`
-          @keyframes gateFadeIn {
-            from { opacity: 0; transform: scale(0.94) translateY(14px); }
-            to   { opacity: 1; transform: scale(1) translateY(0); }
-          }
-          @keyframes gateIconPop {
-            0%   { transform: scale(0); opacity: 0; }
-            60%  { transform: scale(1.18); opacity: 1; }
-            100% { transform: scale(1); opacity: 1; }
-          }
-          @keyframes gateSparkle {
-            0%, 100% { transform: translateY(0) rotate(0deg); opacity: 0.8; }
-            50%       { transform: translateY(-6px) rotate(12deg); opacity: 1; }
-          }
-          @keyframes gatePulse {
-            0%, 100% { box-shadow: 0 0 20px rgba(245,61,137,0.3); }
-            50%       { box-shadow: 0 0 40px rgba(245,61,137,0.65); }
-          }
-          @keyframes gateDotBounce {
-            0%, 80%, 100% { transform: scale(0.6); opacity: 0.3; }
-            40%           { transform: scale(1.2); opacity: 1; }
-          }
-          .gate-wrap     { animation: gateFadeIn 0.45s cubic-bezier(.36,.07,.19,.97) both; }
-          .gate-icon-pop { animation: gateIconPop 0.55s cubic-bezier(.36,.07,.19,.97) both; }
-          .gate-sparkle  { animation: gateSparkle 2s ease-in-out infinite; }
-          .gate-sparkle2 { animation: gateSparkle 2s ease-in-out infinite 0.45s; }
-          .gate-pulse    { animation: gatePulse 2s ease-in-out infinite; }
-          .gate-d1 { animation: gateDotBounce 1.2s ease-in-out infinite 0s; }
-          .gate-d2 { animation: gateDotBounce 1.2s ease-in-out infinite 0.2s; }
-          .gate-d3 { animation: gateDotBounce 1.2s ease-in-out infinite 0.4s; }
-          .gate-d4 { animation: gateDotBounce 1.2s ease-in-out infinite 0.6s; }
-          .gate-d5 { animation: gateDotBounce 1.2s ease-in-out infinite 0.8s; }
-        `}</style>
+    const rawName = user?.displayName || user?.email?.split('@')[0] || '';
+    const firstName = rawName.trim().split(' ')[0] || 'there';
 
-        <div className="gate-wrap flex flex-col items-center text-center px-4">
-          {/* Icon */}
-          <div className="relative mb-5">
-            <div className="w-20 h-20 rounded-full bg-primary/15 border-2 border-primary/40 flex items-center justify-center gate-icon-pop gate-pulse text-primary font-display text-2xl overflow-hidden">
+    return (
+      <div
+        className={`fixed inset-0 z-[9999] flex items-center justify-center bg-background/95 backdrop-blur-md transition-opacity duration-300 ${
+          fading ? 'opacity-0 pointer-events-none' : 'opacity-100'
+        }`}
+      >
+        <div className="flex flex-col items-center text-center px-6 max-w-sm w-full animate-in fade-in zoom-in-95 duration-200">
+          {/* Avatar / Monogram */}
+          <div className="mb-5">
+            <div className="w-16 h-16 rounded-full bg-primary/10 ring-1 ring-primary/20 shadow-md shadow-primary/10 flex items-center justify-center overflow-hidden">
               {user?.avatarUrl ? (
-                <img src={user.avatarUrl} alt={name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                <img
+                  src={user.avatarUrl}
+                  alt={rawName}
+                  className="w-full h-full object-cover"
+                  referrerPolicy="no-referrer"
+                />
               ) : (
-                name.charAt(0).toUpperCase()
+                <span className="font-hero text-2xl text-primary tracking-wide">
+                  {firstName.charAt(0).toUpperCase()}
+                </span>
               )}
             </div>
-            <span className="absolute -top-1 -right-1 text-xl gate-sparkle select-none">✨</span>
-            <span className="absolute -bottom-1 -left-2 text-lg gate-sparkle2 select-none">🌸</span>
           </div>
 
-          <span className="booth-heading-kicker mb-2 text-primary">Authenticating</span>
-          <h1 className="font-display text-4xl sm:text-5xl text-black tracking-wide mb-1">
-            WELCOME <span className="text-primary">BACK!</span>
+          {/* Badge */}
+          <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-[0.2em] bg-primary/10 text-primary border border-primary/20 mb-2.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+            Session Restored
+          </span>
+
+          {/* Title */}
+          <h1 className="font-hero text-3xl sm:text-4xl text-foreground tracking-wide mb-1">
+            WELCOME <span className="text-primary">BACK</span>
           </h1>
-          <p className="text-sm text-black/60 font-medium mt-1 mb-8">
-            Hey {name} - Setting up your session…
+
+          <p className="text-xs sm:text-sm text-foreground/60 font-medium mb-6">
+            Hey {firstName}, ready for your next shots?
           </p>
 
-          {/* Bouncing dots */}
-          <div className="flex flex-col items-center gap-4">
-            <div className="flex items-center gap-2.5">
-              <span className="w-3 h-3 rounded-full bg-primary gate-d1" />
-              <span className="w-3 h-3 rounded-full bg-primary/80 gate-d2" />
-              <span className="w-3 h-3 rounded-full bg-primary/60 gate-d3" />
-              <span className="w-3 h-3 rounded-full bg-primary/80 gate-d4" />
-              <span className="w-3 h-3 rounded-full bg-primary gate-d5" />
-            </div>
-            <p className="text-xs text-black/40 font-semibold uppercase tracking-wider">
-              Just a moment…
-            </p>
+          {/* Minimal hairline progress indicator */}
+          <div className="w-36 h-[2.5px] rounded-full bg-foreground/10 overflow-hidden relative">
+            <div
+              className="absolute inset-y-0 left-0 w-full"
+              style={{
+                background: 'linear-gradient(90deg, transparent, var(--color-primary, #f53d89), transparent)',
+                animation: 'gateShimmer 1.1s cubic-bezier(0.4, 0, 0.2, 1) infinite'
+              }}
+            />
           </div>
+          <style>{`
+            @keyframes gateShimmer {
+              0%   { transform: translateX(-100%); }
+              100% { transform: translateX(100%); }
+            }
+          `}</style>
         </div>
       </div>
     );

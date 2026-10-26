@@ -146,30 +146,20 @@ export function AuthModal({
     }
   };
 
-  // Start countdown when splash appears & mark WelcomeGate as done so
-  // the App-level gate doesn't fire a second "Welcome Back" screen.
+  // When splash appears, mark WelcomeGate as done and smoothly proceed
   useEffect(() => {
     if (!showWelcome) return;
     sessionStorage.setItem('ps_welcome_gate_done', '1');
-    setCountdown(6);
-    countdownRef.current = setInterval(() => {
-      setCountdown(prev => {
-        if (prev <= 1) {
-          clearInterval(countdownRef.current!);
-          setShowWelcome(false);
-          if (onSuccess) {
-            onSuccess();
-          } else {
-            navigate('/profile', { replace: true });
-          }
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-    return () => { if (countdownRef.current) clearInterval(countdownRef.current); };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [showWelcome]);
+    const timer = setTimeout(() => {
+      setShowWelcome(false);
+      if (onSuccess) {
+        onSuccess();
+      } else {
+        navigate('/profile', { replace: true });
+      }
+    }, 1250);
+    return () => clearTimeout(timer);
+  }, [showWelcome, onSuccess, navigate]);
 
   // ── Email Verification Required Screen ───────────────────────────────────
   if (showVerification) {
@@ -271,91 +261,59 @@ export function AuthModal({
 
   // ── Welcome Splash Screen ────────────────────────────────────────────────
   if (showWelcome) {
+    const firstName = welcomeName.trim().split(' ')[0] || 'there';
+    const isSignup = welcomeType === 'signup';
+
     return (
-      <div
-        className={`w-full max-w-md mx-auto ${isInline ? '' : 'ticket p-6 sm:p-8'}`}
-        style={{ animation: 'welcomeFadeIn 0.45s cubic-bezier(.36,.07,.19,.97) both' }}
-      >
-        <style>{`
-          @keyframes welcomeFadeIn {
-            from { opacity: 0; transform: scale(0.93) translateY(18px); }
-            to   { opacity: 1; transform: scale(1) translateY(0); }
-          }
-          @keyframes welcomePop {
-            0%   { transform: scale(0); opacity: 0; }
-            60%  { transform: scale(1.18); opacity: 1; }
-            100% { transform: scale(1); opacity: 1; }
-          }
-          @keyframes sparkleFloat {
-            0%, 100% { transform: translateY(0) rotate(0deg); opacity: 0.8; }
-            50%       { transform: translateY(-8px) rotate(15deg); opacity: 1; }
-          }
-          @keyframes pulseGlow {
-            0%, 100% { box-shadow: 0 0 24px rgba(245,61,137,0.35); }
-            50%       { box-shadow: 0 0 44px rgba(245,61,137,0.65); }
-          }
-          .welcome-icon-pop    { animation: welcomePop 0.55s cubic-bezier(.36,.07,.19,.97) both; }
-          .sparkle-float       { animation: sparkleFloat 2s ease-in-out infinite; }
-          .sparkle-float-delay { animation: sparkleFloat 2s ease-in-out infinite 0.45s; }
-          .pulse-glow          { animation: pulseGlow 2s ease-in-out infinite; }
-        `}</style>
-
-        {/* Icon + heading */}
-        <div className="flex flex-col items-center text-center mb-8">
-          <div className="relative mb-5">
-            <div className="w-20 h-20 rounded-full bg-primary/15 border-2 border-primary/40 flex items-center justify-center pulse-glow welcome-icon-pop">
-              {welcomeType === 'signup'
-                ? <PartyPopper className="w-9 h-9 text-primary" />
-                : <Sparkles className="w-9 h-9 text-primary" />
-              }
+      <div className={`w-full max-w-md mx-auto ${isInline ? '' : 'ticket p-6 sm:p-8'}`}>
+        <div className="flex flex-col items-center text-center py-4 animate-in fade-in zoom-in-95 duration-200">
+          {/* Icon */}
+          <div className="mb-5">
+            <div className="w-16 h-16 rounded-full bg-primary/10 ring-1 ring-primary/20 shadow-md shadow-primary/10 flex items-center justify-center">
+              {isSignup ? (
+                <PartyPopper className="w-7 h-7 text-primary" />
+              ) : (
+                <Sparkles className="w-7 h-7 text-primary" />
+              )}
             </div>
-            <span className="absolute -top-1 -right-1 text-xl sparkle-float select-none">✨</span>
-            <span className="absolute -bottom-1 -left-2 text-lg sparkle-float-delay select-none">🌸</span>
           </div>
 
-          <span className="booth-heading-kicker mb-2">
-            {welcomeType === 'signup' ? "You're in!" : 'Signed in'}
+          {/* Badge */}
+          <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-[0.2em] bg-primary/10 text-primary border border-primary/20 mb-2.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+            {isSignup ? 'Account Created' : 'Authenticated'}
           </span>
-          <h2 className="font-display text-4xl sm:text-5xl text-foreground tracking-wide mb-1">
-            {welcomeType === 'signin'
-              ? <>WELCOME <span className="text-primary">BACK!</span></>
-              : <>WELCOME TO <span className="text-primary">PINKSNAP!</span></>
-            }
+
+          {/* Title */}
+          <h2 className="font-hero text-3xl sm:text-4xl text-foreground tracking-wide mb-1">
+            {isSignup ? (
+              <>WELCOME TO <span className="text-primary">PINKSNAP</span></>
+            ) : (
+              <>WELCOME <span className="text-primary">BACK</span></>
+            )}
           </h2>
-          <p className="text-sm text-foreground/60 font-medium mt-1">
-            {welcomeType === 'signin'
-              ? `Hey ${welcomeName} 👋 Great to see you again!`
-              : `Hey ${welcomeName} 🎉 Your account is all set!`
-            }
-          </p>
-        </div>
 
-        {/* Dot loading animation */}
-        <div className="flex flex-col items-center gap-4 mb-8">
-          <style>{`
-            @keyframes modalDotBounce {
-              0%, 80%, 100% { transform: scale(0.6); opacity: 0.3; }
-              40%           { transform: scale(1.2); opacity: 1; }
-            }
-            .modal-dot-1 { animation: modalDotBounce 1.2s ease-in-out infinite 0s; }
-            .modal-dot-2 { animation: modalDotBounce 1.2s ease-in-out infinite 0.2s; }
-            .modal-dot-3 { animation: modalDotBounce 1.2s ease-in-out infinite 0.4s; }
-            .modal-dot-4 { animation: modalDotBounce 1.2s ease-in-out infinite 0.6s; }
-            .modal-dot-5 { animation: modalDotBounce 1.2s ease-in-out infinite 0.8s; }
-          `}</style>
-          <div className="flex items-center gap-2.5">
-            <span className="w-3 h-3 rounded-full bg-primary modal-dot-1" />
-            <span className="w-3 h-3 rounded-full bg-primary/80 modal-dot-2" />
-            <span className="w-3 h-3 rounded-full bg-primary/60 modal-dot-3" />
-            <span className="w-3 h-3 rounded-full bg-primary/80 modal-dot-4" />
-            <span className="w-3 h-3 rounded-full bg-primary modal-dot-5" />
+          <p className="text-xs sm:text-sm text-foreground/60 font-medium mb-6">
+            {isSignup ? `Hey ${firstName}, your account is ready!` : `Hey ${firstName}, good to see you again.`}
+          </p>
+
+          {/* Minimal hairline progress indicator */}
+          <div className="w-36 h-[2.5px] rounded-full bg-foreground/10 overflow-hidden relative">
+            <div
+              className="absolute inset-y-0 left-0 w-full"
+              style={{
+                background: 'linear-gradient(90deg, transparent, var(--color-primary, #f53d89), transparent)',
+                animation: 'modalShimmer 1.1s cubic-bezier(0.4, 0, 0.2, 1) infinite'
+              }}
+            />
           </div>
-          <p className="text-xs text-foreground/50 font-semibold uppercase tracking-wider">
-            Redirecting to your profile…
-          </p>
+          <style>{`
+            @keyframes modalShimmer {
+              0%   { transform: translateX(-100%); }
+              100% { transform: translateX(100%); }
+            }
+          `}</style>
         </div>
-
-        {/* Removed Skip button at the bottom as requested */}
       </div>
     );
   }
