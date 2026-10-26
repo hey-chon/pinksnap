@@ -725,7 +725,8 @@ export type ArtisanTemplateId =
   | 'love-stamp'
   | 'newspaper'
   | 'wave-navy'
-  | 'wave-pink';
+  | 'wave-pink'
+  | 'mora';
 
 export interface ArtisanSlot {
   /** Absolute pixel position at 1× scale */
@@ -1040,65 +1041,15 @@ function theaterFg(ctx: CanvasRenderingContext2D, w: number, h: number, s: numbe
 }
 
 // ══════════════════════════════════════════════════════════════════════════
-// MORA — Dark editorial strip · near-black · 4 landscape shots
+// MORA — Dark editorial strip · 4 shots · IMG_2605.JPG
 // ══════════════════════════════════════════════════════════════════════════
 
-const MORA_SLOTS: ArtisanSlot[] = [
-  { x: 158, y: 112, w: 372, h: 208, r: 0 },
-  { x: 158, y: 336, w: 372, h: 208, r: 0 },
-  { x: 158, y: 560, w: 372, h: 208, r: 0 },
-  { x: 158, y: 784, w: 372, h: 208, r: 0 },
+export const MORA_SLOTS: ArtisanSlot[] = [
+  { x: 59, y: 74,  w: 322, h: 219, r: 0 },
+  { x: 59, y: 316, w: 323, h: 220, r: 0 },
+  { x: 59, y: 559, w: 322, h: 220, r: 0 },
+  { x: 59, y: 801, w: 323, h: 219, r: 0 },
 ];
-
-function moraBg(ctx: CanvasRenderingContext2D, w: number, h: number, s: number, _date: number) {
-  const bg = '#100707', wh = '#ffffff', red = '#c41818';
-
-  ctx.fillStyle = bg; ctx.fillRect(0, 0, w, h);
-  aBox(ctx, Math.round(8 * s), Math.round(8 * s), w - Math.round(16 * s), h - Math.round(16 * s), 0,
-    undefined, 'rgba(255,255,255,0.08)', Math.round(s));
-
-  // Top label bar
-  const lbW = Math.round(280 * s);
-  aBox(ctx, (w - lbW) / 2, Math.round(28 * s), lbW, Math.round(34 * s), Math.round(2 * s), undefined, wh, Math.round(s));
-  aTxt(ctx, 'SHAWN PHOTO STUDIO', w / 2, Math.round(50 * s), `bold ${Math.round(11 * s)}px "Inter", sans-serif`, wh);
-
-  // Photo slots: dark box + white border + red left accent
-  MORA_SLOTS.forEach((sl, i) => {
-    aBox(ctx, sl.x * s, sl.y * s, sl.w * s, sl.h * s, 0, '#060202');
-    ctx.save();
-    ctx.strokeStyle = wh; ctx.lineWidth = Math.round(2 * s);
-    ctx.strokeRect(sl.x * s, sl.y * s, sl.w * s, sl.h * s);
-    ctx.restore();
-    aBox(ctx, sl.x * s - Math.round(4 * s), sl.y * s, Math.round(4 * s), sl.h * s, 0, red);
-
-    // Side label rotated text
-    ctx.save();
-    ctx.fillStyle = 'rgba(255,255,255,0.2)';
-    ctx.font = `${Math.round(9 * s)}px "Inter", sans-serif`;
-    ctx.translate(sl.x * s - Math.round(14 * s), sl.y * s + sl.h * s / 2);
-    ctx.rotate(-Math.PI / 2);
-    ctx.textAlign = 'center';
-    ctx.fillText(i % 2 === 0 ? '#picturememories' : 'pictee', 0, 0);
-    ctx.restore();
-  });
-}
-
-function moraFg(ctx: CanvasRenderingContext2D, w: number, h: number, s: number, date: number) {
-  const wh = '#ffffff';
-  aTxt(ctx, 'MORA', w / 2, Math.round(1085 * s),
-    `italic bold ${Math.round(76 * s)}px Georgia, "Times New Roman", serif`, wh);
-  aTxt(ctx, 'YOU AND MEE AGAINST', w / 2, Math.round(1160 * s),
-    `bold ${Math.round(20 * s)}px "Inter", sans-serif`, wh);
-  aTxt(ctx, 'EVERYTHING', w / 2, Math.round(1190 * s),
-    `bold ${Math.round(20 * s)}px "Inter", sans-serif`, wh);
-
-  const lbW = Math.round(260 * s);
-  aBox(ctx, (w - lbW) / 2, Math.round(1220 * s), lbW, Math.round(34 * s), Math.round(2 * s), undefined, wh, Math.round(s));
-  aTxt(ctx, 'PINKSNAP STUDIO', w / 2, Math.round(1242 * s), `bold ${Math.round(11 * s)}px "Inter", sans-serif`, wh);
-
-  const dStr = new Date(date).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }).toUpperCase();
-  aTxt(ctx, dStr, w / 2, Math.round(1282 * s), `bold ${Math.round(11 * s)}px "Inter", sans-serif`, 'rgba(255,255,255,0.45)');
-}
 
 // ══════════════════════════════════════════════════════════════════════════
 // EVERY MOMENT — Bold blue gradient · 3 square shots · UP and DOWN variants
@@ -1355,6 +1306,26 @@ export const ARTISAN_TEMPLATES: ArtisanTemplate[] = [
       }
     },
     // Skip foreground overlay — photos cover placeholders directly, no chroma-key needed
+    paintFg() {},
+    async paintFgAsync() {},
+  },
+  {
+    id: 'mora',
+    label: 'Mora',
+    note: 'Dark editorial · 4 shots',
+    nw: 418, nh: 1274,
+    slots: MORA_SLOTS,
+    ...makeImageTemplate('/templates/IMG_2605.JPG', MORA_SLOTS),
+    paintBg(ctx, w, h) { ctx.fillStyle = '#100707'; ctx.fillRect(0, 0, w, h); },
+    async paintBgAsync(ctx, w, h) {
+      try {
+        const img = await loadImg('/templates/IMG_2605.JPG');
+        ctx.drawImage(img, 0, 0, w, h);
+      } catch {
+        ctx.fillStyle = '#100707';
+        ctx.fillRect(0, 0, w, h);
+      }
+    },
     paintFg() {},
     async paintFgAsync() {},
   },

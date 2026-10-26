@@ -71,29 +71,35 @@ function ArtisanThumbnailCard({
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
+    const dpr = Math.max(3, typeof window !== 'undefined' ? (window.devicePixelRatio || 2) * 1.5 : 3);
     const targetHeight = 150;
-    const scale = targetHeight / template.nh;
-    const targetWidth = Math.round(template.nw * scale);
-    canvas.width = targetWidth;
-    canvas.height = targetHeight;
+    const renderScale = (targetHeight * dpr) / template.nh;
+    const targetWidth = Math.round(template.nw * (targetHeight / template.nh));
+    const renderW = Math.round(targetWidth * dpr);
+    const renderH = Math.round(targetHeight * dpr);
+
+    canvas.width = renderW;
+    canvas.height = renderH;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
     const now = Date.now();
 
     let cancelled = false;
     const render = async () => {
       // Background
       if (template.paintBgAsync) {
-        await template.paintBgAsync(ctx, targetWidth, targetHeight, scale, now);
+        await template.paintBgAsync(ctx, renderW, renderH, renderScale, now);
       } else {
-        template.paintBg(ctx, targetWidth, targetHeight, scale, now);
+        template.paintBg(ctx, renderW, renderH, renderScale, now);
       }
       if (cancelled) return;
       // Foreground
       if (template.paintFgAsync) {
-        await template.paintFgAsync(ctx, targetWidth, targetHeight, scale, now);
+        await template.paintFgAsync(ctx, renderW, renderH, renderScale, now);
       } else {
-        template.paintFg(ctx, targetWidth, targetHeight, scale, now);
+        template.paintFg(ctx, renderW, renderH, renderScale, now);
       }
     };
     render();
@@ -281,14 +287,18 @@ export default function Edit() {
     if (!canvas) return;
 
     const template = getArtisanTemplate(artisanId);
-    const targetHeight = 1200; // High res, CSS scales it
-    const scale = targetHeight / template.nh;
+    const dpr = Math.max(2, typeof window !== 'undefined' ? window.devicePixelRatio || 2 : 2);
+    const baseHeight = 1200;
+    const scale = (baseHeight * dpr) / template.nh;
     const targetWidth = Math.round(template.nw * scale);
+    const targetHeight = Math.round(template.nh * scale);
 
     canvas.width = targetWidth;
     canvas.height = targetHeight;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
 
     const render = async () => {
       // 1. Instant background + placeholder render
@@ -325,6 +335,8 @@ export default function Edit() {
       const c = artisanCanvasRef.current;
       const cctx = c.getContext('2d');
       if (!cctx) return;
+      cctx.imageSmoothingEnabled = true;
+      cctx.imageSmoothingQuality = 'high';
 
       // Redraw background
       if (template.paintBgAsync) {
