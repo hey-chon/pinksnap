@@ -157,7 +157,7 @@ export function AuthModal({
       } else {
         navigate('/profile', { replace: true });
       }
-    }, 1250);
+    }, 8000);
     return () => clearTimeout(timer);
   }, [showWelcome, onSuccess, navigate]);
 

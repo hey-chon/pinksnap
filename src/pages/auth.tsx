@@ -43,7 +43,7 @@ export default function AuthPage() {
     timerRef.current = setTimeout(() => {
       sessionStorage.setItem('ps_auth_splash_done', '1');
       setLocation('/profile', { replace: true });
-    }, 1250);
+    }, 8000);
 
     return () => { if (timerRef.current) clearTimeout(timerRef.current); };
   }, [isAuthenticated, user?.email, setLocation]);
@@ -91,22 +91,27 @@ export default function AuthPage() {
 
           {/* Title */}
           <h1 className="font-hero text-3xl sm:text-4xl text-foreground tracking-wide mb-1">
-            WELCOME <span className="text-primary">BACK</span>
+            WELCOME <span className="text-primary">BACK!</span>
           </h1>
 
           <p className="text-xs sm:text-sm text-foreground/60 font-medium mb-6">
-            Hey {firstName}, redirecting to your profile…
+            Hey {rawName} - Setting up your session…
           </p>
 
           {/* Minimal hairline progress indicator */}
-          <div className="w-36 h-[2.5px] rounded-full bg-foreground/10 overflow-hidden relative">
-            <div
-              className="absolute inset-y-0 left-0 w-full"
-              style={{
-                background: 'linear-gradient(90deg, transparent, var(--color-primary, #f53d89), transparent)',
-                animation: 'authShimmer 1.1s cubic-bezier(0.4, 0, 0.2, 1) infinite'
-              }}
-            />
+          <div className="flex flex-col items-center gap-3">
+            <div className="w-40 h-[2.5px] rounded-full bg-foreground/10 overflow-hidden relative">
+              <div
+                className="absolute inset-y-0 left-0 w-full"
+                style={{
+                  background: 'linear-gradient(90deg, transparent, var(--color-primary, #f53d89), transparent)',
+                  animation: 'authShimmer 1.2s cubic-bezier(0.4, 0, 0.2, 1) infinite'
+                }}
+              />
+            </div>
+            <p className="text-[11px] text-foreground/40 font-semibold uppercase tracking-wider">
+              Redirecting to your profile…
+            </p>
           </div>
           <style>{`
             @keyframes authShimmer {

@@ -79,15 +79,14 @@ function WelcomeGate({ children }: { children: React.ReactNode }) {
       setFading(false);
       timerRef.current = setTimeout(() => {
         setFading(true);
-        setTimeout(() => setGating(false), 280);
-      }, 1250);
+        setTimeout(() => setGating(false), 300);
+      }, 3000);
     }
     return () => { if (timerRef.current) clearTimeout(timerRef.current); };
   }, [isAuthenticated, isLoading]);
 
   if (gating) {
-    const rawName = user?.displayName || user?.email?.split('@')[0] || '';
-    const firstName = rawName.trim().split(' ')[0] || 'there';
+    const name = user?.displayName || user?.email?.split('@')[0] || '';
 
     return (
       <div
@@ -102,42 +101,48 @@ function WelcomeGate({ children }: { children: React.ReactNode }) {
               {user?.avatarUrl ? (
                 <img
                   src={user.avatarUrl}
-                  alt={rawName}
+                  alt={name}
                   className="w-full h-full object-cover"
                   referrerPolicy="no-referrer"
                 />
               ) : (
                 <span className="font-hero text-2xl text-primary tracking-wide">
-                  {firstName.charAt(0).toUpperCase()}
+                  {name.charAt(0).toUpperCase()}
                 </span>
               )}
             </div>
           </div>
 
-          {/* Badge */}
+          {/* Kicker */}
           <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-[0.2em] bg-primary/10 text-primary border border-primary/20 mb-2.5">
             <span className="w-1.5 h-1.5 rounded-full bg-primary" />
-            Session Restored
+            Authenticating
           </span>
 
-          {/* Title */}
+          {/* Heading */}
           <h1 className="font-hero text-3xl sm:text-4xl text-foreground tracking-wide mb-1">
-            WELCOME <span className="text-primary">BACK</span>
+            WELCOME <span className="text-primary">BACK!</span>
           </h1>
 
+          {/* Exact original description */}
           <p className="text-xs sm:text-sm text-foreground/60 font-medium mb-6">
-            Hey {firstName}, ready for your next shots?
+            Hey {name} - Setting up your session…
           </p>
 
           {/* Minimal hairline progress indicator */}
-          <div className="w-36 h-[2.5px] rounded-full bg-foreground/10 overflow-hidden relative">
-            <div
-              className="absolute inset-y-0 left-0 w-full"
-              style={{
-                background: 'linear-gradient(90deg, transparent, var(--color-primary, #f53d89), transparent)',
-                animation: 'gateShimmer 1.1s cubic-bezier(0.4, 0, 0.2, 1) infinite'
-              }}
-            />
+          <div className="flex flex-col items-center gap-3">
+            <div className="w-40 h-[2.5px] rounded-full bg-foreground/10 overflow-hidden relative">
+              <div
+                className="absolute inset-y-0 left-0 w-full"
+                style={{
+                  background: 'linear-gradient(90deg, transparent, var(--color-primary, #f53d89), transparent)',
+                  animation: 'gateShimmer 1.2s cubic-bezier(0.4, 0, 0.2, 1) infinite'
+                }}
+              />
+            </div>
+            <p className="text-[11px] text-foreground/40 font-semibold uppercase tracking-wider">
+              Just a moment…
+            </p>
           </div>
           <style>{`
             @keyframes gateShimmer {
