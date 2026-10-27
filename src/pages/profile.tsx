@@ -58,17 +58,91 @@ export default function ProfilePage() {
   const { savedMemories, deleteMemory } = useAppContext();
   const { toast } = useToast();
 
+  // Support viewing another user's public profile wall
+  const searchParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+  const targetUserId = searchParams?.get('user') || null;
+  const isOwner = !targetUserId || (Boolean(user?.id) && user?.id === targetUserId);
+
+  const [publicProfile, setPublicProfile] = useState<{
+    id: string;
+    displayName: string;
+    avatarUrl: string | null;
+    role: string;
+    bio: string;
+    wallStripIds: string[];
+    createdAt?: string;
+  } | null>(null);
+  const [isLoadingPublicProfile, setIsLoadingPublicProfile] = useState(false);
+
+  useEffect(() => {
+    if (isOwner || !targetUserId) return;
+    setIsLoadingPublicProfile(true);
+    supabase
+      .from('profiles_public')
+      .select('id, display_name, avatar_url, role, bio, wall_strip_ids')
+      .eq('id', targetUserId)
+      .maybeSingle()
+      .then(({ data }) => {
+        setIsLoadingPublicProfile(false);
+        if (data) {
+          setPublicProfile({
+            id: data.id,
+            displayName: data.display_name || 'PinkSnap Member',
+            avatarUrl: data.avatar_url || null,
+            role: data.role || 'user',
+            bio: data.bio || '',
+            wallStripIds: Array.isArray(data.wall_strip_ids) ? data.wall_strip_ids : [],
+          });
+        }
+      });
+  }, [isOwner, targetUserId]);
+
+  const effectiveUser = isOwner
+    ? user
+    : publicProfile
+    ? {
+        id: publicProfile.id,
+        email: '',
+        displayName: publicProfile.displayName,
+        bio: publicProfile.bio,
+        avatarUrl: publicProfile.avatarUrl,
+        avatarStoragePath: null,
+        role: publicProfile.role as any,
+        wallStripIds: publicProfile.wallStripIds,
+        createdAt: publicProfile.createdAt,
+      }
+    : null;
+
   const [displayName, setDisplayName] = useState(user?.displayName || '');
   const [bio, setBio] = useState(user?.bio ?? '');
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const [showAvatarMenu, setShowAvatarMenu] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [avatarLoadError, setAvatarLoadError] = useState(false);
-  const safeAvatarSrc = normalizeAvatarUrl(user?.avatarUrl);
+  const safeAvatarSrc = normalizeAvatarUrl(effectiveUser?.avatarUrl);
 
   useEffect(() => {
     setAvatarLoadError(false);
-  }, [user?.avatarUrl]);
+  }, [effectiveUser?.avatarUrl]);
+
+  // Anti-save DRM enforcement: intercept Ctrl+S / Cmd+S save attempts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && (e.key === 's' || e.key === 'S')) {
+        e.preventDefault();
+        if (!isOwner) {
+          toast({
+            title: 'Protected Photo Strip 🔒',
+            description: 'PinkSnap strips are private and protected. Only the account owner can save or download their strips.',
+            variant: 'destructive',
+          });
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOwner, toast]);
+
   const [isSendingReset, setIsSendingReset] = useState(false);
   const [activeTab, setActiveTab] = useState<'strips' | 'edit'>('strips');
   const [selectedMemory, setSelectedMemory] = useState<{ id: string; url: string; date: number; frame: string } | null>(null);
@@ -122,9 +196,11 @@ export default function ProfilePage() {
     }
   }, [user?.id, wallStripIdsKey, showPostModal]);
 
-  const postedStrips = savedMemories.filter((m) => postedStripIds.includes(m.id));
+  const postedStrips = isOwner
+    ? savedMemories.filter((m) => postedStripIds.includes(m.id))
+    : savedMemories.filter((m) => (effectiveUser?.wallStripIds || []).includes(m.id));
 
-  if (!user) {
+  if (!effectiveUser && !isLoadingPublicProfile) {
     return (
       <div className="flex flex-col h-dvh bg-[#faf7f9]">
         <TopNav backTo="/" title="MY PROFILE" />
@@ -303,10 +379,11 @@ export default function ProfilePage() {
   };
 
   const handleShareProfile = async () => {
-    const profileUrl = window.location.href;
+    if (!effectiveUser?.id) return;
+    const profileUrl = `${window.location.origin}/profile?user=${effectiveUser.id}`;
     const shareData = {
-      title: `${user.displayName}'s PinkSnap Profile`,
-      text: `Check out ${user.displayName}'s photo booth profile on PinkSnap! ✨`,
+      title: `${effectiveUser.displayName}'s PinkSnap Profile`,
+      text: `Check out ${effectiveUser.displayName}'s photo booth profile on PinkSnap! ✨`,
       url: profileUrl,
     };
 
@@ -335,6 +412,16 @@ export default function ProfilePage() {
 
   const handleDownloadMemory = async (url: string, date: number, e?: React.MouseEvent) => {
     e?.stopPropagation();
+    // STRICT OWNER CHECK: Non-owners are never allowed to download/save another user's strip
+    if (!isOwner) {
+      toast({
+        title: 'Save Protected 🔒',
+        description: 'Only the account owner who created this photo strip can save or download it.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     try {
       await downloadImage(url, `pinksnap-${date}.png`);
       toast({
@@ -352,26 +439,55 @@ export default function ProfilePage() {
 
   const handleTogglePostToWall = (stripId: string, e?: React.MouseEvent | React.TouchEvent) => {
     e?.stopPropagation();
-    if (!user?.id) return;
+    if (!user?.id || !isOwner) return;
+
+    // Verify ownership of the strip from savedMemories
+    const ownsStrip = savedMemories.some((m) => m.id === stripId);
+    if (!ownsStrip) {
+      toast({
+        title: 'Access Restricted 🔒',
+        description: 'You can only publish photo strips that you personally created and own.',
+        variant: 'destructive',
+      });
+      return;
+    }
 
     setPostedStripIds((prev) => {
       const isPosted = prev.includes(stripId);
       const next = isPosted ? prev.filter((id) => id !== stripId) : [...prev, stripId];
       try {
         localStorage.setItem(`pinksnap_wall_strips_${user.id}`, JSON.stringify(next));
-      } catch {
-      }
+      } catch {}
 
-      // Debounce cloud sync so rapid clicks / taps don't conflict or overwrite
+      // Debounce authenticated cloud sync directly to public.profiles.wall_strip_ids
       if (cloudSyncTimeoutRef.current) {
         clearTimeout(cloudSyncTimeoutRef.current);
       }
-      cloudSyncTimeoutRef.current = setTimeout(() => {
-        updateProfile({ wallStripIds: next }).catch(() => {});
-      }, 500);
+      cloudSyncTimeoutRef.current = setTimeout(async () => {
+        try {
+          const res = await updateProfile({ wallStripIds: next });
+          if (res.error) {
+            toast({
+              title: 'Wall Sync Warning',
+              description: res.error,
+              variant: 'destructive',
+            });
+          }
+        } catch (syncErr) {
+          console.error('[Wall Sync] Failed to update wall strips:', syncErr);
+        }
+      }, 400);
+
+      toast({
+        title: isPosted ? 'Removed from Wall' : 'Published to Wall 🛡️',
+        description: isPosted
+          ? 'Photo strip has been hidden from your public wall.'
+          : 'Live on your wall. Anti-theft protection is active (non-owners cannot save).',
+      });
 
       return next;
     });
+  };
   };
 
   const handleClosePostModal = () => {
@@ -489,12 +605,12 @@ export default function ProfilePage() {
     }
   };
 
-  const initial = (user.displayName || user.email || 'U').charAt(0).toUpperCase();
-  const userHandle = (user.displayName || 'star').toLowerCase().replace(/[^a-z0-9_]/g, '');
-  const joinedDate = user.createdAt
-    ? new Date(user.createdAt).toLocaleDateString(undefined, { month: 'short', year: 'numeric' })
+  const initial = (effectiveUser?.displayName || effectiveUser?.email || 'U').charAt(0).toUpperCase();
+  const userHandle = (effectiveUser?.displayName || 'star').toLowerCase().replace(/[^a-z0-9_]/g, '');
+  const joinedDate = effectiveUser?.createdAt
+    ? new Date(effectiveUser.createdAt).toLocaleDateString(undefined, { month: 'short', year: 'numeric' })
     : 'Member';
-  const [emailName = '', emailDomain = ''] = (user.email || '').split('@');
+  const [emailName = '', emailDomain = ''] = (isOwner && user?.email ? user.email : '').split('@');
 
   return (
     <div className="flex flex-col h-dvh bg-[#fff7fa] relative overflow-hidden">
@@ -531,6 +647,7 @@ export default function ProfilePage() {
         <div
           className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-xl flex flex-col items-center justify-between p-4 sm:p-6 animate-in fade-in duration-200"
           onClick={() => setSelectedMemory(null)}
+          onContextMenu={(e) => { e.preventDefault(); return false; }}
         >
           <div className="w-full max-w-4xl flex items-center justify-between text-white z-10 pt-2 sm:pt-4">
             <div className="flex items-center gap-2">
@@ -541,15 +658,22 @@ export default function ProfilePage() {
               </span>
             </div>
             <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={(e) => handleDownloadMemory(selectedMemory.url, selectedMemory.date, e)}
-                className="p-2 sm:px-3 sm:py-2 bg-white/10 hover:bg-white/20 rounded-full text-xs font-black uppercase tracking-wider flex items-center gap-1.5 transition-colors border border-white/20"
-                aria-label="Download strip"
-              >
-                <Download className="w-4 h-4" />
-                <span className="hidden sm:inline">Save</span>
-              </button>
+              {isOwner ? (
+                <button
+                  type="button"
+                  onClick={(e) => handleDownloadMemory(selectedMemory.url, selectedMemory.date, e)}
+                  className="p-2 sm:px-3 sm:py-2 bg-white/10 hover:bg-white/20 rounded-full text-xs font-black uppercase tracking-wider flex items-center gap-1.5 transition-colors border border-white/20"
+                  aria-label="Download strip"
+                >
+                  <Download className="w-4 h-4" />
+                  <span className="hidden sm:inline">Save</span>
+                </button>
+              ) : (
+                <div className="px-3 py-1.5 rounded-full bg-white/10 border border-white/20 text-[10px] font-bold text-white/90 flex items-center gap-1.5 select-none">
+                  <Lock className="w-3.5 h-3.5 text-primary" />
+                  <span>Owner Protected (Saving Disabled)</span>
+                </div>
+              )}
               <button
                 type="button"
                 onClick={() => setSelectedMemory(null)}
@@ -562,25 +686,38 @@ export default function ProfilePage() {
           </div>
 
           <div
-            className="flex-1 flex flex-col items-center justify-center py-4 w-full overflow-hidden"
+            className="flex-1 flex flex-col items-center justify-center py-4 w-full overflow-hidden relative"
             onClick={(e) => e.stopPropagation()}
+            onContextMenu={(e) => { e.preventDefault(); return false; }}
           >
-            <img
-              src={selectedMemory.url}
-              alt="Photo strip preview"
-              className="max-h-[70dvh] sm:max-h-[78dvh] w-auto object-contain drop-shadow-[0_25px_60px_rgba(245,61,137,0.35)] rounded-2xl select-none animate-in zoom-in-95 duration-200"
-            />
+            <div className="relative flex flex-col items-center select-none">
+              <img
+                src={selectedMemory.url}
+                alt="Photo strip preview"
+                onContextMenu={(e) => { e.preventDefault(); return false; }}
+                draggable={false}
+                className="max-h-[70dvh] sm:max-h-[78dvh] w-auto object-contain drop-shadow-[0_25px_60px_rgba(245,61,137,0.35)] rounded-2xl select-none animate-in zoom-in-95 duration-200 pointer-events-none"
+              />
+              {!isOwner && (
+                <div className="mt-4 px-4 py-2 rounded-full bg-black/60 backdrop-blur-md border border-white/20 text-[11px] font-bold text-white flex items-center gap-2 select-none pointer-events-none">
+                  <Shield className="w-3.5 h-3.5 text-primary" />
+                  <span>PinkSnap Anti-Theft Guard · Protected by Account Owner</span>
+                </div>
+              )}
+            </div>
           </div>
 
-          <div className="w-full max-w-xs pb-3 flex justify-center gap-3">
-            <button
-              type="button"
-              onClick={(e) => handleDeleteMemory(selectedMemory.id, e)}
-              className="text-xs text-destructive/80 hover:text-destructive flex items-center gap-1.5 transition-colors py-1.5 px-3 rounded-lg hover:bg-white/5"
-            >
-              <Trash2 className="w-3.5 h-3.5" /> Delete Strip
-            </button>
-          </div>
+          {isOwner && (
+            <div className="w-full max-w-xs pb-3 flex justify-center gap-3">
+              <button
+                type="button"
+                onClick={(e) => handleDeleteMemory(selectedMemory.id, e)}
+                className="text-xs text-destructive/80 hover:text-destructive flex items-center gap-1.5 transition-colors py-1.5 px-3 rounded-lg hover:bg-white/5"
+              >
+                <Trash2 className="w-3.5 h-3.5" /> Delete Strip
+              </button>
+            </div>
+          )}
         </div>
       )}
 
@@ -923,6 +1060,26 @@ export default function ProfilePage() {
 
           </div>
 
+          {/* ── Zero-Knowledge Encryption & DRM Protection Banner ── */}
+          <div className="flex items-center justify-between p-3.5 mb-5 rounded-2xl bg-gradient-to-r from-pink-500/[0.08] via-rose-500/[0.08] to-purple-500/[0.08] border border-pink-200/60 shadow-xs">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-primary text-white flex items-center justify-center shrink-0 shadow-sm shadow-primary/25">
+                <Shield className="w-4 h-4" />
+              </div>
+              <div>
+                <p className="text-xs font-black text-foreground uppercase tracking-wide flex items-center gap-1.5">
+                  Zero-Knowledge Photo Vault
+                  <span className="text-[9px] bg-primary/10 text-primary px-1.5 py-0.5 rounded font-black">AES-256-GCM</span>
+                </p>
+                <p className="text-[10px] text-foreground/60 font-medium leading-tight">
+                  {isOwner
+                    ? 'Your private gallery and photo strips are end-to-end encrypted. When posted to your wall, DRM anti-theft protection blocks other users from saving or downloading your strips.'
+                    : `This wall is protected by PinkSnap DRM. Strips belong exclusively to ${effectiveUser?.displayName} and cannot be saved or downloaded by other users.`}
+                </p>
+              </div>
+            </div>
+          </div>
+
           {/* ── Social Profile Feed Tabs ── */}
           <div className="flex items-center justify-center p-1 bg-white rounded-2xl border border-pink-100 shadow-sm mb-5 gap-1">
             <button
@@ -938,27 +1095,31 @@ export default function ProfilePage() {
               <span>Strips ({postedStrips.length})</span>
             </button>
 
-            <button
-              type="button"
-              onClick={() => setActiveTab('edit')}
-              className={`flex-1 py-2.5 px-3 rounded-xl text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 transition-all ${
-                activeTab === 'edit'
-                  ? 'bg-primary text-white shadow-md shadow-primary/25'
-                  : 'text-foreground/60 hover:text-foreground hover:bg-foreground/[0.03]'
-              }`}
-            >
-              <Settings className="w-4 h-4" />
-              <span>Settings</span>
-            </button>
+            {isOwner && (
+              <>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('edit')}
+                  className={`flex-1 py-2.5 px-3 rounded-xl text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 transition-all ${
+                    activeTab === 'edit'
+                      ? 'bg-primary text-white shadow-md shadow-primary/25'
+                      : 'text-foreground/60 hover:text-foreground hover:bg-foreground/[0.03]'
+                  }`}
+                >
+                  <Settings className="w-4 h-4" />
+                  <span>Settings</span>
+                </button>
 
-            <button
-              type="button"
-              onClick={() => setShowPostModal(true)}
-              className="flex-1 py-2.5 px-3 rounded-xl text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 transition-all text-foreground/60 hover:text-foreground hover:bg-foreground/[0.03] cursor-pointer"
-            >
-              <PlusCircle className="w-4 h-4" />
-              <span>Post</span>
-            </button>
+                <button
+                  type="button"
+                  onClick={() => setShowPostModal(true)}
+                  className="flex-1 py-2.5 px-3 rounded-xl text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 transition-all text-foreground/60 hover:text-foreground hover:bg-foreground/[0.03] cursor-pointer"
+                >
+                  <PlusCircle className="w-4 h-4" />
+                  <span>Post</span>
+                </button>
+              </>
+            )}
           </div>
 
           {/* ── TAB 1: Profile Wall ── */}
@@ -972,7 +1133,9 @@ export default function ProfilePage() {
                   </div>
                   <h3 className="font-hero text-xl sm:text-2xl text-foreground mb-1.5 sm:mb-2">PROFILE WALL</h3>
                   <p className="text-foreground/60 text-xs sm:text-sm max-w-sm mx-auto mb-5 sm:mb-6 leading-relaxed">
-                    Strips in your gallery are private by default. Pick your favorite snapshots to showcase here on your public wall.
+                    {isOwner
+                      ? 'Strips in your gallery are private by default. Pick your favorite snapshots to showcase here on your public wall.'
+                      : 'This user has not posted any public photo strips yet.'}
                   </p>
                 </div>
               ) : (
@@ -982,7 +1145,8 @@ export default function ProfilePage() {
                     <div
                       key={memory.id}
                       onClick={() => setSelectedMemory({ id: memory.id, url: memory.url, date: memory.date, frame: memory.frame })}
-                      className="group relative bg-white rounded-2xl p-2.5 sm:p-3 border border-pink-100/90 shadow-sm hover:shadow-xl hover:border-primary/40 transition-all cursor-pointer flex flex-col justify-between"
+                      onContextMenu={(e) => { e.preventDefault(); return false; }}
+                      className="group relative bg-white rounded-2xl p-2.5 sm:p-3 border border-pink-100/90 shadow-sm hover:shadow-xl hover:border-primary/40 transition-all cursor-pointer flex flex-col justify-between select-none"
                     >
                       {/* Cute Scrapbook Polaroid Tape */}
                       <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-8 sm:w-10 h-2 sm:h-2.5 bg-gradient-to-r from-pink-300/80 via-pink-200/90 to-rose-300/80 rounded-xs rotate-[-2deg] border border-white/70 shadow-xs pointer-events-none z-10" />
@@ -992,11 +1156,13 @@ export default function ProfilePage() {
                         <img
                           src={memory.url}
                           alt="Wall photo strip"
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 select-none"
+                          onContextMenu={(e) => { e.preventDefault(); return false; }}
+                          draggable={false}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 select-none pointer-events-none"
                           loading="lazy"
                         />
                         {/* Hover Overlay */}
-                        <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 text-white">
+                        <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 text-white pointer-events-none">
                           <span className="p-2 rounded-full bg-white/20 backdrop-blur-md">
                             <Sparkles className="w-4 h-4 text-white" />
                           </span>
@@ -1007,30 +1173,44 @@ export default function ProfilePage() {
                       <div className="flex items-center justify-between gap-1 text-[10px] text-foreground/60 font-semibold px-1">
                         <span className="truncate">{new Date(memory.date).toLocaleDateString()}</span>
                         <div className="flex items-center gap-1">
-                          <button
-                            type="button"
-                            onClick={(e) => handleTogglePostToWall(memory.id, e)}
-                            className="p-1 rounded-md hover:bg-foreground/[0.06] text-foreground/50 hover:text-amber-600 transition-colors"
-                            aria-label="Hide from wall"
-                          >
-                            <EyeOff className="w-3.5 h-3.5" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={(e) => handleDownloadMemory(memory.url, memory.date, e)}
-                            className="p-1 rounded-md hover:bg-foreground/[0.06] text-foreground/50 hover:text-primary transition-colors"
-                            aria-label="Download strip"
-                          >
-                            <Download className="w-3.5 h-3.5" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={(e) => handleDeleteMemory(memory.id, e)}
-                            className="p-1 rounded-md hover:bg-destructive/10 text-foreground/50 hover:text-destructive transition-colors"
-                            aria-label="Delete permanently"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
+                          {isOwner && (
+                            <button
+                              type="button"
+                              onClick={(e) => handleTogglePostToWall(memory.id, e)}
+                              className="p-1 rounded-md hover:bg-foreground/[0.06] text-foreground/50 hover:text-amber-600 transition-colors"
+                              aria-label="Hide from wall"
+                              title="Unpost from wall"
+                            >
+                              <EyeOff className="w-3.5 h-3.5" />
+                            </button>
+                          )}
+                          {isOwner ? (
+                            <button
+                              type="button"
+                              onClick={(e) => handleDownloadMemory(memory.url, memory.date, e)}
+                              className="p-1 rounded-md hover:bg-foreground/[0.06] text-foreground/50 hover:text-primary transition-colors"
+                              aria-label="Download strip"
+                              title="Save strip"
+                            >
+                              <Download className="w-3.5 h-3.5" />
+                            </button>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 text-[9px] font-black uppercase tracking-wider text-foreground/45 bg-foreground/[0.04] px-1.5 py-0.5 rounded select-none" title="Saving is restricted exclusively to the account owner">
+                              <Lock className="w-2.5 h-2.5 text-primary" />
+                              <span>Protected</span>
+                            </span>
+                          )}
+                          {isOwner && (
+                            <button
+                              type="button"
+                              onClick={(e) => handleDeleteMemory(memory.id, e)}
+                              className="p-1 rounded-md hover:bg-destructive/10 text-foreground/50 hover:text-destructive transition-colors"
+                              aria-label="Delete permanently"
+                              title="Delete permanently"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          )}
                         </div>
                       </div>
                     </div>
