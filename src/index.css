@@ -1523,3 +1523,32 @@ html, body { overflow-x: hidden; }
     border-radius: 0.6rem;
   }
 }
+
+/* ==========================================================================
+   PinkSnap Anti-Theft Image Protection (CSS Defense Layer)
+   Prevents drag, long-press save, and selection of all photo strip images.
+   Works across Chrome, Safari, Firefox, and mobile browsers.
+   ========================================================================== */
+
+img[draggable="false"],
+.select-none img,
+.pointer-events-none {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-user-drag: none;
+  -khtml-user-drag: none;
+  -moz-user-drag: none;
+  -o-user-drag: none;
+  user-drag: none;
+  -webkit-touch-callout: none;
+}
+
+/* Prevent iOS long-press "Save Image" action sheet on all strip images */
+img[oncontextmenu],
+[data-testid^="gallery-memory-"] img {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+}
