@@ -20,6 +20,12 @@ CREATE TABLE IF NOT EXISTS public.profiles (
 ALTER TABLE public.profiles
   ADD COLUMN IF NOT EXISTS avatar_storage_path TEXT;
 
+ALTER TABLE public.profiles
+  ADD COLUMN IF NOT EXISTS bio TEXT;
+
+ALTER TABLE public.profiles
+  ADD COLUMN IF NOT EXISTS wall_strip_ids TEXT[] DEFAULT '{}'::text[];
+
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 
 -- [M4] Added SET search_path to prevent search-path hijacking
@@ -181,41 +187,60 @@ ALTER TABLE public.profiles
 ALTER TABLE public.profiles
   ADD CONSTRAINT profiles_avatar_fields_consistent CHECK ((avatar_url IS NULL) = (avatar_storage_path IS NULL));
 
--- Public view for chat: exposes only non-sensitive fields, readable by all users (anon & authenticated)
+-- Public view for chat and public profiles: exposes non-sensitive fields
 CREATE OR REPLACE VIEW public.profiles_public WITH (security_invoker = false) AS
-SELECT id, display_name, avatar_url, role
+SELECT id, display_name, avatar_url, role, bio, wall_strip_ids
 FROM public.profiles;
 
 -- Grant read access to the view
 GRANT SELECT ON public.profiles_public TO anon, authenticated;
 
--- [CLOUD] Strips storage bucket — stores photo strip images per user (replaces localStorage)
+-- [ENCRYPTED STORAGE] Strips storage bucket — stores client-side AES-256-GCM encrypted photo strips per user
+-- STRICT PRIVACY: public = false. Anonymous and unauthorized access is completely blocked.
 INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 VALUES (
   'strips',
   'strips',
-  true,
-  5242880,  -- 5 MB per strip image
-  ARRAY['image/jpeg', 'image/png', 'image/webp']
+  false,  -- STRICT PRIVACY: Private bucket! No public read!
+  10485760,  -- 10 MB per encrypted strip
+  ARRAY['image/jpeg', 'image/png', 'image/webp', 'application/octet-stream']
 )
 ON CONFLICT (id) DO UPDATE
 SET
-  public = EXCLUDED.public,
+  public = false,
   file_size_limit = EXCLUDED.file_size_limit,
   allowed_mime_types = EXCLUDED.allowed_mime_types;
 
 DROP POLICY IF EXISTS "Public can view strip objects" ON storage.objects;
 DROP POLICY IF EXISTS "Authenticated users can upload own strip objects" ON storage.objects;
+DROP POLICY IF EXISTS "Authenticated users can update own strip objects" ON storage.objects;
 DROP POLICY IF EXISTS "Authenticated users can delete own strip objects" ON storage.objects;
+DROP POLICY IF EXISTS "Authenticated users can view own strip objects" ON storage.objects;
 
-CREATE POLICY "Public can view strip objects"
+-- Strict Owner-Only Policy: Users can ONLY read objects in their own folder
+CREATE POLICY "Authenticated users can view own strip objects"
   ON storage.objects FOR SELECT
-  TO public
-  USING (bucket_id = 'strips');
+  TO authenticated
+  USING (
+    bucket_id = 'strips'
+    AND split_part(name, '/', 1) = auth.uid()::text
+  );
 
 CREATE POLICY "Authenticated users can upload own strip objects"
   ON storage.objects FOR INSERT
   TO authenticated
+  WITH CHECK (
+    bucket_id = 'strips'
+    AND split_part(name, '/', 1) = auth.uid()::text
+  );
+
+CREATE POLICY "Authenticated users can update own strip objects"
+  ON storage.objects FOR UPDATE
+  TO authenticated
+  USING (
+    bucket_id = 'strips'
+    AND split_part(name, '/', 1) = auth.uid()::text
+  )
   WITH CHECK (
     bucket_id = 'strips'
     AND split_part(name, '/', 1) = auth.uid()::text
@@ -238,8 +263,18 @@ CREATE TABLE IF NOT EXISTS public.memories (
   frame TEXT NOT NULL DEFAULT 'classic',
   filter TEXT NOT NULL DEFAULT 'color',
   mime_type TEXT DEFAULT 'image/jpeg',
+  is_encrypted BOOLEAN DEFAULT true NOT NULL,
+  encryption_iv TEXT,
+  encryption_salt TEXT,
+  is_posted BOOLEAN DEFAULT false NOT NULL,
   created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
 );
+
+-- Ensure encryption columns exist
+ALTER TABLE public.memories ADD COLUMN IF NOT EXISTS is_encrypted BOOLEAN DEFAULT true NOT NULL;
+ALTER TABLE public.memories ADD COLUMN IF NOT EXISTS encryption_iv TEXT;
+ALTER TABLE public.memories ADD COLUMN IF NOT EXISTS encryption_salt TEXT;
+ALTER TABLE public.memories ADD COLUMN IF NOT EXISTS is_posted BOOLEAN DEFAULT false NOT NULL;
 
 -- Enable RLS on memories
 ALTER TABLE public.memories ENABLE ROW LEVEL SECURITY;
@@ -250,11 +285,11 @@ DROP POLICY IF EXISTS "Users can insert their own memories" ON public.memories;
 DROP POLICY IF EXISTS "Users can delete their own memories" ON public.memories;
 DROP POLICY IF EXISTS "Admins can view all memories" ON public.memories;
 
--- Memories RLS Policies
+-- Memories RLS Policies: Strictly Owner-Only Access
 CREATE POLICY "Users can view their own memories"
   ON public.memories FOR SELECT
   TO authenticated
-  USING (auth.uid() = user_id OR public.is_admin());
+  USING (auth.uid() = user_id);
 
 CREATE POLICY "Users can insert their own memories"
   ON public.memories FOR INSERT
@@ -264,7 +299,7 @@ CREATE POLICY "Users can insert their own memories"
 CREATE POLICY "Users can delete their own memories"
   ON public.memories FOR DELETE
   TO authenticated
-  USING (auth.uid() = user_id OR public.is_admin());
+  USING (auth.uid() = user_id);
 
 -- 5. Trigger to automatically create a profile entry when a new user signs up
 -- [C1] Always assign 'user' role — never trust client-supplied metadata for role

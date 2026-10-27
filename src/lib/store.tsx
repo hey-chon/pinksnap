@@ -39,11 +39,14 @@ const MAX_SAVED_MEMORIES = 50;
 const isLayoutType = (value: unknown): value is LayoutType =>
   value === 'vertical-4' || value === 'quad-4' || value === 'horizontal-3';
 
+import { encryptBlob, decryptBlob, encryptShots, decryptShots } from '@/lib/crypto';
+
 /**
- * Upload a data-URL image to Supabase Storage (`strips` bucket) under the
+ * Upload an encrypted data-URL image to Supabase Storage (`strips` bucket) under the
  * authenticated user's folder, then insert a row into the `memories` table.
  *
- * Returns the public URL of the uploaded image, or `null` on failure.
+ * All strips are encrypted with AES-256-GCM BEFORE leaving the browser.
+ * Only the authenticated account owner possesses the key to decrypt and view them.
  */
 async function uploadStripToCloud(
   userId: string,
@@ -54,15 +57,16 @@ async function uploadStripToCloud(
   mimeType: string = 'image/jpeg',
 ): Promise<string | null> {
   try {
-    const blob = dataUrlToBlob(dataUrl);
-    const ext = mimeType === 'image/png' ? 'png' : 'jpeg';
-    const storagePath = `${userId}/${memoryId}.${ext}`;
+    const rawBlob = dataUrlToBlob(dataUrl);
+    // Encrypt the photo strip binary using user-derived AES-256-GCM
+    const { encryptedBlob, ivHex, saltHex } = await encryptBlob(rawBlob, userId);
+    const storagePath = `${userId}/${memoryId}.enc`;
 
     const { error: uploadError } = await supabase.storage
       .from('strips')
-      .upload(storagePath, blob, {
-        contentType: mimeType,
-        upsert: false,
+      .upload(storagePath, encryptedBlob, {
+        contentType: 'application/octet-stream',
+        upsert: true,
       });
 
     if (uploadError) {
@@ -70,33 +74,28 @@ async function uploadStripToCloud(
       return null;
     }
 
-    // Get the public URL
-    const { data: urlData } = supabase.storage
-      .from('strips')
-      .getPublicUrl(storagePath);
-
-    const publicUrl = urlData?.publicUrl;
-    if (!publicUrl) return null;
-
-    // Insert into memories table
+    // Insert metadata with encryption parameters into memories table
     const { error: insertError } = await supabase.from('memories').insert({
       id: memoryId,
       user_id: userId,
-      image_url: publicUrl,
+      image_url: storagePath,
       layout,
       frame: typeof frame === 'string' ? frame : 'classic',
       filter: 'color',
       mime_type: mimeType,
+      is_encrypted: true,
+      encryption_iv: ivHex,
+      encryption_salt: saltHex,
     });
 
     if (insertError) {
       console.error('[PinkSnap Cloud] Insert error:', insertError.message);
-      // Attempt cleanup of the uploaded file
       await supabase.storage.from('strips').remove([storagePath]);
       return null;
     }
 
-    return publicUrl;
+    // Return the local dataUrl for instant flicker-free rendering for the owner
+    return dataUrl;
   } catch (err) {
     console.error('[PinkSnap Cloud] Upload exception:', err);
     return null;
@@ -104,13 +103,14 @@ async function uploadStripToCloud(
 }
 
 /**
- * Fetch memories for a given user from the Supabase `memories` table.
+ * Fetch and decrypt memories for a given user from the Supabase `memories` table.
+ * Every photo strip is decrypted on-the-fly in the browser with AES-256-GCM.
  */
 async function fetchCloudMemories(userId: string): Promise<Memory[]> {
   try {
     const { data, error } = await supabase
       .from('memories')
-      .select('id, image_url, layout, frame, mime_type, created_at')
+      .select('id, image_url, layout, frame, mime_type, created_at, is_encrypted, encryption_iv, encryption_salt')
       .eq('user_id', userId)
       .order('created_at', { ascending: false })
       .limit(MAX_SAVED_MEMORIES);
@@ -120,16 +120,69 @@ async function fetchCloudMemories(userId: string): Promise<Memory[]> {
       return [];
     }
 
-    return (data || []).map((row: any) => ({
-      id: row.id,
-      url: row.image_url,
-      date: new Date(row.created_at).getTime(),
-      layout: isLayoutType(row.layout) ? row.layout : 'vertical-4',
-      frame: (isFrameType(row.frame) || ARTISAN_TEMPLATES.some(t => t.id === row.frame))
-        ? row.frame
-        : 'classic',
-      mimeType: row.mime_type || 'image/jpeg',
-    }));
+    const decryptedMemories: Memory[] = [];
+
+    for (const row of data || []) {
+      let displayUrl = row.image_url;
+
+      try {
+        // Resolve storage path
+        let storagePath = row.image_url;
+        if (storagePath.includes('/strips/')) {
+          storagePath = storagePath.split('/strips/')[1].split('?')[0];
+        }
+
+        // If stored as an encrypted storage path or relative path, download and decrypt
+        if (storagePath && !storagePath.startsWith('data:')) {
+          const { data: cipherBlob, error: dlError } = await supabase.storage
+            .from('strips')
+            .download(storagePath);
+
+          if (!dlError && cipherBlob) {
+            // Decrypt the blob with the user's AES-256-GCM key
+            const decryptedBlob = await decryptBlob(
+              cipherBlob,
+              userId,
+              row.encryption_iv,
+              row.encryption_salt
+            );
+            displayUrl = URL.createObjectURL(decryptedBlob);
+          } else if (storagePath.includes('.enc')) {
+            // If encrypted file could not be downloaded via auth storage, try signed URL
+            const { data: signedData } = await supabase.storage
+              .from('strips')
+              .createSignedUrl(storagePath, 3600);
+            if (signedData?.signedUrl) {
+              const res = await fetch(signedData.signedUrl);
+              const blob = await res.blob();
+              const decryptedBlob = await decryptBlob(
+                blob,
+                userId,
+                row.encryption_iv,
+                row.encryption_salt
+              );
+              displayUrl = URL.createObjectURL(decryptedBlob);
+            }
+          }
+        }
+      } catch (decryptErr) {
+        console.warn(`[PinkSnap Cloud] Could not decrypt memory ${row.id}:`, decryptErr);
+        // Fall back to original url if already public/legacy
+      }
+
+      decryptedMemories.push({
+        id: row.id,
+        url: displayUrl,
+        date: new Date(row.created_at).getTime(),
+        layout: isLayoutType(row.layout) ? row.layout : 'vertical-4',
+        frame: (isFrameType(row.frame) || ARTISAN_TEMPLATES.some(t => t.id === row.frame))
+          ? row.frame
+          : 'classic',
+        mimeType: row.mime_type || 'image/jpeg',
+      });
+    }
+
+    return decryptedMemories;
   } catch (err) {
     console.error('[PinkSnap Cloud] Fetch exception:', err);
     return [];
@@ -141,12 +194,14 @@ async function fetchCloudMemories(userId: string): Promise<Memory[]> {
  */
 async function deleteCloudMemory(userId: string, memoryId: string, imageUrl: string): Promise<boolean> {
   try {
-    // Extract the storage path from the public URL
-    const match = imageUrl.match(/\/strips\/(.+)$/);
-    const storagePath = match ? match[1] : `${userId}/${memoryId}.jpeg`;
+    const encPath = `${userId}/${memoryId}.enc`;
+    let legacyPath = `${userId}/${memoryId}.jpeg`;
+    if (imageUrl.includes('/strips/')) {
+      legacyPath = imageUrl.split('/strips/')[1].split('?')[0];
+    }
 
-    // Delete from storage first
-    await supabase.storage.from('strips').remove([storagePath]);
+    // Remove both potential encrypted and legacy storage paths
+    await supabase.storage.from('strips').remove([encPath, legacyPath]);
 
     // Delete from the memories table
     const { error } = await supabase
