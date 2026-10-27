@@ -1467,9 +1467,14 @@ export default function ProfilePage() {
             {/* Modal Header */}
             <div className="flex items-center justify-between px-3.5 sm:px-5 pt-2.5 sm:pt-4 pb-2.5 sm:pb-3.5 border-b border-pink-100 shrink-0">
               <div>
-                <h3 className="font-hero text-base sm:text-xl text-foreground tracking-tight">CHOOSE STRIPS TO POST</h3>
+                <div className="flex items-center gap-1.5">
+                  <h3 className="font-hero text-base sm:text-xl text-foreground tracking-tight">CHOOSE STRIPS TO POST</h3>
+                  <span className="inline-flex items-center gap-1 text-[9px] bg-primary/10 text-primary font-black uppercase px-2 py-0.5 rounded-full">
+                    <Shield className="w-2.5 h-2.5" /> Anti-Theft Protected
+                  </span>
+                </div>
                 <p className="text-[10px] sm:text-xs text-foreground/50 font-medium">
-                  Tap any photo strip to toggle it on or off your wall
+                  Tap any photo strip to toggle it on or off your wall. DRM locks prevent non-owners from saving.
                 </p>
               </div>
               <div className="flex items-center gap-2">

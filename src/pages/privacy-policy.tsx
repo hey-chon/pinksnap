@@ -83,12 +83,12 @@ export default function PrivacyPolicy() {
                 <div className="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-3">
                   <Database className="w-5 h-5" />
                 </div>
-                <h2 className="font-display text-lg tracking-wide text-foreground mb-1">CLOUD STORAGE</h2>
+                <h2 className="font-display text-lg tracking-wide text-foreground mb-1">ENCRYPTED VAULT</h2>
                 <p className="text-xs text-foreground/70 font-medium leading-relaxed">
-                  Your photo strips are securely stored in the cloud, tied to your account. Access your memories from any device by signing in.
+                  Your photo strips and gallery shots are client-side encrypted with AES-256-GCM before cloud storage. Only your account holds the decryption key. Other users and attackers cannot access or save your strips.
                 </p>
               </div>
-              <span className="text-[10px] font-black uppercase text-primary mt-3 inline-block">Per-Account Cloud</span>
+              <span className="text-[10px] font-black uppercase text-primary mt-3 inline-block">AES-256-GCM Encrypted</span>
             </div>
 
             <div className="ticket p-4 flex flex-col justify-between">
@@ -205,10 +205,10 @@ export default function PrivacyPolicy() {
 
                   <div className="p-3.5 rounded-2xl bg-white/50 border border-black/5">
                     <h3 className="font-bold text-foreground text-sm flex items-center gap-2">
-                      <Database className="w-4 h-4 text-primary" /> Cloud & Local Storage Data
+                      <Database className="w-4 h-4 text-primary" /> Zero-Knowledge Photo Vault & DRM
                     </h3>
                     <p className="text-xs text-foreground/70 mt-1">
-                      Your photo strips are stored securely in the cloud via Supabase, linked to your authenticated account. Browser <code className="bg-primary/10 text-primary px-1.5 py-0.5 rounded font-mono text-[11px]">localStorage</code> is used only for cookie preferences and minor UI state.
+                      Your photo strips are encrypted using hardware-accelerated AES-256-GCM before upload to private Supabase storage. Decryption keys are derived on your device and are never transmitted to our servers. On your profile wall, digital rights management (DRM) prevents other users from downloading or stealing your photo strips.
                     </p>
                   </div>
                 </div>
