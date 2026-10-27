@@ -131,7 +131,7 @@ function WelcomeGate({ children }: { children: React.ReactNode }) {
 
           {/* Heading */}
           <h1 className="font-hero text-3xl sm:text-4xl text-foreground tracking-wide mb-1">
-            HELLO <span className="text-primary">WELCOME!</span>
+            HI, <span className="text-primary">WELCOME!</span>
           </h1>
 
           {/* Exact original description */}
