@@ -277,7 +277,7 @@ export default function ProfilePage() {
       try {
         const sanitizedAvatar = await sanitizeAvatarForUpload(file);
         const ext = sanitizedAvatar.name.split('.').pop() || 'webp';
-        const storagePath = buildAvatarStoragePath(user.id, ext);
+        const storagePath = buildAvatarStoragePath(user!.id, ext);
 
         const { error: uploadError } = await supabase.storage
           .from(AVATAR_BUCKET)
@@ -586,7 +586,7 @@ export default function ProfilePage() {
   const handlePasswordReset = async () => {
     setIsSendingReset(true);
     try {
-      const res = await resetPassword(user.email);
+      const res = await resetPassword(user!.email);
       if (res.error) {
         toast({
           title: 'Reset Failed',
@@ -774,9 +774,9 @@ export default function ProfilePage() {
                   <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-white border-4 border-white shadow-xl flex items-center justify-center text-primary font-display text-4xl sm:text-5xl overflow-hidden ring-4 ring-pink-500/10">
                     {safeAvatarSrc && !avatarLoadError ? (
                       <img
-                        key={user.avatarUrl}
+                        key={user?.avatarUrl}
                         src={safeAvatarSrc}
-                        alt={user.displayName}
+                        alt={user?.displayName}
                         onError={() => setAvatarLoadError(true)}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         referrerPolicy="no-referrer"
@@ -829,7 +829,7 @@ export default function ProfilePage() {
             <div className="mt-4 sm:mt-5 space-y-2">
               <div className="flex flex-wrap items-center gap-2">
                 <h1 className={`font-hero text-2xl sm:text-3xl tracking-tight leading-tight break-words ${isAdmin ? 'text-white' : 'text-foreground'}`}>
-                  {user.displayName}
+                  {user?.displayName}
                 </h1>
                 
                 {/* Verified Checkmark (Shown for Admin and Contributor) */}
@@ -1240,7 +1240,7 @@ export default function ProfilePage() {
                       {safeAvatarSrc && !avatarLoadError ? (
                         <img
                           src={safeAvatarSrc}
-                          alt={user.displayName}
+                          alt={user?.displayName}
                           onError={() => setAvatarLoadError(true)}
                           className="w-full h-full object-cover"
                         />
@@ -1267,7 +1267,7 @@ export default function ProfilePage() {
                       />
                     </label>
 
-                    {(user.avatarUrl || user.avatarStoragePath) && (
+                    {(user?.avatarUrl || user?.avatarStoragePath) && (
                       <button
                         type="button"
                         onClick={handleDirectRemoveAvatar}
@@ -1335,7 +1335,7 @@ export default function ProfilePage() {
                   </label>
                   <input
                     type="email"
-                    value={user.email}
+                    value={user?.email ?? ''}
                     disabled
                     className="w-full px-4 py-3 bg-foreground/[0.03] border border-black/[0.06] rounded-2xl text-sm font-mono text-foreground/50 cursor-not-allowed"
                   />
@@ -1425,7 +1425,7 @@ export default function ProfilePage() {
                 />
               </label>
 
-              {(user.avatarUrl || user.avatarStoragePath) && (
+              {(user?.avatarUrl || user?.avatarStoragePath) && (
                 <button
                   type="button"
                   onClick={handleDirectRemoveAvatar}
