@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'wouter';
 import { TopNav, BottomNav } from '@/components/layout';
 import { useAppContext } from '@/lib/store';
-import { Trash2, Download, Image as ImageIcon, ArrowRight, X, ZoomIn, Loader2, Eraser } from 'lucide-react';
+import { Trash2, Download, Image as ImageIcon, ArrowRight, X, ZoomIn, Loader2, Eraser, Shield, Lock } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast.tsx';
 import { downloadImage } from '@/lib/image-utils';
 import { useAuth } from '@/hooks/use-auth';
@@ -25,6 +25,30 @@ export default function Gallery() {
   const [isDeletingAll, setIsDeletingAll] = useState(false);
   const { savedMemories, deleteMemory, isLoadingMemories } = useAppContext();
   const { toast } = useToast();
+
+  // Anti-save keyboard interception: block Ctrl+S, Ctrl+Shift+S, PrintScreen
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Block save shortcuts
+      if ((e.ctrlKey || e.metaKey) && (e.key === 's' || e.key === 'S')) {
+        e.preventDefault();
+        toast({
+          title: 'Protected Gallery \uD83D\uDD12',
+          description: 'Your encrypted photo strips are protected. Use the SAVE button to download your own strips.',
+          variant: 'destructive',
+        });
+      }
+      // Warn on PrintScreen
+      if (e.key === 'PrintScreen') {
+        toast({
+          title: 'Screenshot Detected \uD83D\uDEE1\uFE0F',
+          description: 'Gallery strips are AES-256-GCM encrypted. Screenshots may capture the decrypted view.',
+        });
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [toast]);
 
   const handleStartSession = () => {
     sessionStorage.setItem('ps_has_entered_app', 'true');
@@ -81,36 +105,56 @@ export default function Gallery() {
       {/* ── Lightbox Full-Screen Modal ────────────────────────────────────── */}
       {selectedMemory && (
         <div 
-          className="fixed inset-0 z-50 bg-black/92 backdrop-blur-xl flex flex-col items-center justify-between p-4 sm:p-6 animate-in fade-in duration-200"
+          className="fixed inset-0 z-50 bg-black/95 backdrop-blur-xl flex flex-col items-center justify-between p-4 sm:p-6 animate-in fade-in duration-200"
           onClick={() => setSelectedMemory(null)}
+          onContextMenu={(e) => { e.preventDefault(); return false; }}
         >
-          <button
-            onClick={() => setSelectedMemory(null)}
-            className="hidden sm:flex absolute sm:top-8 sm:right-8 z-[60] w-12 h-12 rounded-full bg-black/40 hover:bg-black/60 items-center justify-center text-white transition-colors focus:outline-none ring-1 ring-white/30 backdrop-blur-md"
-            aria-label="Close preview"
-          >
-            <X className="w-6 h-6" />
-          </button>
+          {/* Top Bar */}
+          <div className="w-full max-w-4xl flex items-center justify-between text-white z-10 pt-2 sm:pt-4">
+            <div className="flex items-center gap-2">
+              <span className="font-hero text-lg sm:text-xl tracking-wider text-primary">PINKSNAP</span>
+              <span className="text-white/40 text-xs">·</span>
+              <span className="text-xs text-white/70 font-mono">
+                {new Date(selectedMemory.date).toLocaleDateString()}
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); handleDownload(selectedMemory.url, selectedMemory.date); }}
+                className="p-2 sm:px-3 sm:py-2 bg-white/10 hover:bg-white/20 rounded-full text-xs font-black uppercase tracking-wider flex items-center gap-1.5 transition-colors border border-white/20"
+                aria-label="Download strip"
+              >
+                <Download className="w-4 h-4" />
+                <span className="hidden sm:inline">Save</span>
+              </button>
+              <button
+                onClick={() => setSelectedMemory(null)}
+                className="p-2 bg-white/10 hover:bg-white/20 rounded-full transition-colors border border-white/20"
+                aria-label="Close preview"
+              >
+                <X className="w-5 h-5 text-white" />
+              </button>
+            </div>
+          </div>
 
           <div 
             className="flex-1 flex flex-col items-center justify-center py-4 w-full overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+            onContextMenu={(e) => { e.preventDefault(); return false; }}
           >
-            <div className="relative flex flex-col items-center" onClick={(e) => e.stopPropagation()}>
+            <div className="relative flex flex-col items-center select-none">
               <img
                 src={selectedMemory.url}
                 alt="Full size photostrip"
-                onContextMenu={(e) => e.preventDefault()}
+                onContextMenu={(e) => { e.preventDefault(); return false; }}
                 draggable={false}
-                className="max-h-[55vh] sm:max-h-[65vh] w-auto object-contain drop-shadow-[0_20px_50px_rgba(0,0,0,0.8)] rounded-xl select-none"
+                className="max-h-[70dvh] sm:max-h-[78dvh] w-auto object-contain drop-shadow-[0_25px_60px_rgba(245,61,137,0.35)] rounded-2xl select-none animate-in zoom-in-95 duration-200 pointer-events-none"
               />
-              <div className="mt-6 flex flex-col items-center text-center">
-                <div className="font-black text-2xl tracking-tight leading-none mb-1.5">
-                  <span className="text-white">PINK</span>
-                  <span className="text-primary">SNAP</span>
-                </div>
-                <div className="text-[10px] sm:text-xs font-bold text-white/60 tracking-[0.2em] uppercase">
-                  {getFrameLabel(selectedMemory.frame)} · {new Date(selectedMemory.date).toLocaleDateString()}
-                </div>
+              {/* DRM Guard Badge */}
+              <div className="mt-4 px-4 py-2 rounded-full bg-black/60 backdrop-blur-md border border-white/20 text-[11px] font-bold text-white flex items-center gap-2 select-none pointer-events-none">
+                <Shield className="w-3.5 h-3.5 text-emerald-400" />
+                <span>AES-256-GCM Encrypted · Private Vault</span>
               </div>
             </div>
           </div>
@@ -194,15 +238,16 @@ export default function Gallery() {
 
                   <div 
                     onClick={() => setSelectedMemory({ id: memory.id, url: memory.url, date: memory.date, frame: memory.frame })}
+                    onContextMenu={(e) => { e.preventDefault(); return false; }}
                     className="w-full aspect-[3/4] bg-black/10 rounded-2xl overflow-hidden mb-4 relative flex items-center justify-center p-3 shadow-inner border border-black/10 cursor-pointer group hover:bg-black/15 transition-all"
                   >
                     <img 
                       src={memory.url} 
                       data-testid={`gallery-memory-${memory.id}`}
                       alt={`PinkSnap photo strip from ${new Date(memory.date).toLocaleDateString()}`}
-                      onContextMenu={(e) => e.preventDefault()}
+                      onContextMenu={(e) => { e.preventDefault(); return false; }}
                       draggable={false}
-                      className="max-w-full max-h-full object-contain drop-shadow-md rounded-sm group-hover:scale-[1.02] transition-transform select-none"
+                      className="max-w-full max-h-full object-contain drop-shadow-md rounded-sm group-hover:scale-[1.02] transition-transform select-none pointer-events-none"
                     />
                     <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 text-white font-black text-xs tracking-wider rounded-2xl pointer-events-none">
                       <ZoomIn className="w-4 h-4" /> VIEW FULL STRIP

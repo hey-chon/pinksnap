@@ -488,7 +488,6 @@ export default function ProfilePage() {
       return next;
     });
   };
-  };
 
   const handleClosePostModal = () => {
     setShowPostModal(false);

@@ -89,7 +89,7 @@ export async function deriveUserKey(userId: string, saltHex?: string): Promise<C
   const derivedKey = await crypto.subtle.deriveKey(
     {
       name: 'PBKDF2',
-      salt: saltBytes,
+      salt: new Uint8Array(saltBytes.buffer as ArrayBuffer),
       iterations: PBKDF2_ITERATIONS,
       hash: 'SHA-256',
     },
@@ -175,7 +175,7 @@ export async function decryptDataUrl(
 ): Promise<string> {
   const salt = saltHex || getUserSalt(userId);
   const key = await deriveUserKey(userId, salt);
-  const iv = hexToBuf(ivHex);
+  const ivBytes = hexToBuf(ivHex);
 
   const binaryString = atob(ciphertextBase64);
   const cipherBytes = new Uint8Array(binaryString.length);
@@ -186,7 +186,7 @@ export async function decryptDataUrl(
   const decryptedBuffer = await crypto.subtle.decrypt(
     {
       name: 'AES-GCM',
-      iv,
+      iv: new Uint8Array(ivBytes.buffer as ArrayBuffer),
     },
     key,
     cipherBytes.buffer
@@ -280,10 +280,10 @@ export async function decryptBlob(
         if (headerObj.magic === MAGIC_HEADER && headerObj.iv && headerObj.salt) {
           const cipherSlice = bytes.slice(2 + headerLen);
           const key = await deriveUserKey(userId, headerObj.salt);
-          const iv = hexToBuf(headerObj.iv);
+          const ivBytes = hexToBuf(headerObj.iv);
 
           const decryptedBuffer = await crypto.subtle.decrypt(
-            { name: 'AES-GCM', iv },
+            { name: 'AES-GCM', iv: new Uint8Array(ivBytes.buffer as ArrayBuffer) },
             key,
             cipherSlice
           );
@@ -301,10 +301,10 @@ export async function decryptBlob(
     try {
       const salt = fallbackSalt || getUserSalt(userId);
       const key = await deriveUserKey(userId, salt);
-      const iv = hexToBuf(fallbackIv);
+      const fallbackIvBytes = hexToBuf(fallbackIv);
 
       const decryptedBuffer = await crypto.subtle.decrypt(
-        { name: 'AES-GCM', iv },
+        { name: 'AES-GCM', iv: new Uint8Array(fallbackIvBytes.buffer as ArrayBuffer) },
         key,
         buffer
       );

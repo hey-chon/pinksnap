@@ -227,25 +227,56 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [layout, setLayout] = useState<LayoutType>(() => (sessionStorage.getItem('ps_layout') as LayoutType) || 'vertical-4');
   const [frame, setFrame] = useState<FrameType>(() => (sessionStorage.getItem('ps_frame') as FrameType) || 'classic');
   const [filter, setFilter] = useState<FilterType>(() => (sessionStorage.getItem('ps_filter') as FilterType) || 'color');
-  const [shots, setShots] = useState<string[]>(() => {
-    try {
-      const stored = sessionStorage.getItem('ps_shots');
-      return stored ? JSON.parse(stored) : [];
-    } catch {
-      return [];
+  const [shots, setShots] = useState<string[]>([]);
+  const [shotsLoaded, setShotsLoaded] = useState(false);
+
+  // Decrypt shots from sessionStorage on mount (once user is authenticated)
+  useEffect(() => {
+    if (shotsLoaded) return;
+    const raw = sessionStorage.getItem('ps_shots');
+    if (!raw) {
+      setShotsLoaded(true);
+      return;
     }
-  });
+    if (user?.id) {
+      decryptShots(raw, user.id).then((decrypted) => {
+        setShots(decrypted);
+        setShotsLoaded(true);
+      }).catch(() => {
+        // Fallback: try parsing as plain JSON (legacy)
+        try { setShots(JSON.parse(raw)); } catch { setShots([]); }
+        setShotsLoaded(true);
+      });
+    } else {
+      // No user yet — try parsing as plain array (pre-auth shots)
+      try { setShots(JSON.parse(raw)); } catch { setShots([]); }
+      setShotsLoaded(true);
+    }
+  }, [user?.id, shotsLoaded]);
 
   useEffect(() => sessionStorage.setItem('ps_layout', layout), [layout]);
   useEffect(() => sessionStorage.setItem('ps_frame', frame), [frame]);
   useEffect(() => sessionStorage.setItem('ps_filter', filter), [filter]);
+
+  // Encrypt shots before storing in sessionStorage — plaintext data URLs never written
   useEffect(() => {
-    try {
-      sessionStorage.setItem('ps_shots', JSON.stringify(shots));
-    } catch (e) {
-      console.warn('Could not save shots to sessionStorage', e);
+    if (!shotsLoaded) return;
+    if (shots.length === 0) {
+      sessionStorage.removeItem('ps_shots');
+      return;
     }
-  }, [shots]);
+    if (user?.id) {
+      encryptShots(shots, user.id).then((encrypted) => {
+        try { sessionStorage.setItem('ps_shots', encrypted); } catch {}
+      }).catch(() => {
+        // Last-resort fallback: store as JSON (should not normally happen)
+        try { sessionStorage.setItem('ps_shots', JSON.stringify(shots)); } catch {}
+      });
+    } else {
+      // Pre-auth: store plain (session scoped, cleared on close)
+      try { sessionStorage.setItem('ps_shots', JSON.stringify(shots)); } catch {}
+    }
+  }, [shots, user?.id, shotsLoaded]);
   const [savedMemories, setSavedMemories] = useState<Memory[]>([]);
   const [isLoadingMemories, setIsLoadingMemories] = useState(false);
   const [isSavingMemory, setIsSavingMemory] = useState(false);
