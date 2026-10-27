@@ -196,6 +196,21 @@ export default function ProfilePage() {
     }
   }, [user?.id, wallStripIdsKey, showPostModal]);
 
+  // Prune orphaned wall strip IDs — remove references to memories that no longer exist
+  useEffect(() => {
+    if (!user?.id || savedMemories.length === 0 && postedStripIds.length === 0) return;
+    const memoryIds = new Set(savedMemories.map((m) => m.id));
+    const validIds = postedStripIds.filter((id) => memoryIds.has(id));
+    if (validIds.length !== postedStripIds.length) {
+      setPostedStripIds(validIds);
+      try {
+        localStorage.setItem(`pinksnap_wall_strips_${user.id}`, JSON.stringify(validIds));
+      } catch {}
+      // Sync pruned list to cloud
+      updateProfile({ wallStripIds: validIds }).catch(() => {});
+    }
+  }, [savedMemories, postedStripIds, user?.id]);
+
   const postedStrips = isOwner
     ? savedMemories.filter((m) => postedStripIds.includes(m.id))
     : savedMemories.filter((m) => (effectiveUser?.wallStripIds || []).includes(m.id));
