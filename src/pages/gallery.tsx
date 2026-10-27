@@ -172,12 +172,6 @@ export default function Gallery() {
           <div className="text-center mb-8">
             <span className="booth-heading-kicker mb-3">print archive</span>
             <h1 className="font-hero text-[2rem] leading-[1] sm:text-4xl md:text-5xl mt-4 text-foreground">THE <span className="text-primary">GALLERY.</span></h1>
-            
-            {/* ── Zero-Knowledge Encryption Shield ── */}
-            <div className="mt-4 inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/25 text-emerald-800 text-[11px] font-bold shadow-xs">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span>AES-256-GCM Encrypted Vault · Private to Your Account</span>
-            </div>
 
             {savedMemories.length > 0 && !isLoadingMemories && (
               <div className="mt-5 flex justify-center">
