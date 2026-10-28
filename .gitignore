@@ -74,6 +74,9 @@ web_modules/
 .cache
 .parcel-cache
 
+# Vercel
+.vercel
+
 # Next.js build output
 .next
 out

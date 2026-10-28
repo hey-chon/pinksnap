@@ -263,7 +263,7 @@ export default function PrivacyPolicy() {
                 </p>
                 <ul className="list-disc list-inside space-y-2 pl-2 text-foreground/75">
                   <li><strong>Supabase:</strong> Provides managed authentication, relational database storage for chat messages/profile metadata, realtime synchronization, and public profile avatar storage.</li>
-                  <li><strong>Netlify / Hosting Infrastructure:</strong> Delivers frontend application assets, SSL/TLS encryption, and static content distribution.</li>
+                  <li><strong>Vercel / Netlify / Hosting Infrastructure:</strong> Delivers frontend application assets, SSL/TLS encryption, and static content distribution.</li>
                   <li><strong>Font Providers:</strong> Self-hosted and bundled typography (Inter, Bebas Neue, Press Start 2P) without external tracking.</li>
                 </ul>
               </div>
