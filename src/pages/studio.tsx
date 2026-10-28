@@ -63,8 +63,14 @@ export default function Studio() {
   }, [startCamera]);
 
   const cancelSequence = useCallback(() => {
-    if (timerRef.current) clearInterval(timerRef.current);
-    if (sequenceRef.current) clearTimeout(sequenceRef.current);
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+    if (sequenceRef.current) {
+      clearTimeout(sequenceRef.current);
+      sequenceRef.current = null;
+    }
     setIsCapturing(false);
     setCountdown(null);
   }, []);
@@ -99,7 +105,10 @@ export default function Studio() {
         } else if (count === 0) {
           setCountdown(0);
         } else {
-          if (timerRef.current) clearInterval(timerRef.current);
+          if (timerRef.current) {
+            clearInterval(timerRef.current);
+            timerRef.current = null;
+          }
           setCountdown(null);
           
           if (flashEnabled) {

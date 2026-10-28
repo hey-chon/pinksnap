@@ -40,14 +40,20 @@ export default function Printing() {
       }
 
       if (elapsed >= TOTAL) {
-        if (intervalRef.current) clearInterval(intervalRef.current);
+        if (intervalRef.current) {
+          clearInterval(intervalRef.current);
+          intervalRef.current = null;
+        }
         // Navigate to receipt — replace so user can't go back
         setLocation('/receipt', { replace: true });
       }
     }, 50);
 
     return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
     };
   }, [setLocation]);
 

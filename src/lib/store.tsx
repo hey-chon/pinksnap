@@ -29,6 +29,7 @@ interface AppState {
   savedMemories: Memory[];
   saveMemory: (memory: Memory) => Promise<boolean>;
   deleteMemory: (id: string) => void;
+  clearAllMemories: () => Promise<void>;
   isLoadingMemories: boolean;
   isSavingMemory: boolean;
   latestStrip: string | null;
@@ -488,12 +489,29 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     deleteCloudMemory(user.id, id, memory.url).catch(() => {});
   }, [user?.id, savedMemories, latestStrip]);
 
+  const clearAllMemories = useCallback(async () => {
+    const previous = [...savedMemories];
+    setSavedMemories([]);
+    setLatestStrip(null);
+    try { sessionStorage.removeItem('ps_latest_strip'); } catch {}
+
+    if (!user?.id) return;
+    try {
+      await supabase.from('memories').delete().eq('user_id', user.id);
+      const encPaths = previous.map(m => `${user.id}/${m.id}.enc`);
+      const legacyPaths = previous.map(m => `${user.id}/${m.id}.jpeg`);
+      await supabase.storage.from('strips').remove([...encPaths, ...legacyPaths]).catch(() => {});
+    } catch (err) {
+      console.warn('[PinkSnap Cloud] Clear all memories notice:', err);
+    }
+  }, [user?.id, savedMemories]);
+
   const value: AppState = {
     layout, setLayout,
     frame, setFrame,
     filter, setFilter,
     shots, addShot, removeShot, removeShots, clearShots,
-    savedMemories, saveMemory, deleteMemory,
+    savedMemories, saveMemory, deleteMemory, clearAllMemories,
     isLoadingMemories, isSavingMemory,
     latestStrip, setLatestStrip,
   };

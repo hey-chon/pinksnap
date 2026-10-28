@@ -23,12 +23,17 @@ export default function Gallery() {
   const { isAuthenticated } = useAuth();
   const [selectedMemory, setSelectedMemory] = useState<{ id: string; url: string; date: number; frame: string } | null>(null);
   const [isDeletingAll, setIsDeletingAll] = useState(false);
-  const { savedMemories, deleteMemory, isLoadingMemories } = useAppContext();
+  const { savedMemories, deleteMemory, clearAllMemories, isLoadingMemories } = useAppContext();
   const { toast } = useToast();
 
-  // Anti-save keyboard interception: block Ctrl+S, Ctrl+Shift+S, PrintScreen
+  // Escape to close view mode & anti-save keyboard interception
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Escape closes lightbox
+      if (e.key === 'Escape') {
+        setSelectedMemory(null);
+        return;
+      }
       // Block save shortcuts
       if ((e.ctrlKey || e.metaKey) && (e.key === 's' || e.key === 'S')) {
         e.preventDefault();
@@ -87,15 +92,13 @@ export default function Gallery() {
     if (savedMemories.length === 0) return;
     if (!confirm(`Are you sure you want to delete ALL ${savedMemories.length} photo strips? This cannot be undone.`)) return;
     setIsDeletingAll(true);
-    const ids = savedMemories.map(m => m.id);
-    for (const id of ids) {
-      deleteMemory(id);
-    }
+    const count = savedMemories.length;
+    await clearAllMemories();
     setSelectedMemory(null);
     setIsDeletingAll(false);
     toast({
       title: 'Gallery Cleared',
-      description: `All ${ids.length} photo strips have been deleted.`,
+      description: `All ${count} photo strips have been deleted.`,
     });
   };
 
@@ -105,12 +108,15 @@ export default function Gallery() {
       {/* ── Lightbox Full-Screen Modal ────────────────────────────────────── */}
       {selectedMemory && (
         <div 
-          className="fixed inset-0 z-50 bg-black/95 backdrop-blur-xl flex flex-col items-center justify-between p-4 sm:p-6 animate-in fade-in duration-200"
+          className="fixed inset-0 z-50 bg-black/95 backdrop-blur-xl flex flex-col items-center justify-between p-4 sm:p-6 animate-in fade-in duration-200 cursor-pointer"
           onClick={() => setSelectedMemory(null)}
           onContextMenu={(e) => { e.preventDefault(); return false; }}
         >
           {/* Top Bar */}
-          <div className="w-full max-w-4xl flex items-center justify-between text-white z-10 pt-2 sm:pt-4">
+          <div 
+            className="w-full max-w-4xl flex items-center justify-between text-white z-10 pt-2 sm:pt-4 cursor-default"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="flex items-center gap-2">
               <span className="font-hero text-lg sm:text-xl tracking-wider text-primary">PINKSNAP</span>
               <span className="text-white/40 text-xs">·</span>
@@ -121,7 +127,7 @@ export default function Gallery() {
             <div className="flex items-center gap-2">
               <button
                 type="button"
-                onClick={(e) => { e.stopPropagation(); handleDownload(selectedMemory.url, selectedMemory.date); }}
+                onClick={() => handleDownload(selectedMemory.url, selectedMemory.date)}
                 className="p-2 sm:px-3 sm:py-2 bg-white/10 hover:bg-white/20 rounded-full text-xs font-black uppercase tracking-wider flex items-center gap-1.5 transition-colors border border-white/20"
                 aria-label="Download strip"
               >
@@ -129,6 +135,7 @@ export default function Gallery() {
                 <span className="hidden sm:inline">Save</span>
               </button>
               <button
+                type="button"
                 onClick={() => setSelectedMemory(null)}
                 className="p-2 bg-white/10 hover:bg-white/20 rounded-full transition-colors border border-white/20"
                 aria-label="Close preview"
@@ -138,17 +145,22 @@ export default function Gallery() {
             </div>
           </div>
 
+          {/* Photo Strip Center Area — tapping the background exits view mode */}
           <div 
-            className="flex-1 flex flex-col items-center justify-center py-4 w-full overflow-hidden"
-            onClick={(e) => e.stopPropagation()}
+            className="flex-1 flex flex-col items-center justify-center py-4 w-full overflow-hidden cursor-pointer"
+            onClick={() => setSelectedMemory(null)}
             onContextMenu={(e) => { e.preventDefault(); return false; }}
           >
-            <div className="relative flex flex-col items-center select-none">
+            <div 
+              className="relative flex flex-col items-center select-none cursor-default"
+              onClick={(e) => e.stopPropagation()}
+            >
               <img
                 src={selectedMemory.url}
                 alt="Full size photostrip"
                 onContextMenu={(e) => { e.preventDefault(); return false; }}
                 draggable={false}
+                decoding="async"
                 className="max-h-[70dvh] sm:max-h-[78dvh] w-auto object-contain drop-shadow-[0_25px_60px_rgba(245,61,137,0.35)] rounded-2xl select-none animate-in zoom-in-95 duration-200 pointer-events-none"
               />
               {/* DRM Guard Badge */}
@@ -241,6 +253,8 @@ export default function Gallery() {
                       alt={`PinkSnap photo strip from ${new Date(memory.date).toLocaleDateString()}`}
                       onContextMenu={(e) => { e.preventDefault(); return false; }}
                       draggable={false}
+                      loading="lazy"
+                      decoding="async"
                       className="max-w-full max-h-full object-contain drop-shadow-md rounded-sm group-hover:scale-[1.02] transition-transform select-none pointer-events-none"
                     />
                     <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 text-white font-black text-xs tracking-wider rounded-2xl pointer-events-none">
