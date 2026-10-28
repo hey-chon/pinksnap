@@ -120,6 +120,10 @@ export default function Gallery() {
             <div className="flex items-center gap-2">
               <span className="font-hero text-lg sm:text-xl tracking-wider text-primary">PINKSNAP</span>
               <span className="text-white/40 text-xs">·</span>
+              <span className="text-[10px] font-black bg-white/10 px-2.5 py-1 rounded-full uppercase tracking-widest text-primary border border-primary/20">
+                {getFrameLabel(selectedMemory.frame)}
+              </span>
+              <span className="text-white/40 text-xs">·</span>
               <span className="text-xs text-white/70 font-mono">
                 {new Date(selectedMemory.date).toLocaleDateString()}
               </span>
@@ -163,10 +167,19 @@ export default function Gallery() {
                 decoding="async"
                 className="max-h-[70dvh] sm:max-h-[78dvh] w-auto object-contain drop-shadow-[0_25px_60px_rgba(245,61,137,0.35)] rounded-2xl select-none animate-in zoom-in-95 duration-200 pointer-events-none"
               />
-              {/* DRM Guard Badge */}
-              <div className="mt-4 px-4 py-2 rounded-full bg-black/60 backdrop-blur-md border border-white/20 text-[11px] font-bold text-white flex items-center gap-2 select-none pointer-events-none">
-                <Shield className="w-3.5 h-3.5 text-emerald-400" />
-                <span>AES-256-GCM Encrypted · Private Vault</span>
+              {/* Details & DRM Guard Badge */}
+              <div className="mt-4 flex flex-wrap items-center justify-center gap-2 select-none pointer-events-none">
+                <div className="px-3 py-1.5 rounded-full bg-black/60 backdrop-blur-md border border-white/15 text-[10px] font-black text-white/80 uppercase tracking-widest flex items-center gap-1.5">
+                  <Lock className="w-3 h-3 text-primary" />
+                  <span>{getFrameLabel(selectedMemory.frame)}</span>
+                </div>
+                <div className="px-3 py-1.5 rounded-full bg-black/60 backdrop-blur-md border border-white/15 text-[10px] font-black text-white/80 uppercase tracking-widest flex items-center gap-1.5">
+                  <span>{new Date(selectedMemory.date).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' })}</span>
+                </div>
+                <div className="px-3 py-1.5 rounded-full bg-black/60 backdrop-blur-md border border-emerald-500/20 text-[10px] font-bold text-white flex items-center gap-1.5">
+                  <Shield className="w-3 h-3 text-emerald-400" />
+                  <span>AES-256-GCM</span>
+                </div>
               </div>
             </div>
           </div>
@@ -263,13 +276,18 @@ export default function Gallery() {
                   </div>
                   
                   <div className="flex justify-between items-center border-t border-black/10 pt-3 px-1">
-                    <button 
-                      onClick={() => handleDownload(memory.url, memory.date)}
-                      data-testid={`button-download-${memory.id}`}
-                      className="flex items-center gap-2 px-3 py-2 text-primary hover:bg-primary/10 rounded-xl font-black text-[10px] sm:text-xs transition-colors tracking-wider focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                    >
-                      <Download className="w-4 h-4" /> SAVE
-                    </button>
+                    <div className="flex items-center gap-1.5">
+                      <button 
+                        onClick={() => handleDownload(memory.url, memory.date)}
+                        data-testid={`button-download-${memory.id}`}
+                        className="flex items-center gap-2 px-3 py-2 text-primary hover:bg-primary/10 rounded-xl font-black text-[10px] sm:text-xs transition-colors tracking-wider focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                      >
+                        <Download className="w-4 h-4" /> SAVE
+                      </button>
+                      <span className="hidden sm:flex items-center gap-1 text-[8px] font-bold text-emerald-600/70 px-1.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/15 select-none">
+                        <Shield className="w-2.5 h-2.5" /> AES-256
+                      </span>
+                    </div>
                     <button 
                       onClick={() => handleDelete(memory.id)}
                       data-testid={`button-delete-${memory.id}`}
