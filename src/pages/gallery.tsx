@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'wouter';
 import { TopNav, BottomNav } from '@/components/layout';
 import { useAppContext } from '@/lib/store';
-import { Trash2, Download, Image as ImageIcon, ArrowRight, X, ZoomIn, Loader2, Eraser, Shield, Lock } from 'lucide-react';
+import { Trash2, Download, Image as ImageIcon, ArrowRight, X, ZoomIn, Loader2, Eraser, Shield } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast.tsx';
 import { downloadImage } from '@/lib/image-utils';
 import { useAuth } from '@/hooks/use-auth';
@@ -108,78 +108,35 @@ export default function Gallery() {
       {/* ── Lightbox Full-Screen Modal ────────────────────────────────────── */}
       {selectedMemory && (
         <div 
-          className="fixed inset-0 z-50 bg-black/95 backdrop-blur-xl flex flex-col items-center justify-between p-4 sm:p-6 animate-in fade-in duration-200 cursor-pointer"
+          className="fixed inset-0 z-50 bg-black/95 backdrop-blur-xl flex flex-col items-center justify-center p-4 sm:p-6 animate-in fade-in duration-200 cursor-pointer"
           onClick={() => setSelectedMemory(null)}
           onContextMenu={(e) => { e.preventDefault(); return false; }}
         >
-          {/* Top Bar */}
+          {/* Centered strip + details */}
           <div 
-            className="w-full max-w-4xl flex items-center justify-between text-white z-10 pt-2 sm:pt-4 cursor-default"
+            className="relative flex flex-col items-center select-none cursor-default"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center gap-2">
-              <span className="font-hero text-lg sm:text-xl tracking-wider text-primary">PINKSNAP</span>
-              <span className="text-white/40 text-xs">·</span>
-              <span className="text-[10px] font-black bg-white/10 px-2.5 py-1 rounded-full uppercase tracking-widest text-primary border border-primary/20">
-                {getFrameLabel(selectedMemory.frame)}
-              </span>
-              <span className="text-white/40 text-xs">·</span>
-              <span className="text-xs text-white/70 font-mono">
-                {new Date(selectedMemory.date).toLocaleDateString()}
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => handleDownload(selectedMemory.url, selectedMemory.date)}
-                className="p-2 sm:px-3 sm:py-2 bg-white/10 hover:bg-white/20 rounded-full text-xs font-black uppercase tracking-wider flex items-center gap-1.5 transition-colors border border-white/20"
-                aria-label="Download strip"
-              >
-                <Download className="w-4 h-4" />
-                <span className="hidden sm:inline">Save</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setSelectedMemory(null)}
-                className="p-2 bg-white/10 hover:bg-white/20 rounded-full transition-colors border border-white/20"
-                aria-label="Close preview"
-              >
-                <X className="w-5 h-5 text-white" />
-              </button>
-            </div>
-          </div>
+            <img
+              src={selectedMemory.url}
+              alt="Full size photostrip"
+              onContextMenu={(e) => { e.preventDefault(); return false; }}
+              draggable={false}
+              decoding="async"
+              className="max-h-[70dvh] sm:max-h-[78dvh] w-auto object-contain drop-shadow-[0_25px_60px_rgba(245,61,137,0.35)] rounded-2xl select-none animate-in zoom-in-95 duration-200 pointer-events-none"
+            />
 
-          {/* Photo Strip Center Area — tapping the background exits view mode */}
-          <div 
-            className="flex-1 flex flex-col items-center justify-center py-4 w-full overflow-hidden cursor-pointer"
-            onClick={() => setSelectedMemory(null)}
-            onContextMenu={(e) => { e.preventDefault(); return false; }}
-          >
-            <div 
-              className="relative flex flex-col items-center select-none cursor-default"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <img
-                src={selectedMemory.url}
-                alt="Full size photostrip"
-                onContextMenu={(e) => { e.preventDefault(); return false; }}
-                draggable={false}
-                decoding="async"
-                className="max-h-[70dvh] sm:max-h-[78dvh] w-auto object-contain drop-shadow-[0_25px_60px_rgba(245,61,137,0.35)] rounded-2xl select-none animate-in zoom-in-95 duration-200 pointer-events-none"
-              />
-              {/* Details & DRM Guard Badge */}
-              <div className="mt-4 flex flex-wrap items-center justify-center gap-2 select-none pointer-events-none">
-                <div className="px-3 py-1.5 rounded-full bg-black/60 backdrop-blur-md border border-white/15 text-[10px] font-black text-white/80 uppercase tracking-widest flex items-center gap-1.5">
-                  <Lock className="w-3 h-3 text-primary" />
-                  <span>{getFrameLabel(selectedMemory.frame)}</span>
-                </div>
-                <div className="px-3 py-1.5 rounded-full bg-black/60 backdrop-blur-md border border-white/15 text-[10px] font-black text-white/80 uppercase tracking-widest flex items-center gap-1.5">
-                  <span>{new Date(selectedMemory.date).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' })}</span>
-                </div>
-                <div className="px-3 py-1.5 rounded-full bg-black/60 backdrop-blur-md border border-emerald-500/20 text-[10px] font-bold text-white flex items-center gap-1.5">
-                  <Shield className="w-3 h-3 text-emerald-400" />
-                  <span>AES-256-GCM</span>
-                </div>
+            {/* PINKSNAP branding */}
+            <div className="mt-5 text-center select-none pointer-events-none">
+              <h2 className="font-hero text-xl sm:text-2xl tracking-wider">
+                <span className="text-white">PINK</span><span className="text-primary">SNAP</span>
+              </h2>
+              <p className="text-[11px] sm:text-xs font-black uppercase tracking-[.2em] text-white/60 mt-1">
+                {getFrameLabel(selectedMemory.frame)}  ·  {new Date(selectedMemory.date).toLocaleDateString()}
+              </p>
+              <div className="mt-2.5 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[10px] font-bold text-white/40">
+                <Shield className="w-3 h-3 text-emerald-400/70" />
+                <span>AES-256-GCM Encrypted</span>
               </div>
             </div>
           </div>
@@ -276,18 +233,13 @@ export default function Gallery() {
                   </div>
                   
                   <div className="flex justify-between items-center border-t border-black/10 pt-3 px-1">
-                    <div className="flex items-center gap-1.5">
-                      <button 
-                        onClick={() => handleDownload(memory.url, memory.date)}
-                        data-testid={`button-download-${memory.id}`}
-                        className="flex items-center gap-2 px-3 py-2 text-primary hover:bg-primary/10 rounded-xl font-black text-[10px] sm:text-xs transition-colors tracking-wider focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                      >
-                        <Download className="w-4 h-4" /> SAVE
-                      </button>
-                      <span className="hidden sm:flex items-center gap-1 text-[8px] font-bold text-emerald-600/70 px-1.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/15 select-none">
-                        <Shield className="w-2.5 h-2.5" /> AES-256
-                      </span>
-                    </div>
+                    <button 
+                      onClick={() => handleDownload(memory.url, memory.date)}
+                      data-testid={`button-download-${memory.id}`}
+                      className="flex items-center gap-2 px-3 py-2 text-primary hover:bg-primary/10 rounded-xl font-black text-[10px] sm:text-xs transition-colors tracking-wider focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                    >
+                      <Download className="w-4 h-4" /> SAVE
+                    </button>
                     <button 
                       onClick={() => handleDelete(memory.id)}
                       data-testid={`button-delete-${memory.id}`}
