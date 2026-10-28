@@ -227,7 +227,7 @@ export default function Edit() {
   const { toast } = useToast();
   const {
     shots, addShot, layout, frame, setFrame, filter, setFilter,
-    saveMemory, clearShots, removeShots,
+    saveMemory, clearShots, removeShots, setLatestStrip,
   } = useAppContext();
 
 
@@ -517,6 +517,8 @@ export default function Edit() {
     try {
       const dataUrl = await getOutputImage();
       if (!dataUrl) throw new Error('empty strip');
+
+      setLatestStrip(dataUrl);
 
       // Save to the in-app gallery FIRST, before triggering any download or
       // navigation.  This prevents the race condition where the 'Save & Exit'

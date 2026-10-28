@@ -51,7 +51,7 @@ const getFrameLabel = (frame: string) => {
 
 export default function Receipt() {
   const [, setLocation] = useLocation();
-  const { savedMemories, layout, frame, filter } = useAppContext();
+  const { savedMemories, latestStrip, layout, frame, filter, isLoadingMemories } = useAppContext();
   const { toast } = useToast();
   const [revealed, setRevealed] = useState(false);
   const [askPrint, setAskPrint] = useState(false);
@@ -76,7 +76,16 @@ export default function Receipt() {
     return () => window.removeEventListener('resize', computeScale);
   }, [computeScale]);
 
-  const latestMemory = savedMemories.length > 0 ? savedMemories[0] : null;
+  const primaryMemory = savedMemories.length > 0 ? savedMemories[0] : null;
+  const latestMemory = primaryMemory || (latestStrip ? {
+    id: 'strip-' + Date.now(),
+    url: latestStrip,
+    date: Date.now(),
+    layout: layout,
+    frame: frame,
+    mimeType: 'image/jpeg',
+  } : null);
+
   const sessionDate = latestMemory?.date ?? Date.now();
   const orderNumber = latestMemory
     ? latestMemory.id.slice(-8).toUpperCase()
@@ -299,7 +308,7 @@ export default function Receipt() {
 
             <div className="border-t border-dashed border-black/15 my-4" />
 
-            {latestMemory && (
+            {latestMemory ? (
               <div className="flex flex-col items-center my-5">
                 <div
                   className="bg-black/5 border border-black/10 rounded-sm p-2 shadow-inner"
@@ -317,7 +326,14 @@ export default function Receipt() {
                   -- your photo strip --
                 </p>
               </div>
-            )}
+            ) : isLoadingMemories ? (
+              <div className="flex flex-col items-center my-6 py-6 px-4 bg-black/[0.02] border border-dashed border-black/15 rounded-sm">
+                <div className="w-5 h-5 border-2 border-black/20 border-t-black/60 rounded-full animate-spin mb-2" />
+                <p className="font-mono text-[9px] text-black/40 tracking-wider uppercase">
+                  Decrypting photo strip...
+                </p>
+              </div>
+            ) : null}
 
             <div className="border-t border-dashed border-black/15 my-4" />
 

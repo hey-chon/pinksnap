@@ -148,8 +148,10 @@ export async function encryptDataUrl(dataUrl: string, userId: string): Promise<E
   // Convert encrypted bytes to base64
   const cipherBytes = new Uint8Array(ciphertextBuffer);
   let cipherBinary = '';
-  for (let i = 0; i < cipherBytes.byteLength; i++) {
-    cipherBinary += String.fromCharCode(cipherBytes[i]);
+  const CHUNK_SIZE = 8192;
+  for (let i = 0; i < cipherBytes.length; i += CHUNK_SIZE) {
+    const chunk = cipherBytes.subarray(i, i + CHUNK_SIZE);
+    cipherBinary += String.fromCharCode.apply(null, chunk as unknown as number[]);
   }
   const ciphertextBase64 = btoa(cipherBinary);
 
@@ -194,8 +196,10 @@ export async function decryptDataUrl(
 
   const decryptedBytes = new Uint8Array(decryptedBuffer);
   let decryptedBinary = '';
-  for (let i = 0; i < decryptedBytes.byteLength; i++) {
-    decryptedBinary += String.fromCharCode(decryptedBytes[i]);
+  const CHUNK_SIZE = 8192;
+  for (let i = 0; i < decryptedBytes.length; i += CHUNK_SIZE) {
+    const chunk = decryptedBytes.subarray(i, i + CHUNK_SIZE);
+    decryptedBinary += String.fromCharCode.apply(null, chunk as unknown as number[]);
   }
 
   return `data:${mimeType};base64,${btoa(decryptedBinary)}`;
@@ -325,7 +329,13 @@ export async function decryptBlob(
 export async function encryptShots(shots: string[], userId: string): Promise<string> {
   if (!shots || shots.length === 0) return JSON.stringify([]);
   const serialized = JSON.stringify(shots);
-  const enc = await encryptDataUrl(`data:application/json;base64,${btoa(serialized)}`, userId);
+  let b64 = '';
+  try {
+    b64 = btoa(serialized);
+  } catch {
+    b64 = btoa(encodeURIComponent(serialized).replace(/%([0-9A-F]{2})/g, (_, p1) => String.fromCharCode(parseInt(p1, 16))));
+  }
+  const enc = await encryptDataUrl(`data:application/json;base64,${b64}`, userId);
   return JSON.stringify(enc);
 }
 
@@ -348,12 +358,19 @@ export async function decryptShots(encryptedRecordStr: string, userId: string): 
         userId,
         'application/json'
       );
-      const b64 = dataUrl.split(',')[1];
-      const jsonStr = atob(b64);
-      return JSON.parse(jsonStr);
+      const b64 = dataUrl.split(',')[1] || '';
+      let jsonStr = '';
+      try {
+        jsonStr = decodeURIComponent(Array.from(atob(b64)).map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''));
+      } catch {
+        jsonStr = atob(b64);
+      }
+      const result = JSON.parse(jsonStr);
+      return Array.isArray(result) ? result : [];
     }
     return [];
   } catch {
     return [];
   }
 }
+

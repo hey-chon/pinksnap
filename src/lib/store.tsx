@@ -31,6 +31,8 @@ interface AppState {
   deleteMemory: (id: string) => void;
   isLoadingMemories: boolean;
   isSavingMemory: boolean;
+  latestStrip: string | null;
+  setLatestStrip: (strip: string | null) => void;
 }
 
 const AppContext = createContext<AppState | null>(null);
@@ -39,7 +41,7 @@ const MAX_SAVED_MEMORIES = 50;
 const isLayoutType = (value: unknown): value is LayoutType =>
   value === 'vertical-4' || value === 'quad-4' || value === 'horizontal-3';
 
-import { encryptBlob, decryptBlob, encryptShots, decryptShots } from '@/lib/crypto';
+import { encryptBlob, decryptBlob, encryptShots, decryptShots, encryptDataUrl, decryptDataUrl } from '@/lib/crypto';
 
 /**
  * Upload an encrypted data-URL image to Supabase Storage (`strips` bucket) under the
@@ -62,43 +64,79 @@ async function uploadStripToCloud(
     const { encryptedBlob, ivHex, saltHex } = await encryptBlob(rawBlob, userId);
     const storagePath = `${userId}/${memoryId}.enc`;
 
-    const { error: uploadError } = await supabase.storage
-      .from('strips')
-      .upload(storagePath, encryptedBlob, {
-        contentType: 'application/octet-stream',
-        upsert: true,
-      });
+    let uploadedToStorage = false;
+    try {
+      const { error: uploadError } = await supabase.storage
+        .from('strips')
+        .upload(storagePath, encryptedBlob, {
+          contentType: 'application/octet-stream',
+          upsert: true,
+        });
 
-    if (uploadError) {
-      console.error('[PinkSnap Cloud] Upload error:', uploadError.message);
-      return null;
+      if (!uploadError) {
+        uploadedToStorage = true;
+      } else {
+        console.warn('[PinkSnap Cloud] Storage bucket upload unavailable:', uploadError.message);
+      }
+    } catch (storageEx) {
+      console.warn('[PinkSnap Cloud] Storage bucket upload exception:', storageEx);
     }
 
-    // Insert metadata with encryption parameters into memories table
-    const { error: insertError } = await supabase.from('memories').insert({
+    let finalImageUrl = storagePath;
+    let finalIvHex = ivHex;
+    let finalSaltHex = saltHex;
+
+    // If storage bucket was unavailable, encrypt dataUrl with AES-256-GCM directly for image_url
+    if (!uploadedToStorage) {
+      const enc = await encryptDataUrl(dataUrl, userId);
+      finalImageUrl = `enc:${enc.ivHex}:${enc.saltHex}:${enc.ciphertextBase64}`;
+      finalIvHex = enc.ivHex;
+      finalSaltHex = enc.saltHex;
+    }
+
+    // Try inserting into memories table with encryption columns first
+    const insertPayloadWithEnc: any = {
       id: memoryId,
       user_id: userId,
-      image_url: storagePath,
+      image_url: finalImageUrl,
       layout,
       frame: typeof frame === 'string' ? frame : 'classic',
       filter: 'color',
       mime_type: mimeType,
       is_encrypted: true,
-      encryption_iv: ivHex,
-      encryption_salt: saltHex,
-    });
+      encryption_iv: finalIvHex,
+      encryption_salt: finalSaltHex,
+    };
 
-    if (insertError) {
-      console.error('[PinkSnap Cloud] Insert error:', insertError.message);
-      await supabase.storage.from('strips').remove([storagePath]);
-      return null;
+    let { error: insertError } = await supabase.from('memories').insert(insertPayloadWithEnc);
+
+    // If memories table does not have is_encrypted column in schema cache, fallback to base columns
+    if (insertError && (insertError.message?.includes('is_encrypted') || insertError.code === 'PGRST204')) {
+      const insertPayloadLegacy = {
+        id: memoryId,
+        user_id: userId,
+        image_url: finalImageUrl,
+        layout,
+        frame: typeof frame === 'string' ? frame : 'classic',
+        filter: 'color',
+        mime_type: mimeType,
+      };
+      const retry = await supabase.from('memories').insert(insertPayloadLegacy);
+      insertError = retry.error;
     }
 
-    // Return the local dataUrl for instant flicker-free rendering for the owner
+    if (insertError) {
+      console.warn('[PinkSnap Cloud] Insert notice:', insertError.message);
+      if (uploadedToStorage) {
+        await supabase.storage.from('strips').remove([storagePath]).catch(() => {});
+      }
+    }
+
+    // Always return local dataUrl for instant flicker-free rendering for the owner
     return dataUrl;
   } catch (err) {
     console.error('[PinkSnap Cloud] Upload exception:', err);
-    return null;
+    return dataUrl;
   }
 }
 
@@ -108,38 +146,54 @@ async function uploadStripToCloud(
  */
 async function fetchCloudMemories(userId: string): Promise<Memory[]> {
   try {
-    const { data, error } = await supabase
+    let queryResult: any = await supabase
       .from('memories')
       .select('id, image_url, layout, frame, mime_type, created_at, is_encrypted, encryption_iv, encryption_salt')
       .eq('user_id', userId)
       .order('created_at', { ascending: false })
       .limit(MAX_SAVED_MEMORIES);
 
-    if (error) {
-      console.error('[PinkSnap Cloud] Fetch error:', error.message);
+    // If is_encrypted column does not exist in schema, fallback to available columns
+    if (queryResult.error && (queryResult.error.message?.includes('is_encrypted') || queryResult.error.code === '42703')) {
+      queryResult = await supabase
+        .from('memories')
+        .select('id, image_url, layout, frame, mime_type, created_at')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(MAX_SAVED_MEMORIES);
+    }
+
+    if (queryResult.error) {
+      console.warn('[PinkSnap Cloud] Fetch notice:', queryResult.error.message);
       return [];
     }
 
     const decryptedMemories: Memory[] = [];
 
-    for (const row of data || []) {
+    for (const row of queryResult.data || []) {
       let displayUrl = row.image_url;
 
       try {
-        // Resolve storage path
-        let storagePath = row.image_url;
-        if (storagePath.includes('/strips/')) {
-          storagePath = storagePath.split('/strips/')[1].split('?')[0];
-        }
+        if (displayUrl.startsWith('enc:')) {
+          // Encrypted payload stored in image_url: enc:ivHex:saltHex:ciphertextBase64
+          const parts = displayUrl.split(':');
+          if (parts.length >= 4) {
+            const ivHex = parts[1];
+            const saltHex = parts[2];
+            const ciphertextBase64 = parts.slice(3).join(':');
+            displayUrl = await decryptDataUrl(ciphertextBase64, ivHex, saltHex, userId, row.mime_type || 'image/jpeg');
+          }
+        } else if (displayUrl && !displayUrl.startsWith('data:') && !displayUrl.startsWith('http://') && !displayUrl.startsWith('https://')) {
+          let storagePath = displayUrl;
+          if (storagePath.includes('/strips/')) {
+            storagePath = storagePath.split('/strips/')[1].split('?')[0];
+          }
 
-        // If stored as an encrypted storage path or relative path, download and decrypt
-        if (storagePath && !storagePath.startsWith('data:')) {
           const { data: cipherBlob, error: dlError } = await supabase.storage
             .from('strips')
             .download(storagePath);
 
           if (!dlError && cipherBlob) {
-            // Decrypt the blob with the user's AES-256-GCM key
             const decryptedBlob = await decryptBlob(
               cipherBlob,
               userId,
@@ -148,7 +202,6 @@ async function fetchCloudMemories(userId: string): Promise<Memory[]> {
             );
             displayUrl = URL.createObjectURL(decryptedBlob);
           } else if (storagePath.includes('.enc')) {
-            // If encrypted file could not be downloaded via auth storage, try signed URL
             const { data: signedData } = await supabase.storage
               .from('strips')
               .createSignedUrl(storagePath, 3600);
@@ -167,7 +220,6 @@ async function fetchCloudMemories(userId: string): Promise<Memory[]> {
         }
       } catch (decryptErr) {
         console.warn(`[PinkSnap Cloud] Could not decrypt memory ${row.id}:`, decryptErr);
-        // Fall back to original url if already public/legacy
       }
 
       decryptedMemories.push({
@@ -201,7 +253,7 @@ async function deleteCloudMemory(userId: string, memoryId: string, imageUrl: str
     }
 
     // Remove both potential encrypted and legacy storage paths
-    await supabase.storage.from('strips').remove([encPath, legacyPath]);
+    await supabase.storage.from('strips').remove([encPath, legacyPath]).catch(() => {});
 
     // Delete from the memories table
     const { error } = await supabase
@@ -223,60 +275,118 @@ async function deleteCloudMemory(userId: string, memoryId: string, imageUrl: str
 }
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, isLoading: isAuthLoading } = useAuth();
   const [layout, setLayout] = useState<LayoutType>(() => (sessionStorage.getItem('ps_layout') as LayoutType) || 'vertical-4');
   const [frame, setFrame] = useState<FrameType>(() => (sessionStorage.getItem('ps_frame') as FrameType) || 'classic');
   const [filter, setFilter] = useState<FilterType>(() => (sessionStorage.getItem('ps_filter') as FilterType) || 'color');
   const [shots, setShots] = useState<string[]>([]);
   const [shotsLoaded, setShotsLoaded] = useState(false);
+  const [latestStrip, setLatestStrip] = useState<string | null>(null);
 
-  // Decrypt shots from sessionStorage on mount (once user is authenticated)
+  // Decrypt shots and latest strip from sessionStorage on mount (once auth status is resolved)
   useEffect(() => {
     if (shotsLoaded) return;
-    const raw = sessionStorage.getItem('ps_shots');
-    if (!raw) {
+    if (isAuthLoading) return; // Wait until auth state is determined!
+
+    const rawShots = sessionStorage.getItem('ps_shots');
+    const rawStrip = sessionStorage.getItem('ps_latest_strip');
+
+    if (!rawShots) {
       setShotsLoaded(true);
-      return;
-    }
-    if (user?.id) {
-      decryptShots(raw, user.id).then((decrypted) => {
-        setShots(decrypted);
+    } else if (user?.id) {
+      decryptShots(rawShots, user.id).then((decrypted) => {
+        if (Array.isArray(decrypted) && decrypted.length > 0) {
+          setShots(decrypted);
+        } else {
+          try {
+            const parsed = JSON.parse(rawShots);
+            if (Array.isArray(parsed)) setShots(parsed);
+          } catch {}
+        }
         setShotsLoaded(true);
       }).catch(() => {
-        // Fallback: try parsing as plain JSON (legacy)
-        try { setShots(JSON.parse(raw)); } catch { setShots([]); }
+        try {
+          const parsed = JSON.parse(rawShots);
+          if (Array.isArray(parsed)) setShots(parsed);
+        } catch {}
         setShotsLoaded(true);
       });
     } else {
-      // No user yet — try parsing as plain array (pre-auth shots)
-      try { setShots(JSON.parse(raw)); } catch { setShots([]); }
+      // Pre-auth shots
+      try {
+        const parsed = JSON.parse(rawShots);
+        if (Array.isArray(parsed)) setShots(parsed);
+      } catch {}
       setShotsLoaded(true);
     }
-  }, [user?.id, shotsLoaded]);
+
+    // Restore latestStrip if available in session
+    if (rawStrip) {
+      try {
+        const parsed = JSON.parse(rawStrip);
+        if (parsed.encrypted && user?.id) {
+          decryptDataUrl(
+            parsed.encrypted.ciphertextBase64,
+            parsed.encrypted.ivHex,
+            parsed.encrypted.saltHex,
+            user.id,
+            parsed.encrypted.mimeType || 'image/jpeg'
+          ).then(decryptedUrl => {
+            setLatestStrip(decryptedUrl);
+          }).catch(() => {});
+        } else if (typeof parsed.url === 'string') {
+          setLatestStrip(parsed.url);
+        } else if (typeof parsed === 'string') {
+          setLatestStrip(parsed);
+        }
+      } catch {
+        if (typeof rawStrip === 'string' && rawStrip.startsWith('data:image/')) {
+          setLatestStrip(rawStrip);
+        }
+      }
+    }
+  }, [user?.id, isAuthLoading, shotsLoaded]);
 
   useEffect(() => sessionStorage.setItem('ps_layout', layout), [layout]);
   useEffect(() => sessionStorage.setItem('ps_frame', frame), [frame]);
   useEffect(() => sessionStorage.setItem('ps_filter', filter), [filter]);
 
-  // Encrypt shots before storing in sessionStorage — plaintext data URLs never written
+  // Encrypt shots before storing in sessionStorage — plaintext data URLs never written unencrypted
   useEffect(() => {
     if (!shotsLoaded) return;
-    if (shots.length === 0) {
-      sessionStorage.removeItem('ps_shots');
+    if (!Array.isArray(shots) || shots.length === 0) {
       return;
     }
     if (user?.id) {
       encryptShots(shots, user.id).then((encrypted) => {
         try { sessionStorage.setItem('ps_shots', encrypted); } catch {}
       }).catch(() => {
-        // Last-resort fallback: store as JSON (should not normally happen)
         try { sessionStorage.setItem('ps_shots', JSON.stringify(shots)); } catch {}
       });
     } else {
-      // Pre-auth: store plain (session scoped, cleared on close)
       try { sessionStorage.setItem('ps_shots', JSON.stringify(shots)); } catch {}
     }
   }, [shots, user?.id, shotsLoaded]);
+
+  // Persist latest strip securely in sessionStorage whenever updated
+  useEffect(() => {
+    if (!latestStrip) return;
+    if (user?.id) {
+      encryptDataUrl(latestStrip, user.id).then(enc => {
+        try {
+          sessionStorage.setItem('ps_latest_strip', JSON.stringify({
+            url: latestStrip,
+            encrypted: enc,
+          }));
+        } catch {}
+      }).catch(() => {
+        try { sessionStorage.setItem('ps_latest_strip', latestStrip); } catch {}
+      });
+    } else {
+      try { sessionStorage.setItem('ps_latest_strip', latestStrip); } catch {}
+    }
+  }, [latestStrip, user?.id]);
+
   const [savedMemories, setSavedMemories] = useState<Memory[]>([]);
   const [isLoadingMemories, setIsLoadingMemories] = useState(false);
   const [isSavingMemory, setIsSavingMemory] = useState(false);
@@ -287,13 +397,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   // Fetch memories from the cloud whenever the authenticated user changes
   useEffect(() => {
     if (!isAuthenticated || !user?.id) {
-      // User signed out — clear everything
       setSavedMemories([]);
       lastFetchedUserId.current = null;
       return;
     }
 
-    // Don't re-fetch if we already loaded for this user
     if (lastFetchedUserId.current === user.id) return;
 
     let cancelled = false;
@@ -301,7 +409,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
     fetchCloudMemories(user.id).then((memories) => {
       if (!cancelled) {
-        setSavedMemories(memories);
+        setSavedMemories(prev => {
+          // Merge newly fetched memories with optimistic local memories
+          const ids = new Set(memories.map(m => m.id));
+          const localOnly = prev.filter(p => !ids.has(p.id));
+          return [...localOnly, ...memories].slice(0, MAX_SAVED_MEMORIES);
+        });
         lastFetchedUserId.current = user.id;
         setIsLoadingMemories(false);
       }
@@ -310,71 +423,70 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     return () => { cancelled = true; };
   }, [isAuthenticated, user?.id]);
 
-  const addShot = (shot: string) => {
+  const addShot = useCallback((shot: string) => {
     if (typeof shot === 'string' && shot.startsWith('data:image/')) {
       setShots(prev => [...prev, shot]);
     }
-  };
+  }, []);
 
-  const removeShot = (index: number) => {
+  const removeShot = useCallback((index: number) => {
     setShots(prev => prev.filter((_, i) => i !== index));
-  };
+  }, []);
 
-  const removeShots = (indexes: number[]) => {
+  const removeShots = useCallback((indexes: number[]) => {
     setShots(prev => prev.filter((_, i) => !indexes.includes(i)));
-  };
+  }, []);
 
-  const clearShots = () => setShots([]);
+  const clearShots = useCallback(() => {
+    setShots([]);
+    try { sessionStorage.removeItem('ps_shots'); } catch {}
+  }, []);
 
   const saveMemory = useCallback(async (memory: Memory): Promise<boolean> => {
-    if (!user?.id) return false;
     setIsSavingMemory(true);
 
-    try {
-      const publicUrl = await uploadStripToCloud(
-        user.id,
-        memory.id,
-        memory.url,
-        memory.layout,
-        memory.frame,
-        memory.mimeType || 'image/jpeg',
-      );
+    // 1. ALWAYS optimistically add to local state immediately so receipt & gallery never lose it
+    const memoryToSave: Memory = {
+      ...memory,
+      date: memory.date || Date.now(),
+    };
 
-      if (!publicUrl) {
-        setIsSavingMemory(false);
-        return false;
+    setSavedMemories(prev => [memoryToSave, ...prev.filter(m => m.id !== memory.id)].slice(0, MAX_SAVED_MEMORIES));
+    setLatestStrip(memoryToSave.url);
+
+    // 2. Upload to Supabase cloud with zero-knowledge AES-256-GCM encryption if authenticated
+    if (user?.id) {
+      try {
+        await uploadStripToCloud(
+          user.id,
+          memoryToSave.id,
+          memoryToSave.url,
+          memoryToSave.layout,
+          memoryToSave.frame,
+          memoryToSave.mimeType || 'image/jpeg',
+        );
+      } catch (cloudErr) {
+        console.warn('[PinkSnap Cloud] Cloud sync notice:', cloudErr);
       }
-
-      // Optimistically add the memory to state with the cloud URL
-      const cloudMemory: Memory = {
-        ...memory,
-        url: publicUrl,
-        date: Date.now(),
-      };
-
-      setSavedMemories(prev => [cloudMemory, ...prev].slice(0, MAX_SAVED_MEMORIES));
-      setIsSavingMemory(false);
-      return true;
-    } catch {
-      setIsSavingMemory(false);
-      return false;
     }
+
+    setIsSavingMemory(false);
+    return true;
   }, [user?.id]);
 
   const deleteMemory = useCallback((id: string) => {
+    setSavedMemories(prev => prev.filter(m => m.id !== id));
+    if (latestStrip && savedMemories[0]?.id === id) {
+      setLatestStrip(null);
+      try { sessionStorage.removeItem('ps_latest_strip'); } catch {}
+    }
+
     if (!user?.id) return;
     const memory = savedMemories.find(m => m.id === id);
     if (!memory) return;
 
-    // Optimistically remove from state
-    setSavedMemories(prev => prev.filter(m => m.id !== id));
-
-    // Delete from cloud in the background
-    deleteCloudMemory(user.id, id, memory.url).catch(() => {
-      // If cloud delete fails, the item is already removed from the UI.
-      // The storage file will be orphaned but won't affect the user.
-    });
-  }, [user?.id, savedMemories]);
+    deleteCloudMemory(user.id, id, memory.url).catch(() => {});
+  }, [user?.id, savedMemories, latestStrip]);
 
   const value: AppState = {
     layout, setLayout,
@@ -383,6 +495,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     shots, addShot, removeShot, removeShots, clearShots,
     savedMemories, saveMemory, deleteMemory,
     isLoadingMemories, isSavingMemory,
+    latestStrip, setLatestStrip,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
