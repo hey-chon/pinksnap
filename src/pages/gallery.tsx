@@ -123,7 +123,7 @@ export default function Gallery() {
               onContextMenu={(e) => { e.preventDefault(); return false; }}
               draggable={false}
               decoding="async"
-              className="max-h-[70dvh] sm:max-h-[78dvh] w-auto object-contain drop-shadow-[0_25px_60px_rgba(245,61,137,0.35)] rounded-2xl select-none animate-in zoom-in-95 duration-200 pointer-events-none"
+              className="max-h-[55dvh] sm:max-h-[65dvh] w-auto object-contain drop-shadow-[0_25px_60px_rgba(245,61,137,0.35)] rounded-2xl select-none animate-in zoom-in-95 duration-200 pointer-events-none"
             />
 
             {/* PINKSNAP branding */}
