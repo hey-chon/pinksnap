@@ -73,9 +73,10 @@ function ArtisanShowcaseCard({
     const canvas = canvasRef.current;
     if (!canvas) return;
     const dpr = Math.min(2, typeof window !== 'undefined' ? (window.devicePixelRatio || 2) : 2);
+    // Standardize all artisan strips to the exact same uniform dimensions
     const targetHeight = 320;
+    const targetWidth = 104;
     const renderScale = (targetHeight * dpr) / template.nh;
-    const targetWidth = Math.round(template.nw * (targetHeight / template.nh));
     const renderW = Math.round(targetWidth * dpr);
     const renderH = Math.round(targetHeight * dpr);
 
@@ -113,24 +114,27 @@ function ArtisanShowcaseCard({
     <button
       type="button"
       onClick={onSelect}
-      className="group relative flex flex-col items-center shrink-0 text-left focus:outline-none cursor-pointer"
+      className="group relative flex flex-col items-center shrink-0 text-left focus:outline-none cursor-pointer bg-transparent"
       title={`Try ${template.label} Artisan theme`}
     >
-      <div className="relative overflow-hidden rounded-2xl bg-white/90 p-2 sm:p-2.5 border border-pink-100/80 shadow-md transition-all duration-300 group-hover:shadow-2xl group-hover:scale-[1.03] group-hover:border-primary/50 group-active:scale-95">
+      {/* Strip frame with clear background — NO white box, NO black gradient */}
+      <div className="relative overflow-hidden rounded-xl bg-transparent transition-all duration-300 group-hover:scale-[1.04] group-active:scale-95 drop-shadow-md group-hover:drop-shadow-xl">
         <canvas
           ref={canvasRef}
-          style={{ height: '300px', width: 'auto' }}
-          className="block h-[240px] sm:h-[280px] md:h-[300px] w-auto rounded-xl select-none"
+          className="block h-[260px] sm:h-[300px] md:h-[320px] w-[86px] sm:w-[98px] md:w-[104px] rounded-xl select-none bg-transparent"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-2xl flex items-end justify-center p-3">
-          <span className="px-3 py-1.5 rounded-full bg-white text-neutral-900 text-[10px] font-black uppercase tracking-wider shadow-md transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
-            Use Theme →
+
+        {/* Clean hover badge — arrow ALWAYS beside text, NO black gradient */}
+        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none p-1.5">
+          <span className="whitespace-nowrap inline-flex items-center gap-1 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full bg-primary text-white text-[9px] sm:text-[10px] font-black uppercase tracking-wider shadow-xl transform scale-90 group-hover:scale-100 transition-transform duration-200">
+            <span>USE THEME</span>
+            <span className="text-xs">→</span>
           </span>
         </div>
       </div>
 
-      <div className="text-center mt-2.5">
-        <p className="font-display text-xs sm:text-sm font-black text-foreground tracking-wide uppercase group-hover:text-primary transition-colors">
+      <div className="text-center mt-2.5 w-[86px] sm:w-[98px] md:w-[104px]">
+        <p className="font-display text-xs sm:text-sm font-black text-foreground tracking-wide uppercase group-hover:text-primary transition-colors truncate">
           {template.label}
         </p>
         <p className="text-[10px] font-bold text-foreground/45 uppercase tracking-widest mt-0.5">
