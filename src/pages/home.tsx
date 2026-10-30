@@ -1,9 +1,10 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Link, useLocation } from 'wouter';
 import { TopNav, BottomNav } from '@/components/layout';
 import { ArrowRight, Camera, Download, LayoutGrid, MessageCircle, Sparkles, Wand2 } from 'lucide-react';
 import Credits from '@/components/credits';
 import { useAuth } from '@/hooks/use-auth';
+import { ARTISAN_TEMPLATES, ArtisanTemplate } from '@/lib/customization';
 
 
 const STEPS = [
@@ -59,17 +60,86 @@ const STEPS = [
   },
 ];
 
-const ARTISAN_SHOWCASE = [
-  { id: 'the-1975', label: 'The 1975', note: 'Magazine · 4 shots', img: '/templates/the-1975.jpg' },
-  { id: 'director-cut', label: "Director's Cut", note: 'Cinema · 3 shots', img: '/templates/director-cut.jpg' },
-  { id: 'port-archive', label: 'The Archive', note: 'Gallery · 4 shots', img: '/templates/image.jpg' },
-  { id: 'theater-show', label: 'Theater Show', note: 'Vintage · 4 shots', img: '/templates/theater-show.png' },
-  { id: 'newspaper', label: 'Newspaper', note: 'Editorial · 3 shots', img: '/templates/newspaper.jpg' },
-  { id: 'retro-tv', label: 'Retro TV', note: 'CRT TV · 4 shots', img: '/templates/retro-tv.png' },
-  { id: 'love-stamp', label: 'Love Stamp', note: 'Postage · 4 shots', img: '/templates/love-stamp.jpg' },
-  { id: 'every-moment-up', label: 'The Moments', note: 'Cobalt · 3 shots', img: '/templates/every-moment-up.png' },
-  { id: 'mora', label: 'Mora', note: 'Minimal · 4 shots', img: '/templates/mora.png' },
-];
+function ArtisanShowcaseCard({
+  template,
+  onSelect,
+}: {
+  template: ArtisanTemplate;
+  onSelect: () => void;
+}) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const dpr = Math.min(2, typeof window !== 'undefined' ? (window.devicePixelRatio || 2) : 2);
+    const targetHeight = 320;
+    const renderScale = (targetHeight * dpr) / template.nh;
+    const targetWidth = Math.round(template.nw * (targetHeight / template.nh));
+    const renderW = Math.round(targetWidth * dpr);
+    const renderH = Math.round(targetHeight * dpr);
+
+    canvas.width = renderW;
+    canvas.height = renderH;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+    const now = Date.now();
+
+    let cancelled = false;
+    const render = async () => {
+      if (template.paintBgAsync) {
+        await template.paintBgAsync(ctx, renderW, renderH, renderScale, now);
+      } else {
+        template.paintBg(ctx, renderW, renderH, renderScale, now);
+      }
+      if (cancelled) return;
+      if (template.paintFgAsync) {
+        await template.paintFgAsync(ctx, renderW, renderH, renderScale, now);
+      } else {
+        template.paintFg(ctx, renderW, renderH, renderScale, now);
+      }
+    };
+    render();
+    return () => {
+      cancelled = true;
+    };
+  }, [template]);
+
+  const photoCount = template.slots?.length ? `${template.slots.length} photos` : '4 photos';
+
+  return (
+    <button
+      type="button"
+      onClick={onSelect}
+      className="group relative flex flex-col items-center shrink-0 text-left focus:outline-none cursor-pointer"
+      title={`Try ${template.label} Artisan theme`}
+    >
+      <div className="relative overflow-hidden rounded-2xl bg-white/90 p-2 sm:p-2.5 border border-pink-100/80 shadow-md transition-all duration-300 group-hover:shadow-2xl group-hover:scale-[1.03] group-hover:border-primary/50 group-active:scale-95">
+        <canvas
+          ref={canvasRef}
+          style={{ height: '300px', width: 'auto' }}
+          className="block h-[240px] sm:h-[280px] md:h-[300px] w-auto rounded-xl select-none"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-2xl flex items-end justify-center p-3">
+          <span className="px-3 py-1.5 rounded-full bg-white text-neutral-900 text-[10px] font-black uppercase tracking-wider shadow-md transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
+            Use Theme →
+          </span>
+        </div>
+      </div>
+
+      <div className="text-center mt-2.5">
+        <p className="font-display text-xs sm:text-sm font-black text-foreground tracking-wide uppercase group-hover:text-primary transition-colors">
+          {template.label}
+        </p>
+        <p className="text-[10px] font-bold text-foreground/45 uppercase tracking-widest mt-0.5">
+          {photoCount}
+        </p>
+      </div>
+    </button>
+  );
+}
 
 export default function Home() {
   const [, navigate] = useLocation();
@@ -283,41 +353,15 @@ export default function Home() {
           {/* Horizontal Infinite Marquee Loop */}
           <div className="artisan-marquee-wrapper overflow-hidden py-3 -mx-5 sm:-mx-8 px-5 sm:px-8">
             <div className="artisan-marquee-track gap-4 sm:gap-6">
-              {[...ARTISAN_SHOWCASE, ...ARTISAN_SHOWCASE].map((item, idx) => (
-                <button
-                  key={`${item.id}-${idx}`}
-                  type="button"
-                  onClick={() => {
-                    sessionStorage.setItem('ps_edit_artisan', item.id);
+              {[...ARTISAN_TEMPLATES, ...ARTISAN_TEMPLATES].map((template, idx) => (
+                <ArtisanShowcaseCard
+                  key={`${template.id}-${idx}`}
+                  template={template}
+                  onSelect={() => {
+                    sessionStorage.setItem('ps_edit_artisan', template.id);
                     handleGetStarted();
                   }}
-                  className="group relative flex flex-col items-center shrink-0 text-left focus:outline-none cursor-pointer"
-                  title={`Try ${item.label} Artisan theme`}
-                >
-                  <div className="relative overflow-hidden rounded-2xl bg-white/80 p-2 sm:p-2.5 border border-pink-100/70 shadow-md transition-all duration-300 group-hover:shadow-2xl group-hover:scale-[1.03] group-hover:border-primary/40 group-active:scale-95">
-                    <img
-                      src={item.img}
-                      alt={`${item.label} Artisan photo strip`}
-                      loading="lazy"
-                      draggable={false}
-                      className="h-64 sm:h-80 md:h-[340px] w-auto object-contain rounded-xl select-none"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-2xl flex items-end justify-center p-3">
-                      <span className="px-3 py-1.5 rounded-full bg-white text-neutral-900 text-[10px] font-black uppercase tracking-wider shadow-md transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
-                        Try Theme →
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="text-center mt-2.5">
-                    <p className="font-display text-xs sm:text-sm font-black text-foreground tracking-wide uppercase group-hover:text-primary transition-colors">
-                      {item.label}
-                    </p>
-                    <p className="text-[10px] font-bold text-foreground/45 uppercase tracking-widest mt-0.5">
-                      {item.note}
-                    </p>
-                  </div>
-                </button>
+                />
               ))}
             </div>
           </div>
