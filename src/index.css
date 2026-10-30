@@ -1328,6 +1328,34 @@ html, body { overflow-x: hidden; }
 }
 
 /* ==========================================================================
+   Artisan Strips Showcase Loop
+   ========================================================================== */
+
+@keyframes artisan-marquee-scroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.artisan-marquee-wrapper {
+  mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
+}
+
+.artisan-marquee-track {
+  display: flex;
+  width: max-content;
+  animation: artisan-marquee-scroll 38s linear infinite;
+}
+
+.artisan-marquee-track:hover {
+  animation-play-state: paused;
+}
+
+/* ==========================================================================
    Creator & Credits Section Styles
    ========================================================================== */
 

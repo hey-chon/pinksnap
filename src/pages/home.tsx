@@ -59,6 +59,18 @@ const STEPS = [
   },
 ];
 
+const ARTISAN_SHOWCASE = [
+  { id: 'the-1975', label: 'The 1975', note: 'Magazine · 4 shots', img: '/templates/the-1975.jpg' },
+  { id: 'director-cut', label: "Director's Cut", note: 'Cinema · 3 shots', img: '/templates/director-cut.jpg' },
+  { id: 'port-archive', label: 'The Archive', note: 'Gallery · 4 shots', img: '/templates/image.jpg' },
+  { id: 'theater-show', label: 'Theater Show', note: 'Vintage · 4 shots', img: '/templates/theater-show.png' },
+  { id: 'newspaper', label: 'Newspaper', note: 'Editorial · 3 shots', img: '/templates/newspaper.jpg' },
+  { id: 'retro-tv', label: 'Retro TV', note: 'CRT TV · 4 shots', img: '/templates/retro-tv.png' },
+  { id: 'love-stamp', label: 'Love Stamp', note: 'Postage · 4 shots', img: '/templates/love-stamp.jpg' },
+  { id: 'every-moment-up', label: 'The Moments', note: 'Cobalt · 3 shots', img: '/templates/every-moment-up.png' },
+  { id: 'mora', label: 'Mora', note: 'Minimal · 4 shots', img: '/templates/mora.png' },
+];
+
 export default function Home() {
   const [, navigate] = useLocation();
   const { isAuthenticated } = useAuth();
@@ -235,6 +247,80 @@ export default function Home() {
             </Link>
           </div>
 
+        </section>
+
+        {/* ── ARTISAN STRIPS — Cinematic Showcase Loop ── */}
+        <section aria-labelledby="artisan-showcase-title" className="relative z-10 w-full max-w-6xl mx-auto py-8 sm:py-14">
+          {/* Cinematic Header */}
+          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 mb-6 px-1">
+            <div>
+              <p className="text-[11px] font-black tracking-[.25em] text-primary uppercase mb-1.5 flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+                THEMED EDITIONS
+              </p>
+              <h2
+                id="artisan-showcase-title"
+                className="font-hero text-5xl sm:text-7xl md:text-8xl tracking-tight text-foreground leading-[0.88] uppercase"
+              >
+                ARTISAN <span className="text-primary">STRIPS.</span>
+              </h2>
+            </div>
+
+            <div className="flex flex-col sm:items-end gap-1">
+              <p className="text-[11px] sm:text-xs font-bold text-foreground/50 tracking-wider uppercase">
+                Curated layouts & editorial prints
+              </p>
+              <button
+                type="button"
+                onClick={handleGetStarted}
+                className="inline-flex items-center gap-1.5 text-xs font-black text-primary hover:text-primary/80 uppercase tracking-wider transition-all hover:translate-x-0.5 cursor-pointer"
+              >
+                TRY ARTISAN THEMES <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
+
+          {/* Horizontal Infinite Marquee Loop */}
+          <div className="artisan-marquee-wrapper overflow-hidden py-3 -mx-5 sm:-mx-8 px-5 sm:px-8">
+            <div className="artisan-marquee-track gap-4 sm:gap-6">
+              {[...ARTISAN_SHOWCASE, ...ARTISAN_SHOWCASE].map((item, idx) => (
+                <button
+                  key={`${item.id}-${idx}`}
+                  type="button"
+                  onClick={() => {
+                    sessionStorage.setItem('ps_edit_artisan', item.id);
+                    handleGetStarted();
+                  }}
+                  className="group relative flex flex-col items-center shrink-0 text-left focus:outline-none cursor-pointer"
+                  title={`Try ${item.label} Artisan theme`}
+                >
+                  <div className="relative overflow-hidden rounded-2xl bg-white/80 p-2 sm:p-2.5 border border-pink-100/70 shadow-md transition-all duration-300 group-hover:shadow-2xl group-hover:scale-[1.03] group-hover:border-primary/40 group-active:scale-95">
+                    <img
+                      src={item.img}
+                      alt={`${item.label} Artisan photo strip`}
+                      loading="lazy"
+                      draggable={false}
+                      className="h-64 sm:h-80 md:h-[340px] w-auto object-contain rounded-xl select-none"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-2xl flex items-end justify-center p-3">
+                      <span className="px-3 py-1.5 rounded-full bg-white text-neutral-900 text-[10px] font-black uppercase tracking-wider shadow-md transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
+                        Try Theme →
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="text-center mt-2.5">
+                    <p className="font-display text-xs sm:text-sm font-black text-foreground tracking-wide uppercase group-hover:text-primary transition-colors">
+                      {item.label}
+                    </p>
+                    <p className="text-[10px] font-bold text-foreground/45 uppercase tracking-widest mt-0.5">
+                      {item.note}
+                    </p>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
         </section>
 
         <Credits />
