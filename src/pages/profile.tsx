@@ -1084,14 +1084,18 @@ export default function ProfilePage() {
 
           </div>
 
-          {/* ── Zero-Knowledge Vault Link ── */}
-          <div className="text-center mb-4">
+          {/* ── Zero-Knowledge Vault Minimized Hyperlink ── */}
+          <div className="flex items-center justify-center mb-5">
             <button
               type="button"
               onClick={() => setShowVaultModal(true)}
-              className="text-xs text-neutral-500 hover:text-neutral-900 underline underline-offset-2 cursor-pointer transition-colors"
+              className="inline-flex items-center gap-2 text-xs font-black text-foreground/60 hover:text-primary transition-all underline underline-offset-4 decoration-primary/40 hover:decoration-primary cursor-pointer py-1 px-3 rounded-full hover:bg-primary/[0.04] group"
             >
-              Zero-Knowledge Vault
+              <Shield className="w-3.5 h-3.5 text-primary group-hover:scale-110 transition-transform" />
+              <span>Zero-Knowledge Photo Vault</span>
+              <span className="text-[9px] bg-primary/10 text-primary px-1.5 py-0.5 rounded font-black no-underline">
+                AES-256-GCM
+              </span>
             </button>
           </div>
 
@@ -1419,10 +1423,10 @@ export default function ProfilePage() {
               <button
                 type="button"
                 onClick={() => setShowVaultModal(false)}
-                className="text-neutral-400 hover:text-neutral-700 text-sm font-semibold cursor-pointer px-1.5 py-0.5 rounded"
+                className="w-7 h-7 rounded-full bg-foreground/5 hover:bg-foreground/10 text-foreground/60 flex items-center justify-center transition-colors cursor-pointer"
                 aria-label="Close"
               >
-                ✕
+                <X className="w-4 h-4" />
               </button>
             </div>
 
@@ -1436,7 +1440,7 @@ export default function ProfilePage() {
               <button
                 type="button"
                 onClick={() => setShowVaultModal(false)}
-                className="px-3 py-1.5 text-xs font-semibold bg-neutral-900 hover:bg-black text-white rounded-lg cursor-pointer"
+                className="px-4 py-2 rounded-xl bg-primary hover:bg-primary/90 text-white text-xs font-black uppercase tracking-wider transition-all cursor-pointer shadow-sm active:scale-95"
               >
                 Close
               </button>
