@@ -841,10 +841,10 @@ export default function ProfilePage() {
                   type="button"
                   onClick={handleShareProfile}
                   data-testid="button-share-profile"
-                  className="p-2 sm:px-3 sm:py-2 rounded-full bg-foreground/[0.04] hover:bg-foreground/[0.08] text-foreground/80 border border-black/[0.08] text-xs font-black uppercase tracking-wider transition-all flex items-center gap-1.5 active:scale-95"
+                  className="px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-full bg-white hover:bg-neutral-50 text-neutral-900 border border-neutral-300 shadow-sm text-xs font-bold transition-all flex items-center gap-1.5 active:scale-95 cursor-pointer"
                   title="Share profile"
                 >
-                  <Share2 className="w-3.5 h-3.5" />
+                  <Share2 className="w-3.5 h-3.5 text-neutral-700" />
                   <span className="hidden sm:inline">Share</span>
                 </button>
               </div>
@@ -1084,18 +1084,14 @@ export default function ProfilePage() {
 
           </div>
 
-          {/* ── Zero-Knowledge Vault Minimized Hyperlink ── */}
-          <div className="flex items-center justify-center mb-5">
+          {/* ── Zero-Knowledge Vault Link ── */}
+          <div className="text-center mb-4">
             <button
               type="button"
               onClick={() => setShowVaultModal(true)}
-              className="inline-flex items-center gap-2 text-xs font-black text-foreground/60 hover:text-primary transition-all underline underline-offset-4 decoration-primary/40 hover:decoration-primary cursor-pointer py-1 px-3 rounded-full hover:bg-primary/[0.04] group"
+              className="text-xs text-neutral-500 hover:text-neutral-900 underline underline-offset-2 cursor-pointer transition-colors"
             >
-              <Shield className="w-3.5 h-3.5 text-primary group-hover:scale-110 transition-transform" />
-              <span>Zero-Knowledge Photo Vault</span>
-              <span className="text-[9px] bg-primary/10 text-primary px-1.5 py-0.5 rounded font-black no-underline">
-                AES-256-GCM
-              </span>
+              Zero-Knowledge Vault
             </button>
           </div>
 
@@ -1406,54 +1402,43 @@ export default function ProfilePage() {
         </div>
       </main>
 
-      {/* ── Zero-Knowledge Photo Vault Simple Popup Modal ── */}
+      {/* ── Simple Zero-Knowledge Vault Modal ── */}
       {showVaultModal && (
         <div
-          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-150"
+          className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4"
           onClick={() => setShowVaultModal(false)}
         >
           <div
-            className="bg-white rounded-3xl p-5 sm:p-6 max-w-sm sm:max-w-md w-full shadow-2xl border border-pink-100 relative animate-in zoom-in-95 duration-150"
+            className="bg-white rounded-xl p-5 max-w-sm w-full shadow-lg border border-neutral-200"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Close Button */}
-            <button
-              type="button"
-              onClick={() => setShowVaultModal(false)}
-              className="absolute top-4 right-4 w-7 h-7 rounded-full bg-foreground/5 hover:bg-foreground/10 text-foreground/60 flex items-center justify-center transition-colors cursor-pointer"
-              aria-label="Close"
-            >
-              <X className="w-4 h-4" />
-            </button>
-
-            <div className="flex items-start gap-3.5 pr-6">
-              <div className="w-10 h-10 rounded-2xl bg-primary text-white flex items-center justify-center shrink-0 shadow-md shadow-primary/25 mt-0.5">
-                <Shield className="w-5 h-5" />
-              </div>
-              <div className="space-y-1.5">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <h3 className="text-sm font-black text-foreground uppercase tracking-wide">
-                    Zero-Knowledge Photo Vault
-                  </h3>
-                  <span className="text-[9px] bg-primary/10 text-primary px-2 py-0.5 rounded font-black">
-                    AES-256-GCM
-                  </span>
-                </div>
-                <p className="text-xs text-foreground/70 leading-relaxed font-medium">
-                  {isOwner
-                    ? 'Your private gallery and photo strips are end-to-end encrypted. When posted to your wall, DRM anti-theft protection blocks other users from saving or downloading your strips.'
-                    : `This wall is protected by PinkSnap DRM. Strips belong exclusively to ${effectiveUser?.displayName} and cannot be saved or downloaded by other users.`}
-                </p>
-              </div>
-            </div>
-
-            <div className="mt-5 pt-3.5 border-t border-pink-100/70 flex justify-end">
+            <div className="flex items-center justify-between pb-3 mb-3 border-b border-neutral-100">
+              <h3 className="text-sm font-bold text-neutral-900">
+                Zero-Knowledge Vault
+              </h3>
               <button
                 type="button"
                 onClick={() => setShowVaultModal(false)}
-                className="px-4 py-2 rounded-xl bg-primary hover:bg-primary/90 text-white text-xs font-black uppercase tracking-wider transition-all cursor-pointer shadow-sm active:scale-95"
+                className="text-neutral-400 hover:text-neutral-700 text-sm font-semibold cursor-pointer px-1.5 py-0.5 rounded"
+                aria-label="Close"
               >
-                Got It
+                ✕
+              </button>
+            </div>
+
+            <p className="text-xs text-neutral-600 leading-relaxed">
+              {isOwner
+                ? 'Your private gallery and photo strips are end-to-end encrypted with AES-256-GCM. When posted to your wall, DRM protection prevents others from downloading your strips.'
+                : `Strips on this wall are protected by PinkSnap DRM and cannot be downloaded by other users.`}
+            </p>
+
+            <div className="mt-4 pt-3 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setShowVaultModal(false)}
+                className="px-3 py-1.5 text-xs font-semibold bg-neutral-900 hover:bg-black text-white rounded-lg cursor-pointer"
+              >
+                Close
               </button>
             </div>
           </div>
