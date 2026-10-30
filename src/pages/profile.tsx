@@ -147,6 +147,7 @@ export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState<'strips' | 'edit'>('strips');
   const [selectedMemory, setSelectedMemory] = useState<{ id: string; url: string; date: number; frame: string } | null>(null);
   const [showPostModal, setShowPostModal] = useState(false);
+  const [showVaultModal, setShowVaultModal] = useState(false);
 
   // Profile wall privacy: only strips explicitly chosen by user are displayed on their wall
   const [postedStripIds, setPostedStripIds] = useState<string[]>(() => {
@@ -195,6 +196,15 @@ export default function ProfilePage() {
       }
     }
   }, [user?.id, wallStripIdsKey, showPostModal]);
+
+  useEffect(() => {
+    if (!showVaultModal) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setShowVaultModal(false);
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [showVaultModal]);
 
   // Prune orphaned wall strip IDs — remove references to memories that no longer exist
   useEffect(() => {
@@ -1074,24 +1084,19 @@ export default function ProfilePage() {
 
           </div>
 
-          {/* ── Zero-Knowledge Encryption & DRM Protection Banner ── */}
-          <div className="flex items-center justify-between p-3.5 mb-5 rounded-2xl bg-gradient-to-r from-pink-500/[0.08] via-rose-500/[0.08] to-purple-500/[0.08] border border-pink-200/60 shadow-xs">
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl bg-primary text-white flex items-center justify-center shrink-0 shadow-sm shadow-primary/25">
-                <Shield className="w-4 h-4" />
-              </div>
-              <div>
-                <p className="text-xs font-black text-foreground uppercase tracking-wide flex items-center gap-1.5">
-                  Zero-Knowledge Photo Vault
-                  <span className="text-[9px] bg-primary/10 text-primary px-1.5 py-0.5 rounded font-black">AES-256-GCM</span>
-                </p>
-                <p className="text-[10px] text-foreground/60 font-medium leading-tight">
-                  {isOwner
-                    ? 'Your private gallery and photo strips are end-to-end encrypted. When posted to your wall, DRM anti-theft protection blocks other users from saving or downloading your strips.'
-                    : `This wall is protected by PinkSnap DRM. Strips belong exclusively to ${effectiveUser?.displayName} and cannot be saved or downloaded by other users.`}
-                </p>
-              </div>
-            </div>
+          {/* ── Zero-Knowledge Vault Minimized Hyperlink ── */}
+          <div className="flex items-center justify-center mb-5">
+            <button
+              type="button"
+              onClick={() => setShowVaultModal(true)}
+              className="inline-flex items-center gap-2 text-xs font-black text-foreground/60 hover:text-primary transition-all underline underline-offset-4 decoration-primary/40 hover:decoration-primary cursor-pointer py-1 px-3 rounded-full hover:bg-primary/[0.04] group"
+            >
+              <Shield className="w-3.5 h-3.5 text-primary group-hover:scale-110 transition-transform" />
+              <span>Zero-Knowledge Photo Vault</span>
+              <span className="text-[9px] bg-primary/10 text-primary px-1.5 py-0.5 rounded font-black no-underline">
+                AES-256-GCM
+              </span>
+            </button>
           </div>
 
           {/* ── Social Profile Feed Tabs ── */}
