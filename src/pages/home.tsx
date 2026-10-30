@@ -73,9 +73,8 @@ function ArtisanShowcaseCard({
     const canvas = canvasRef.current;
     if (!canvas) return;
     const dpr = Math.min(2, typeof window !== 'undefined' ? (window.devicePixelRatio || 2) : 2);
-    // Standardize all artisan strips to the exact same uniform dimensions
     const targetHeight = 320;
-    const targetWidth = 104;
+    const targetWidth = Math.round(template.nw * (targetHeight / template.nh));
     const renderScale = (targetHeight * dpr) / template.nh;
     const renderW = Math.round(targetWidth * dpr);
     const renderH = Math.round(targetHeight * dpr);
@@ -117,24 +116,24 @@ function ArtisanShowcaseCard({
       className="group relative flex flex-col items-center shrink-0 text-left focus:outline-none cursor-pointer bg-transparent"
       title={`Try ${template.label} Artisan theme`}
     >
-      {/* Strip frame with clear background — NO white box, NO black gradient */}
+      {/* Strip frame with natural aspect ratio and clear background */}
       <div className="relative overflow-hidden rounded-xl bg-transparent transition-all duration-300 group-hover:scale-[1.04] group-active:scale-95 drop-shadow-md group-hover:drop-shadow-xl">
         <canvas
           ref={canvasRef}
-          className="block h-[260px] sm:h-[300px] md:h-[320px] w-[86px] sm:w-[98px] md:w-[104px] rounded-xl select-none bg-transparent"
+          className="block h-[260px] sm:h-[300px] md:h-[320px] w-auto rounded-xl select-none bg-transparent"
         />
 
-        {/* Clean hover badge — arrow ALWAYS beside text, NO black gradient */}
-        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none p-1.5">
-          <span className="whitespace-nowrap inline-flex items-center gap-1 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full bg-primary text-white text-[9px] sm:text-[10px] font-black uppercase tracking-wider shadow-xl transform scale-90 group-hover:scale-100 transition-transform duration-200">
+        {/* White "USE THEME →" badge placed at bottom as before, with arrow beside text */}
+        <div className="absolute inset-0 flex items-end justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none p-2 sm:p-2.5">
+          <span className="whitespace-nowrap inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white text-neutral-900 text-[10px] font-black uppercase tracking-wider shadow-lg transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
             <span>USE THEME</span>
-            <span className="text-xs">→</span>
+            <span className="text-xs font-black">→</span>
           </span>
         </div>
       </div>
 
-      <div className="text-center mt-2.5 w-[86px] sm:w-[98px] md:w-[104px]">
-        <p className="font-display text-xs sm:text-sm font-black text-foreground tracking-wide uppercase group-hover:text-primary transition-colors truncate">
+      <div className="text-center mt-2.5 max-w-[130px]">
+        <p className="font-display text-xs sm:text-sm font-black text-foreground tracking-wide uppercase group-hover:text-primary transition-colors">
           {template.label}
         </p>
         <p className="text-[10px] font-bold text-foreground/45 uppercase tracking-widest mt-0.5">
