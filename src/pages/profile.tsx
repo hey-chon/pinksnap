@@ -1406,6 +1406,60 @@ export default function ProfilePage() {
         </div>
       </main>
 
+      {/* ── Zero-Knowledge Photo Vault Simple Popup Modal ── */}
+      {showVaultModal && (
+        <div
+          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-150"
+          onClick={() => setShowVaultModal(false)}
+        >
+          <div
+            className="bg-white rounded-3xl p-5 sm:p-6 max-w-sm sm:max-w-md w-full shadow-2xl border border-pink-100 relative animate-in zoom-in-95 duration-150"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Close Button */}
+            <button
+              type="button"
+              onClick={() => setShowVaultModal(false)}
+              className="absolute top-4 right-4 w-7 h-7 rounded-full bg-foreground/5 hover:bg-foreground/10 text-foreground/60 flex items-center justify-center transition-colors cursor-pointer"
+              aria-label="Close"
+            >
+              <X className="w-4 h-4" />
+            </button>
+
+            <div className="flex items-start gap-3.5 pr-6">
+              <div className="w-10 h-10 rounded-2xl bg-primary text-white flex items-center justify-center shrink-0 shadow-md shadow-primary/25 mt-0.5">
+                <Shield className="w-5 h-5" />
+              </div>
+              <div className="space-y-1.5">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h3 className="text-sm font-black text-foreground uppercase tracking-wide">
+                    Zero-Knowledge Photo Vault
+                  </h3>
+                  <span className="text-[9px] bg-primary/10 text-primary px-2 py-0.5 rounded font-black">
+                    AES-256-GCM
+                  </span>
+                </div>
+                <p className="text-xs text-foreground/70 leading-relaxed font-medium">
+                  {isOwner
+                    ? 'Your private gallery and photo strips are end-to-end encrypted. When posted to your wall, DRM anti-theft protection blocks other users from saving or downloading your strips.'
+                    : `This wall is protected by PinkSnap DRM. Strips belong exclusively to ${effectiveUser?.displayName} and cannot be saved or downloaded by other users.`}
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-5 pt-3.5 border-t border-pink-100/70 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setShowVaultModal(false)}
+                className="px-4 py-2 rounded-xl bg-primary hover:bg-primary/90 text-white text-xs font-black uppercase tracking-wider transition-all cursor-pointer shadow-sm active:scale-95"
+              >
+                Got It
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ── Avatar Action Modal (Clean, Minimal, Non-Pink UI) ── */}
       {showAvatarMenu && (
         <div
