@@ -1349,6 +1349,10 @@ html, body { overflow-x: hidden; }
   display: flex;
   width: max-content;
   animation: artisan-marquee-scroll 38s linear infinite;
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transform: translateZ(0);
 }
 
 .artisan-marquee-track:hover {

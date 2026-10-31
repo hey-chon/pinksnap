@@ -67,47 +67,63 @@ function ArtisanShowcaseCard({
   template: ArtisanTemplate;
   onSelect: () => void;
 }) {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [imgSrc, setImgSrc] = useState<string | null>(null);
+  const rendered = useRef(false);
 
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const dpr = Math.min(2, typeof window !== 'undefined' ? (window.devicePixelRatio || 2) : 2);
-    const targetHeight = 320;
-    const targetWidth = Math.round(template.nw * (targetHeight / template.nh));
-    const renderScale = (targetHeight * dpr) / template.nh;
-    const renderW = Math.round(targetWidth * dpr);
-    const renderH = Math.round(targetHeight * dpr);
+    const el = containerRef.current;
+    if (!el) return;
 
-    canvas.width = renderW;
-    canvas.height = renderH;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-    ctx.imageSmoothingEnabled = true;
-    ctx.imageSmoothingQuality = 'high';
-    const now = Date.now();
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !rendered.current) {
+          rendered.current = true;
+          observer.disconnect();
 
-    let cancelled = false;
-    const render = async () => {
-      if (template.paintBgAsync) {
-        await template.paintBgAsync(ctx, renderW, renderH, renderScale, now);
-      } else {
-        template.paintBg(ctx, renderW, renderH, renderScale, now);
-      }
-      if (cancelled) return;
-      if (template.paintFgAsync) {
-        await template.paintFgAsync(ctx, renderW, renderH, renderScale, now);
-      } else {
-        template.paintFg(ctx, renderW, renderH, renderScale, now);
-      }
-    };
-    render();
-    return () => {
-      cancelled = true;
-    };
+          // Render to an offscreen canvas, then convert to a static image
+          const dpr = Math.min(2, window.devicePixelRatio || 2);
+          const targetHeight = 320;
+          const targetWidth = Math.round(template.nw * (targetHeight / template.nh));
+          const renderScale = (targetHeight * dpr) / template.nh;
+          const renderW = Math.round(targetWidth * dpr);
+          const renderH = Math.round(targetHeight * dpr);
+
+          const canvas = document.createElement('canvas');
+          canvas.width = renderW;
+          canvas.height = renderH;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) return;
+          ctx.imageSmoothingEnabled = true;
+          ctx.imageSmoothingQuality = 'high';
+          const now = Date.now();
+
+          const render = async () => {
+            if (template.paintBgAsync) {
+              await template.paintBgAsync(ctx, renderW, renderH, renderScale, now);
+            } else {
+              template.paintBg(ctx, renderW, renderH, renderScale, now);
+            }
+            if (template.paintFgAsync) {
+              await template.paintFgAsync(ctx, renderW, renderH, renderScale, now);
+            } else {
+              template.paintFg(ctx, renderW, renderH, renderScale, now);
+            }
+            // Convert canvas to static image to free up the canvas GPU context
+            setImgSrc(canvas.toDataURL('image/png'));
+          };
+          render();
+        }
+      },
+      { rootMargin: '200px' },
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
   }, [template]);
 
   const photoCount = template.slots?.length ? `${template.slots.length} photos` : '4 photos';
+  const aspectRatio = template.nw / template.nh;
 
   return (
     <button
@@ -117,11 +133,24 @@ function ArtisanShowcaseCard({
       title={`Try ${template.label} Artisan theme`}
     >
       {/* Strip frame with natural aspect ratio and clear background */}
-      <div className="relative overflow-hidden rounded-xl bg-transparent transition-all duration-300 group-hover:scale-[1.04] group-active:scale-95 drop-shadow-md group-hover:drop-shadow-xl">
-        <canvas
-          ref={canvasRef}
-          className="block h-[260px] sm:h-[300px] md:h-[320px] w-auto rounded-xl select-none bg-transparent"
-        />
+      <div
+        ref={containerRef}
+        className="relative overflow-hidden rounded-xl bg-transparent transition-all duration-300 group-hover:scale-[1.04] group-active:scale-95 drop-shadow-md group-hover:drop-shadow-xl"
+      >
+        {imgSrc ? (
+          <img
+            src={imgSrc}
+            alt={template.label}
+            className="block h-[260px] sm:h-[300px] md:h-[320px] w-auto rounded-xl select-none"
+            draggable={false}
+            style={{ aspectRatio }}
+          />
+        ) : (
+          <div
+            className="h-[260px] sm:h-[300px] md:h-[320px] rounded-xl bg-foreground/5 animate-pulse"
+            style={{ aspectRatio }}
+          />
+        )}
 
         {/* White "USE THEME →" badge placed at bottom as before, with arrow beside text */}
         <div className="absolute inset-0 flex items-end justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none p-2 sm:p-2.5">
