@@ -163,32 +163,16 @@ export default function Receipt() {
         })
       );
 
-      // Temporarily unscale parent so the exported image is rendered at full desktop resolution
-      const prevTransform = contentRef.current ? contentRef.current.style.transform : '';
-      const prevWidth = contentRef.current ? contentRef.current.style.width : '';
-      if (contentRef.current) {
-        contentRef.current.style.transform = 'none';
-        contentRef.current.style.width = 'auto';
-      }
+      const options = {
+        cacheBust: false,
+        pixelRatio: 2,
+        backgroundColor: '#ffffff',
+      };
 
-      let dataUrl = '';
-      try {
-        const options = {
-          cacheBust: false,
-          pixelRatio: 2,
-          backgroundColor: '#ffffff',
-        };
-
-        // iOS Safari SVG foreignObject bug: first call primes WebKit's image rendering pipeline
-        await toPng(receiptRef.current, options);
-        // Second call renders the receipt with the photo strip image guaranteed
-        dataUrl = await toPng(receiptRef.current, options);
-      } finally {
-        if (contentRef.current) {
-          contentRef.current.style.transform = prevTransform;
-          contentRef.current.style.width = prevWidth;
-        }
-      }
+      // iOS Safari SVG foreignObject bug: first call primes WebKit's image rendering pipeline
+      await toPng(receiptRef.current, options);
+      // Second call renders the receipt with the photo strip image guaranteed
+      const dataUrl = await toPng(receiptRef.current, options);
 
       await downloadImage(dataUrl, `pinksnap-receipt-${sessionDate}.png`, { silent: false });
     } catch {
@@ -240,11 +224,19 @@ export default function Receipt() {
   })();
 
   const actionBtn =
-    'flex items-center justify-center gap-2 min-h-[44px] px-4 py-3.5 bg-white border border-black/10 text-black/70 font-black text-xs tracking-wider rounded-xl shadow-sm hover:bg-black/5 active:scale-[0.97] transition-all';
+    'flex items-center justify-center gap-2 min-h-[44px] px-4 py-3.5 bg-white border border-black/10 text-black/70 font-black text-xs tracking-wider rounded-xl shadow-sm hover:bg-black/5 active:bg-black/10 active:opacity-85 transition-colors touch-manipulation select-none outline-none focus:outline-none';
 
   return (
     <div className={`min-h-[100dvh] flex flex-col items-center justify-center px-4 py-8 sm:py-12 bg-[#f5f0eb] pb-[max(2rem,env(safe-area-inset-bottom))] overflow-x-hidden ${printTarget === 'strip' ? 'is-printing-strip' : 'is-printing-receipt'}`}>
       <style>{`
+        * {
+          touch-action: manipulation;
+          -webkit-text-size-adjust: 100%;
+        }
+        button, a {
+          touch-action: manipulation !important;
+          -webkit-tap-highlight-color: transparent !important;
+        }
         @keyframes receiptSlideDown {
           from { opacity: 0; transform: translateY(-40px) scale(0.97); }
           to { opacity: 1; transform: translateY(0) scale(1); }
@@ -468,21 +460,22 @@ export default function Receipt() {
 
         {/* Actions: under the ticket on phones, to the right on tablets/desktops */}
         <div className={`actions-panel w-[240px] shrink-0 flex flex-col justify-center gap-3 print:hidden ${revealed ? 'receipt-fade' : 'opacity-0'}`} style={{ maxWidth: '240px' }}>
-          <button type="button" onClick={handleDownload} className={actionBtn}>
+          <button type="button" onClick={handleDownload} onFocus={(e) => e.currentTarget.blur()} className={actionBtn}>
             <Download className="w-4 h-4" /> SAVE
           </button>
-          <button type="button" onClick={handleShare} className={actionBtn}>
+          <button type="button" onClick={handleShare} onFocus={(e) => e.currentTarget.blur()} className={actionBtn}>
             <Share2 className="w-4 h-4" /> SHARE
           </button>
-          <button type="button" onClick={handlePrintStrip} className={actionBtn}>
+          <button type="button" onClick={handlePrintStrip} onFocus={(e) => e.currentTarget.blur()} className={actionBtn}>
             <Printer className="w-4 h-4" /> PRINT STRIP
           </button>
-          <button type="button" onClick={handlePrintReceipt} className={actionBtn}>
+          <button type="button" onClick={handlePrintReceipt} onFocus={(e) => e.currentTarget.blur()} className={actionBtn}>
             <Printer className="w-4 h-4" /> PRINT RECEIPT
           </button>
           <button
             type="button"
             onClick={() => setLocation('/gallery', { replace: true })}
+            onFocus={(e) => e.currentTarget.blur()}
             className={actionBtn}
           >
             <ImageIcon className="w-4 h-4" /> VIEW GALLERY
@@ -494,6 +487,7 @@ export default function Receipt() {
               resetAppFlow();
               setLocation('/', { replace: true });
             }}
+            onFocus={(e) => e.currentTarget.blur()}
             className={actionBtn}
           >
             <Home className="w-4 h-4" /> BACK TO HOME
