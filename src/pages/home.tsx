@@ -358,7 +358,7 @@ export default function Home() {
             <div>
               <p className="text-[11px] font-black tracking-[.25em] text-primary uppercase mb-1.5 flex items-center gap-2">
                 <span className="w-1.5 h-1.5 rounded-full bg-primary" />
-                PINKSNAP
+                PINKSNAP THEMES
               </p>
               <h2
                 id="artisan-showcase-title"
