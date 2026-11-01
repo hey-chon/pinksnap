@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { toPng } from 'html-to-image';
 import { useLocation } from 'wouter';
 import { useAppContext, LayoutType } from '@/lib/store';
@@ -58,23 +58,7 @@ export default function Receipt() {
   const autoDownloadStarted = useRef(false);
   const contentRef = useRef<HTMLDivElement>(null);
   const receiptRef = useRef<HTMLDivElement>(null);
-  const [scale, setScale] = useState(1);
   const [printTarget, setPrintTarget] = useState<'receipt' | 'strip'>('receipt');
-
-  // Scale the side-by-side layout to fit narrow viewports
-  const computeScale = useCallback(() => {
-    const CONTENT_WIDTH = 640; // receipt (~384) + gap (16) + panel (~240)
-    const vw = window.innerWidth;
-    const padding = 32; // 16px on each side
-    const available = vw - padding;
-    setScale(available < CONTENT_WIDTH ? available / CONTENT_WIDTH : 1);
-  }, []);
-
-  useEffect(() => {
-    computeScale();
-    window.addEventListener('resize', computeScale);
-    return () => window.removeEventListener('resize', computeScale);
-  }, [computeScale]);
 
   const primaryMemory = savedMemories.length > 0 ? savedMemories[0] : null;
   const latestMemory = primaryMemory || (latestStrip ? {
@@ -283,12 +267,7 @@ export default function Receipt() {
 
       <div
         ref={contentRef}
-        className="receipt-container flex flex-row items-center justify-center gap-6 md:gap-8"
-        style={{
-          transform: scale < 1 ? `scale(${scale})` : undefined,
-          transformOrigin: 'top center',
-          width: scale < 1 ? '640px' : undefined,
-        }}
+        className="receipt-container flex flex-col md:flex-row items-center justify-center gap-6 md:gap-8 w-full max-w-3xl"
       >
         {/* Receipt card — original full ticket */}
         <div
@@ -435,7 +414,7 @@ export default function Receipt() {
         </div>
 
         {/* Actions: under the ticket on phones, to the right on tablets/desktops */}
-        <div className={`actions-panel w-[240px] shrink-0 flex flex-col justify-center gap-3 print:hidden ${revealed ? 'receipt-fade' : 'opacity-0'}`} style={{ maxWidth: '240px' }}>
+        <div className={`actions-panel w-full max-w-[320px] md:w-[240px] shrink-0 flex flex-col justify-center gap-3 print:hidden ${revealed ? 'receipt-fade' : 'opacity-0'}`}>
           <button type="button" onClick={handleDownload} className={actionBtn}>
             <Download className="w-4 h-4" /> SAVE
           </button>
