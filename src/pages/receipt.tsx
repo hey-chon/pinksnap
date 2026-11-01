@@ -524,12 +524,12 @@ export default function Receipt() {
       </div>
 
       {/* Mobile / Tablet: on the bottom right after the receipt and save contents, visible without scrolling */}
-      <div className={`lg:hidden mt-5 sm:mt-6 text-center select-none print:hidden ${revealed ? 'receipt-fade' : 'opacity-0'}`}>
-        <h2 className="font-hero text-4xl sm:text-5xl tracking-wider leading-none uppercase">
+      <div className={`lg:hidden mt-7 sm:mt-9 text-center select-none print:hidden ${revealed ? 'receipt-fade' : 'opacity-0'}`}>
+        <h2 className="font-hero text-6xl sm:text-7xl tracking-wider leading-none uppercase">
           <span className="text-[#1a1520]">PINK</span>{' '}
           <span className="text-primary">SNAP</span>
         </h2>
-        <p className="font-mono text-[10px] sm:text-xs text-black/45 tracking-[0.35em] uppercase mt-1.5">
+        <p className="font-mono text-xs sm:text-sm text-black/45 tracking-[0.4em] uppercase mt-2.5 sm:mt-3">
           Virtual Photo Booth
         </p>
       </div>
