@@ -302,11 +302,11 @@ export default function Receipt() {
       <div className="w-full max-w-7xl flex flex-col lg:flex-row items-center justify-center">
         {/* Left blank side (desktop/laptop only, vertically centered) */}
         <div className={`hidden lg:flex flex-col items-center justify-center flex-1 select-none pointer-events-none text-center px-6 ${revealed ? 'receipt-fade' : 'opacity-0'}`}>
-          <h2 className="font-hero text-4xl xl:text-5xl 2xl:text-6xl tracking-tight leading-none uppercase">
-            <span className="text-[#1a1520]">PINK</span>
+          <h2 className="font-hero text-5xl xl:text-7xl 2xl:text-8xl tracking-wider leading-none uppercase">
+            <span className="text-[#1a1520]">PINK</span>{' '}
             <span className="text-primary">SNAP</span>
           </h2>
-          <p className="font-mono text-[9px] xl:text-[11px] text-black/40 tracking-[0.3em] uppercase mt-2">
+          <p className="font-mono text-xs xl:text-sm text-black/45 tracking-[0.35em] uppercase mt-3">
             Virtual Photo Booth
           </p>
         </div>
@@ -524,12 +524,12 @@ export default function Receipt() {
       </div>
 
       {/* Mobile / Tablet: on the bottom right after the receipt and save contents, visible without scrolling */}
-      <div className={`lg:hidden mt-4 sm:mt-5 text-center select-none print:hidden ${revealed ? 'receipt-fade' : 'opacity-0'}`}>
-        <h2 className="font-hero text-3xl sm:text-4xl tracking-tight leading-none uppercase">
-          <span className="text-[#1a1520]">PINK</span>
+      <div className={`lg:hidden mt-5 sm:mt-6 text-center select-none print:hidden ${revealed ? 'receipt-fade' : 'opacity-0'}`}>
+        <h2 className="font-hero text-4xl sm:text-5xl tracking-wider leading-none uppercase">
+          <span className="text-[#1a1520]">PINK</span>{' '}
           <span className="text-primary">SNAP</span>
         </h2>
-        <p className="font-mono text-[9px] sm:text-[10px] text-black/40 tracking-[0.3em] uppercase mt-1">
+        <p className="font-mono text-[10px] sm:text-xs text-black/45 tracking-[0.35em] uppercase mt-1.5">
           Virtual Photo Booth
         </p>
       </div>
@@ -537,11 +537,11 @@ export default function Receipt() {
 
     {/* Right blank side (desktop/laptop only, vertically centered) */}
     <div className={`hidden lg:flex flex-col items-center justify-center flex-1 select-none pointer-events-none text-center px-6 ${revealed ? 'receipt-fade' : 'opacity-0'}`}>
-      <h2 className="font-hero text-4xl xl:text-5xl 2xl:text-6xl tracking-tight leading-none uppercase">
-        <span className="text-[#1a1520]">PINK</span>
+      <h2 className="font-hero text-5xl xl:text-7xl 2xl:text-8xl tracking-wider leading-none uppercase">
+        <span className="text-[#1a1520]">PINK</span>{' '}
         <span className="text-primary">SNAP</span>
       </h2>
-      <p className="font-mono text-[9px] xl:text-[11px] text-black/40 tracking-[0.3em] uppercase mt-2">
+      <p className="font-mono text-xs xl:text-sm text-black/45 tracking-[0.35em] uppercase mt-3">
         Virtual Photo Booth
       </p>
     </div>
