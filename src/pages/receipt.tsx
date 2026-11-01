@@ -416,7 +416,7 @@ export default function Receipt() {
             <div className="flex flex-col items-center my-4">
               <div className="flex gap-[1px] items-end h-[32px]">
                 {Array.from({ length: 40 }).map((_, i) => (
-                  <div
+                  <div                 
                     key={i}
                     className="bg-black"
                     style={{
