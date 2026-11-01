@@ -1520,10 +1520,15 @@ html, body { overflow-x: hidden; }
   }
 
   /* 3. Auth Modal "Join PinkSnap" Container */
-  .ticket {
+  .ticket:not(.layout-ticket) {
     padding: 1.25rem !important;
     margin-inline: auto;
     max-width: calc(100vw - 1rem) !important;
+  }
+  .layout-ticket {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-inline: 0 !important;
   }
   .auth-header-title {
     font-size: 2rem !important;
@@ -1546,7 +1551,7 @@ html, body { overflow-x: hidden; }
   }
 
   /* 5. App padding reduction */
-  .studio-panel,
+  .studio-panel:not(.strip-sidebar),
   .edit-card {
     padding: 1.25rem 1rem !important;
     gap: 1rem !important;

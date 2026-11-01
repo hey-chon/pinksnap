@@ -143,14 +143,16 @@ export default function Setup() {
                 onClick={() => setLayout(l.id)}
                 data-testid={`button-layout-${l.id}`}
                 aria-pressed={layout === l.id}
-                className={`ticket group p-4 sm:p-5 text-left focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/40 ${layout === l.id ? 'ticket-active' : ''}`}
+                className={`ticket layout-ticket group p-4 sm:p-5 text-left focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/40 w-full h-full flex flex-col justify-between ${layout === l.id ? 'ticket-active' : ''}`}
               >
-                <div className="mb-6 h-[132px] flex items-end justify-center transition-colors">
-                  {l.icon}
+                <div className="w-full">
+                  <div className="mb-4 sm:mb-6 h-[120px] sm:h-[132px] flex items-end justify-center transition-colors">
+                    {l.icon}
+                  </div>
+                  <span className="font-display text-xl sm:text-2xl block text-foreground">{l.label}</span>
+                  <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-[.14em] text-foreground/45 block mb-3">{l.note}</span>
                 </div>
-                <span className="font-display text-xl sm:text-2xl block text-foreground">{l.label}</span>
-                <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-[.14em] text-foreground/45 block mb-3">{l.note}</span>
-                <span className="ticket-stub block pt-3 text-[11px] font-black uppercase tracking-[.18em] text-primary">{l.shots}</span>
+                <span className="ticket-stub block pt-3 text-[11px] font-black uppercase tracking-[.18em] text-primary w-full">{l.shots}</span>
               </button>
             ))}
           </div>

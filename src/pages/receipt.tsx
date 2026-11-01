@@ -148,7 +148,31 @@ export default function Receipt() {
     if (!receiptRef.current) return;
     try {
       toast({ title: 'Saving receipt...', description: 'Please wait.' });
-      const dataUrl = await toPng(receiptRef.current, { cacheBust: true, pixelRatio: 2 });
+
+      // Ensure all images in receipt (including the strip) are completely loaded and decoded
+      const imgs = Array.from(receiptRef.current.querySelectorAll('img'));
+      await Promise.all(
+        imgs.map((img) => {
+          if (img.complete) return img.decode?.().catch(() => {});
+          return new Promise<void>((resolve) => {
+            img.onload = () => {
+              img.decode?.().then(() => resolve()).catch(() => resolve());
+            };
+            img.onerror = () => resolve();
+          });
+        })
+      );
+
+      const options = {
+        cacheBust: false,
+        pixelRatio: 2,
+        backgroundColor: '#ffffff',
+      };
+
+      // iOS Safari SVG foreignObject bug: first call primes WebKit's image rendering pipeline
+      await toPng(receiptRef.current, options);
+      // Second call renders the receipt with the photo strip image guaranteed
+      const dataUrl = await toPng(receiptRef.current, options);
       await downloadImage(dataUrl, `pinksnap-receipt-${sessionDate}.png`, { silent: false });
     } catch {
       toast({ title: 'Download failed', description: 'Please try again.', variant: 'destructive' });
@@ -317,6 +341,7 @@ export default function Receipt() {
                   <img
                     src={latestMemory.url}
                     alt="Your photo strip"
+                    crossOrigin="anonymous"
                     draggable={false}
                     className="max-h-[220px] w-auto max-w-full object-contain select-none"
                     onContextMenu={(e) => e.preventDefault()}
