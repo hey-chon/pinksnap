@@ -141,7 +141,7 @@ export default function Credits() {
         </div>
 
         {/* rezn1r.tech */}
-        <div className="md:col-span-5 rounded-3xl bg-[#141416] border border-white/10 text-white p-6 sm:p-8 shadow-2xl flex flex-col justify-between relative overflow-hidden group hover:-translate-y-2 hover:border-pink-500/40 hover:shadow-[0_20px_45px_rgba(245,61,137,0.18)] transition-all duration-300 ease-out">
+        <div className="w-full h-full rounded-3xl bg-[#141416] border border-white/10 text-white p-6 sm:p-8 shadow-2xl flex flex-col justify-between relative overflow-hidden group hover:-translate-y-2 hover:border-pink-500/40 hover:shadow-[0_20px_45px_rgba(245,61,137,0.18)] transition-all duration-300 ease-out">
           <div>
             {/* Role Badge */}
             <div className="mb-4">
