@@ -356,8 +356,7 @@ export default function Home() {
           {/* Cinematic Header */}
           <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 mb-6 px-1">
             <div>
-              <p className="text-[11px] font-black tracking-[.25em] text-primary uppercase mb-1.5 flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+              <p className="text-[11px] font-black tracking-[.25em] text-primary uppercase mb-1.5">
                 PINKSNAP THEMES
               </p>
               <h2

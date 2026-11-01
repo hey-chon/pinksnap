@@ -56,14 +56,29 @@ export default function Credits() {
   }, []);
 
   return (
-    <section id="creator-section" ref={sectionRef} aria-labelledby="credits-title" className="relative z-10 max-w-5xl mx-auto pb-14 pt-6 scroll-mt-6">
-      {/* Title */}
-      <div className="flex items-end justify-between gap-4 mb-4">
+    <section id="creator-section" ref={sectionRef} aria-labelledby="credits-title" className="relative z-10 max-w-6xl mx-auto pb-14 sm:pb-20 pt-10 sm:pt-16 mt-4 sm:mt-8 scroll-mt-6">
+      {/* Cinematic Header matching Artisan Showcase */}
+      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 mb-6 px-1">
         <div>
-          <p className="text-[11px] font-black tracking-[.18em] text-primary uppercase mb-1">the little credits corner</p>
-          <h2 id="credits-title" className="text-2xl sm:text-3xl font-black tracking-tight">MADE WITH GOOD HELP.</h2>
+          <p className="text-[11px] font-black tracking-[.25em] text-primary uppercase mb-1.5">
+            THE LITTLE CREDITS CORNER
+          </p>
+          <h2
+            id="credits-title"
+            className="font-hero text-4xl sm:text-6xl md:text-7xl tracking-tight text-foreground leading-[0.88] uppercase"
+          >
+            MADE WITH <span className="text-primary">GOOD HELP.</span>
+          </h2>
         </div>
-        <Sparkles className="w-7 h-7 text-primary/50 shrink-0" />
+
+        <div className="flex flex-col sm:items-end gap-1">
+          <p className="text-[11px] sm:text-xs font-bold text-foreground/50 tracking-wider uppercase">
+            Behind the virtual photobooth
+          </p>
+          <span className="inline-flex items-center gap-1.5 text-xs font-black text-primary uppercase tracking-wider">
+            <Sparkles className="w-3.5 h-3.5" /> CREATORS &amp; FRIENDS
+          </span>
+        </div>
       </div>
 
       {/* Tech Stack Looping Marquee */}
@@ -85,13 +100,19 @@ export default function Credits() {
       <div ref={cardsRef} className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6 items-stretch">
         
         {/* Jimson */}
-        <div className="w-full h-full rounded-3xl bg-[#141416] border border-white/10 text-white p-6 sm:p-8 shadow-2xl flex flex-col justify-between relative overflow-hidden group hover:-translate-y-2 hover:border-pink-500/40 hover:shadow-[0_20px_45px_rgba(245,61,137,0.18)] transition-all duration-300 ease-out">
-          <div>
-            {/* Role Badge */}
-            <div className="mb-4">
-              <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-white text-[#201b2c] text-[11px] font-black uppercase tracking-wider shadow-sm">
-                <Crown className="w-3.5 h-3.5 text-amber-500 fill-amber-400 stroke-none" aria-hidden="true" />
-                <span>Lead Creator & Developer</span>
+        <div className="w-full h-full rounded-3xl bg-[#121118] border border-white/[0.12] text-white p-6 sm:p-8 shadow-2xl flex flex-col justify-between relative overflow-hidden group hover:-translate-y-2 hover:border-pink-500/50 hover:shadow-[0_24px_50px_rgba(245,61,137,0.2)] transition-all duration-300 ease-out">
+          {/* Subtle ambient glow */}
+          <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-3xl pointer-events-none group-hover:bg-primary/20 transition-colors duration-500" />
+
+          <div className="relative z-10">
+            {/* Top row: Role Badge + Index */}
+            <div className="flex items-center justify-between gap-3 mb-5">
+              <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-white/[0.08] backdrop-blur-md border border-white/15 text-white text-[11px] font-black uppercase tracking-wider shadow-sm">
+                <Crown className="w-3.5 h-3.5 text-amber-400 fill-amber-400 stroke-none" aria-hidden="true" />
+                <span>Lead Creator &amp; Developer</span>
+              </span>
+              <span className="font-mono text-[10px] text-white/35 font-bold tracking-widest uppercase">
+                01 / DEV
               </span>
             </div>
 
@@ -110,12 +131,12 @@ export default function Credits() {
               </div>
 
               <div>
-                <p className="text-[11px] font-black tracking-[.18em] text-pink-300 uppercase mb-1">IT’S PINK-SNAP.DEV</p>
-                <h3 className="text-2xl sm:text-3xl font-black tracking-tight">HEY, I’M JIMSON.</h3>
+                <p className="font-mono text-[10px] sm:text-[11px] font-bold tracking-[.22em] text-pink-300 uppercase mb-1">IT’S PINK-SNAP.DEV</p>
+                <h3 className="font-hero text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-white uppercase leading-[0.9]">HEY, I’M JIMSON.</h3>
               </div>
             </div>
 
-            <div className="text-xs sm:text-sm text-white/80 leading-relaxed space-y-3 font-medium">
+            <div className="text-xs sm:text-[13px] text-white/75 leading-relaxed space-y-3 font-normal">
               <p>
                 Hi! I'm a student web developer from Cavite, Philippines, who loves building websites, learning by doing, and keeping things organized.
               </p>
@@ -128,26 +149,32 @@ export default function Credits() {
             </div>
           </div>
 
-          <div className="flex flex-wrap gap-2 mt-6 pt-4 border-t border-white/10">
+          <div className="relative z-10 flex flex-wrap gap-2 mt-6 pt-4 border-t border-white/10">
             {jimsonSocials.map(({ label, href, icon: Icon }) => (
-              <a key={label} href={href} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-full bg-white text-[#201b2c] px-3.5 py-1.5 text-xs font-black hover:bg-white/90 hover:scale-105 transition-all shadow-sm active:scale-95">
+              <a key={label} href={href} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-full bg-white text-[#201b2c] px-3.5 py-1.5 text-xs font-black hover:bg-primary hover:text-white hover:scale-105 transition-all shadow-sm active:scale-95">
                 <Icon className="w-3.5 h-3.5" /> {label}
               </a>
             ))}
-            <a href="https://chon-dev.vercel.app/" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-full bg-white text-[#201b2c] px-3.5 py-1.5 text-xs font-black hover:bg-white/90 hover:scale-105 transition-all shadow-sm active:scale-95">
+            <a href="https://chon-dev.vercel.app/" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-full bg-white text-[#201b2c] px-3.5 py-1.5 text-xs font-black hover:bg-primary hover:text-white hover:scale-105 transition-all shadow-sm active:scale-95">
               chon.dev <ExternalLink className="w-3.5 h-3.5" />
             </a>
           </div>
         </div>
 
         {/* rezn1r.tech */}
-        <div className="w-full h-full rounded-3xl bg-[#141416] border border-white/10 text-white p-6 sm:p-8 shadow-2xl flex flex-col justify-between relative overflow-hidden group hover:-translate-y-2 hover:border-pink-500/40 hover:shadow-[0_20px_45px_rgba(245,61,137,0.18)] transition-all duration-300 ease-out">
-          <div>
-            {/* Role Badge */}
-            <div className="mb-4">
-              <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-white text-[#201b2c] text-[11px] font-black uppercase tracking-wider shadow-sm">
-                <Zap className="w-3.5 h-3.5 text-amber-500 fill-amber-400 stroke-none" aria-hidden="true" />
+        <div className="w-full h-full rounded-3xl bg-[#121118] border border-white/[0.12] text-white p-6 sm:p-8 shadow-2xl flex flex-col justify-between relative overflow-hidden group hover:-translate-y-2 hover:border-pink-500/50 hover:shadow-[0_24px_50px_rgba(245,61,137,0.2)] transition-all duration-300 ease-out">
+          {/* Subtle ambient glow */}
+          <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-3xl pointer-events-none group-hover:bg-primary/20 transition-colors duration-500" />
+
+          <div className="relative z-10">
+            {/* Top row: Role Badge + Index */}
+            <div className="flex items-center justify-between gap-3 mb-5">
+              <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-white/[0.08] backdrop-blur-md border border-white/15 text-white text-[11px] font-black uppercase tracking-wider shadow-sm">
+                <Zap className="w-3.5 h-3.5 text-amber-400 fill-amber-400 stroke-none" aria-hidden="true" />
                 <span>Contributor</span>
+              </span>
+              <span className="font-mono text-[10px] text-white/35 font-bold tracking-widest uppercase">
+                02 / DEV
               </span>
             </div>
 
@@ -166,23 +193,23 @@ export default function Credits() {
               </div>
 
               <div>
-                <p className="text-[11px] font-black tracking-[.18em] text-pink-300 uppercase mb-1">COMMUNITY CHAT & AUTH</p>
-                <h3 className="text-2xl sm:text-3xl font-black tracking-tight">REZN1R</h3>
+                <p className="font-mono text-[10px] sm:text-[11px] font-bold tracking-[.22em] text-pink-300 uppercase mb-1">COMMUNITY CHAT &amp; AUTH</p>
+                <h3 className="font-hero text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-white uppercase leading-[0.9]">REZN1R</h3>
               </div>
             </div>
 
-            <div className="text-xs sm:text-sm text-white/80 leading-relaxed space-y-3 font-medium">
+            <div className="text-xs sm:text-[13px] text-white/75 leading-relaxed space-y-3 font-normal">
               <p>
                 Hey! I'm rezn1r. I helped my friend Jimson integrate the community chat and simple auth into PinkSnap to make it more connected and fun for everyone. Enjoy and happy snapping!
               </p>
             </div>
           </div>
 
-          <div className="flex flex-wrap gap-2 mt-6 pt-4 border-t border-white/10">
-            <a href="https://github.com/rezn1r" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-full bg-white text-[#201b2c] px-3.5 py-1.5 text-xs font-black hover:bg-white/90 hover:scale-105 transition-all shadow-sm active:scale-95">
+          <div className="relative z-10 flex flex-wrap gap-2 mt-6 pt-4 border-t border-white/10">
+            <a href="https://github.com/rezn1r" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-full bg-white text-[#201b2c] px-3.5 py-1.5 text-xs font-black hover:bg-primary hover:text-white hover:scale-105 transition-all shadow-sm active:scale-95">
               <Github className="w-3.5 h-3.5" /> GitHub
             </a>
-            <a href="https://rezn1r.tech" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-full bg-white text-[#201b2c] px-3.5 py-1.5 text-xs font-black hover:bg-white/90 hover:scale-105 transition-all shadow-sm active:scale-95">
+            <a href="https://rezn1r.tech" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-full bg-white text-[#201b2c] px-3.5 py-1.5 text-xs font-black hover:bg-primary hover:text-white hover:scale-105 transition-all shadow-sm active:scale-95">
               rezn1r.tech <ExternalLink className="w-3.5 h-3.5" />
             </a>
           </div>
