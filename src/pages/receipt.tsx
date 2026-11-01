@@ -508,9 +508,16 @@ export default function Receipt() {
         </div>
       </div>
 
-      <p className={`mt-6 font-mono text-[9px] text-black/20 tracking-[0.3em] print:hidden ${revealed ? 'receipt-fade-late' : 'opacity-0'}`}>
-        PINKSNAP.PICS
-      </p>
+      {/* Big Cinematic PINKSNAP on the bottom of receipt contents */}
+      <div className={`mt-6 sm:mt-10 text-center select-none print:hidden ${revealed ? 'receipt-fade-late' : 'opacity-0'}`}>
+        <h2 className="font-hero text-5xl sm:text-6xl md:text-7xl tracking-tighter leading-none uppercase">
+          <span className="text-black">PINK</span>
+          <span className="text-primary">SNAP</span>
+        </h2>
+        <p className="font-mono text-[9px] sm:text-[11px] text-black/35 tracking-[0.3em] uppercase mt-2">
+          VIRTUAL PHOTO BOOTH
+        </p>
+      </div>
     </div>
   );
 }

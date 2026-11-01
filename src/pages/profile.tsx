@@ -55,7 +55,7 @@ const MAX_AVATAR_MB = Math.round(AVATAR_MAX_FILE_BYTES / (1024 * 1024));
 export default function ProfilePage() {
   const [, setLocation] = useLocation();
   const { user, updateProfile, signOut, resetPassword, isAdmin, isContributor } = useAuth();
-  const { savedMemories, deleteMemory } = useAppContext();
+  const { savedMemories, deleteMemory, isLoadingMemories } = useAppContext();
   const { toast } = useToast();
 
   // Support viewing another user's public profile wall
@@ -152,13 +152,15 @@ export default function ProfilePage() {
   // Profile wall privacy: only strips explicitly chosen by user are displayed on their wall
   const [postedStripIds, setPostedStripIds] = useState<string[]>(() => {
     if (typeof window === 'undefined' || !user?.id) return [];
-    if (Array.isArray(user.wallStripIds)) return user.wallStripIds;
+    if (Array.isArray(user.wallStripIds) && user.wallStripIds.length > 0) return user.wallStripIds;
     try {
       const stored = localStorage.getItem(`pinksnap_wall_strips_${user.id}`);
-      return stored ? JSON.parse(stored) : [];
-    } catch {
-      return [];
-    }
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch {}
+    return Array.isArray(user.wallStripIds) ? user.wallStripIds : [];
   });
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -182,7 +184,7 @@ export default function ProfilePage() {
   useEffect(() => {
     if (!user?.id || showPostModal) return;
 
-    if (Array.isArray(user.wallStripIds)) {
+    if (Array.isArray(user.wallStripIds) && user.wallStripIds.length > 0) {
       setPostedStripIds(user.wallStripIds);
       try {
         localStorage.setItem(`pinksnap_wall_strips_${user.id}`, JSON.stringify(user.wallStripIds));
@@ -190,10 +192,13 @@ export default function ProfilePage() {
     } else if (typeof window !== 'undefined') {
       try {
         const stored = localStorage.getItem(`pinksnap_wall_strips_${user.id}`);
-        setPostedStripIds(stored ? JSON.parse(stored) : []);
-      } catch {
-        setPostedStripIds([]);
-      }
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setPostedStripIds(parsed);
+          }
+        }
+      } catch {}
     }
   }, [user?.id, wallStripIdsKey, showPostModal]);
 
@@ -206,9 +211,9 @@ export default function ProfilePage() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [showVaultModal]);
 
-  // Prune orphaned wall strip IDs — remove references to memories that no longer exist
+  // Prune orphaned wall strip IDs — ONLY after memories have finished loading and exist
   useEffect(() => {
-    if (!user?.id || savedMemories.length === 0 && postedStripIds.length === 0) return;
+    if (!user?.id || isLoadingMemories || savedMemories.length === 0 || postedStripIds.length === 0) return;
     const memoryIds = new Set(savedMemories.map((m) => m.id));
     const validIds = postedStripIds.filter((id) => memoryIds.has(id));
     if (validIds.length !== postedStripIds.length) {
@@ -219,7 +224,7 @@ export default function ProfilePage() {
       // Sync pruned list to cloud
       updateProfile({ wallStripIds: validIds }).catch(() => {});
     }
-  }, [savedMemories, postedStripIds, user?.id]);
+  }, [savedMemories, postedStripIds, user?.id, isLoadingMemories]);
 
   const postedStrips = isOwner
     ? savedMemories.filter((m) => postedStripIds.includes(m.id))
