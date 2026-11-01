@@ -494,7 +494,7 @@ export default function Receipt() {
               resetAppFlow();
               setLocation('/', { replace: true });
             }}
-            className="flex items-center justify-center gap-2 min-h-[48px] px-4 py-4 bg-[#f53d89] text-white font-black text-sm tracking-wider rounded-xl shadow-lg shadow-[#f53d89]/25 hover:shadow-xl hover:shadow-[#f53d89]/30 active:scale-[0.97] transition-all"
+            className={actionBtn}
           >
             <Home className="w-4 h-4" /> BACK TO HOME
           </button>
@@ -524,12 +524,12 @@ export default function Receipt() {
       </div>
 
       {/* Mobile / Tablet: on the bottom right after the receipt and save contents, visible without scrolling */}
-      <div className={`lg:hidden mt-7 sm:mt-9 text-center select-none print:hidden ${revealed ? 'receipt-fade' : 'opacity-0'}`}>
-        <h2 className="font-hero text-6xl sm:text-7xl tracking-wider leading-none uppercase">
-          <span className="text-[#1a1520]">PINK</span>{' '}
+      <div className={`lg:hidden mt-8 sm:mt-12 text-center select-none print:hidden ${revealed ? 'receipt-fade' : 'opacity-0'}`}>
+        <h2 className="font-hero text-7xl sm:text-8xl tracking-tighter leading-none uppercase">
+          <span className="text-[#1a1520]">PINK</span>
           <span className="text-primary">SNAP</span>
         </h2>
-        <p className="font-mono text-xs sm:text-sm text-black/45 tracking-[0.4em] uppercase mt-2.5 sm:mt-3">
+        <p className="font-mono text-xs sm:text-sm text-black/40 tracking-[0.3em] uppercase mt-2 sm:mt-2.5">
           Virtual Photo Booth
         </p>
       </div>
