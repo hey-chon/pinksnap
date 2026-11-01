@@ -298,32 +298,36 @@ export default function Receipt() {
         <img src={latestMemory.url} alt="Strip" className="strip-print hidden print:block" />
       )}
 
-      {/* Cinematic PINKSNAP Header — visible immediately on mobile without scrolling */}
-      <div className={`mb-3 sm:mb-5 text-center select-none print:hidden ${revealed ? 'receipt-fade' : 'opacity-0'}`}>
-        <h1 className="font-hero text-3xl sm:text-4xl md:text-5xl tracking-tight leading-none uppercase">
-          <span className="text-[#1a1520]">PINK</span>
-          <span className="text-primary">SNAP</span>
-        </h1>
-        <p className="font-mono text-[9px] sm:text-[10px] text-black/40 tracking-[0.3em] uppercase mt-1">
-          Virtual Photo Booth
-        </p>
-      </div>
+      {/* Main container: column on mobile/tablet, row with flanking branding on desktop/laptop */}
+      <div className="w-full max-w-7xl flex flex-col lg:flex-row items-center justify-center">
+        {/* Left blank side (desktop/laptop only, vertically centered) */}
+        <div className={`hidden lg:flex flex-col items-center justify-center flex-1 select-none pointer-events-none text-center px-6 ${revealed ? 'receipt-fade' : 'opacity-0'}`}>
+          <h2 className="font-hero text-4xl xl:text-5xl 2xl:text-6xl tracking-tight leading-none uppercase">
+            <span className="text-[#1a1520]">PINK</span>
+            <span className="text-primary">SNAP</span>
+          </h2>
+          <p className="font-mono text-[9px] xl:text-[11px] text-black/40 tracking-[0.3em] uppercase mt-2">
+            Virtual Photo Booth
+          </p>
+        </div>
 
-      <div
-        ref={contentRef}
-        className="receipt-container flex flex-row items-center justify-center gap-6 md:gap-8"
-        style={{
-          transform: scale < 1 ? `scale(${scale})` : undefined,
-          transformOrigin: 'top center',
-          width: scale < 1 ? '640px' : undefined,
-        }}
-      >
-        {/* Receipt card — original full ticket */}
+        {/* Center content: receipt card + actions panel + mobile bottom branding */}
         <div
-          ref={receiptRef}
-          className="receipt-enter receipt-card w-full max-w-[320px] shrink-0 bg-white relative shadow-[0_8px_40px_rgba(0,0,0,0.12)]"
-          style={{ borderRadius: '4px 4px 0 0' }}
+          ref={contentRef}
+          className="receipt-container shrink-0 flex flex-col items-center justify-center"
+          style={{
+            transform: scale < 1 ? `scale(${scale})` : undefined,
+            transformOrigin: 'top center',
+            width: scale < 1 ? '640px' : undefined,
+          }}
         >
+          <div className="flex flex-row items-center justify-center gap-6 md:gap-8">
+            {/* Receipt card — original full ticket */}
+            <div
+              ref={receiptRef}
+              className="receipt-enter receipt-card w-full max-w-[320px] shrink-0 bg-white relative shadow-[0_8px_40px_rgba(0,0,0,0.12)]"
+              style={{ borderRadius: '4px 4px 0 0' }}
+            >
           <div className="absolute -top-[6px] left-0 right-0 h-[6px] overflow-hidden print:hidden">
             <svg width="100%" height="6" preserveAspectRatio="none" viewBox="0 0 400 6">
               <path
@@ -518,6 +522,30 @@ export default function Receipt() {
           </div>
         </div>
       </div>
+
+      {/* Mobile / Tablet: on the bottom right after the receipt and save contents, visible without scrolling */}
+      <div className={`lg:hidden mt-4 sm:mt-5 text-center select-none print:hidden ${revealed ? 'receipt-fade' : 'opacity-0'}`}>
+        <h2 className="font-hero text-3xl sm:text-4xl tracking-tight leading-none uppercase">
+          <span className="text-[#1a1520]">PINK</span>
+          <span className="text-primary">SNAP</span>
+        </h2>
+        <p className="font-mono text-[9px] sm:text-[10px] text-black/40 tracking-[0.3em] uppercase mt-1">
+          Virtual Photo Booth
+        </p>
+      </div>
     </div>
-  );
+
+    {/* Right blank side (desktop/laptop only, vertically centered) */}
+    <div className={`hidden lg:flex flex-col items-center justify-center flex-1 select-none pointer-events-none text-center px-6 ${revealed ? 'receipt-fade' : 'opacity-0'}`}>
+      <h2 className="font-hero text-4xl xl:text-5xl 2xl:text-6xl tracking-tight leading-none uppercase">
+        <span className="text-[#1a1520]">PINK</span>
+        <span className="text-primary">SNAP</span>
+      </h2>
+      <p className="font-mono text-[9px] xl:text-[11px] text-black/40 tracking-[0.3em] uppercase mt-2">
+        Virtual Photo Booth
+      </p>
+    </div>
+  </div>
+</div>
+);
 }
