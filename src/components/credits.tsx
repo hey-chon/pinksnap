@@ -58,20 +58,20 @@ export default function Credits() {
   return (
     <section id="creator-section" ref={sectionRef} aria-labelledby="credits-title" className="relative z-10 max-w-6xl mx-auto pb-14 sm:pb-20 pt-10 sm:pt-16 mt-4 sm:mt-8 scroll-mt-6">
       {/* Cinematic Header matching Artisan Showcase */}
-      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 mb-6 px-1">
-        <div>
+      <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-3 mb-6 px-1">
+        <div className="min-w-0">
           <p className="text-[11px] font-black tracking-[.25em] text-primary uppercase mb-1.5">
             THE LITTLE CREDITS CORNER
           </p>
           <h2
             id="credits-title"
-            className="font-hero text-4xl sm:text-6xl md:text-7xl tracking-tight text-foreground leading-[0.88] uppercase"
+            className="font-hero text-[clamp(1.45rem,5.5vw,4.25rem)] tracking-tight text-foreground leading-[0.92] uppercase whitespace-nowrap"
           >
             MADE WITH <span className="text-primary">GOOD HELP.</span>
           </h2>
         </div>
 
-        <div className="flex flex-col sm:items-end gap-1">
+        <div className="flex flex-col sm:flex-row md:flex-col sm:items-center md:items-end gap-1 shrink-0 pb-1">
           <p className="text-[11px] sm:text-xs font-bold text-foreground/50 tracking-wider uppercase">
             Behind the virtual photobooth
           </p>
@@ -141,7 +141,7 @@ export default function Credits() {
                 Hi! I'm a student web developer from Cavite, Philippines, who loves building websites, learning by doing, and keeping things organized.
               </p>
               <p>
-                I'm the developer behind PinkSnap — a virtual photobooth website that I planned, structured, and built with an AI-assisted workflow. While I originally built PinkSnap for me and my girlfriend Jera but it's now open for everyone to use and enjoy!
+                I'm the developer behind PinkSnap — a virtual photobooth website that I planned, structured, and built with an AI-assisted workflow. While I originally built PinkSnap for me and my girlfriend Jera, it's now open for everyone to use and enjoy!
               </p>
               <p>
                 I built PinkSnap to learn new things, explore new techniques, and grow as a student developer. Since this website is a work in progress, I appreciate your patience as I continue to improve it. Thank you for stopping by! :D

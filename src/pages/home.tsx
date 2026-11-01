@@ -340,7 +340,7 @@ export default function Home() {
           </div>
 
           {/* ── Feedback CTA ── */}
-          <div className="mt-4 sm:mt-6 mb-6 sm:mb-8 flex flex-col items-center justify-center text-center gap-1">
+          <div className="mt-4 sm:mt-6 mb-8 sm:mb-12 flex flex-col items-center justify-center text-center gap-1">
             <p className="text-foreground/70 font-medium text-[10px] sm:text-sm">
               Want to give some feedback? Join the community chat
             </p>
@@ -352,7 +352,7 @@ export default function Home() {
         </section>
 
         {/* ── ARTISAN STRIPS — Cinematic Showcase Loop ── */}
-        <section aria-labelledby="artisan-showcase-title" className="relative z-10 w-full max-w-6xl mx-auto py-8 sm:py-14">
+        <section aria-labelledby="artisan-showcase-title" className="relative z-10 w-full max-w-6xl mx-auto pt-10 sm:pt-16 pb-8 sm:pb-14 mt-4 sm:mt-8">
           {/* Cinematic Header */}
           <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 mb-6 px-1">
             <div>
