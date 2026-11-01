@@ -298,6 +298,17 @@ export default function Receipt() {
         <img src={latestMemory.url} alt="Strip" className="strip-print hidden print:block" />
       )}
 
+      {/* Cinematic PINKSNAP Header — visible immediately on mobile without scrolling */}
+      <div className={`mb-3 sm:mb-5 text-center select-none print:hidden ${revealed ? 'receipt-fade' : 'opacity-0'}`}>
+        <h1 className="font-hero text-3xl sm:text-4xl md:text-5xl tracking-tight leading-none uppercase">
+          <span className="text-[#1a1520]">PINK</span>
+          <span className="text-primary">SNAP</span>
+        </h1>
+        <p className="font-mono text-[9px] sm:text-[10px] text-black/40 tracking-[0.3em] uppercase mt-1">
+          Virtual Photo Booth
+        </p>
+      </div>
+
       <div
         ref={contentRef}
         className="receipt-container flex flex-row items-center justify-center gap-6 md:gap-8"
@@ -506,17 +517,6 @@ export default function Receipt() {
             </p>
           </div>
         </div>
-      </div>
-
-      {/* Big Cinematic PINKSNAP on the bottom of receipt contents */}
-      <div className={`mt-6 sm:mt-10 text-center select-none print:hidden ${revealed ? 'receipt-fade-late' : 'opacity-0'}`}>
-        <h2 className="font-hero text-5xl sm:text-6xl md:text-7xl tracking-tighter leading-none uppercase">
-          <span className="text-black">PINK</span>
-          <span className="text-primary">SNAP</span>
-        </h2>
-        <p className="font-mono text-[9px] sm:text-[11px] text-black/35 tracking-[0.3em] uppercase mt-2">
-          VIRTUAL PHOTO BOOTH
-        </p>
       </div>
     </div>
   );
