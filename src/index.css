@@ -790,60 +790,6 @@ img { max-width: 100%; }
   pointer-events: none;
 }
 
-/* ==========================================================================
-   iOS 26 Fluid Slider Action Buttons (Universal Engine)
-   ========================================================================== */
-.ios-slider-btn,
-button:not(:disabled):not(.scroll-cue):not([class*="pointer-events-none"]),
-a.btn-action,
-a[class*="rounded-full"][class*="bg-primary"] {
-  position: relative;
-  overflow: hidden;
-  transition: transform 0.22s cubic-bezier(0.32, 0.72, 0, 1),
-              box-shadow 0.22s cubic-bezier(0.32, 0.72, 0, 1),
-              background-color 0.2s ease,
-              border-color 0.2s ease;
-  -webkit-tap-highlight-color: transparent;
-  user-select: none;
-  touch-action: manipulation;
-}
-
-.ios-slider-btn:active,
-button:not(:disabled):not(.scroll-cue):not([class*="pointer-events-none"]):active,
-a.btn-action:active,
-a[class*="rounded-full"][class*="bg-primary"]:active {
-  transform: scale(0.93) !important;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
-}
-
-.ios-slider-btn::before,
-button:not(:disabled):not(.scroll-cue):not(.no-slider):not([class*="pointer-events-none"])::before,
-a.btn-action::before,
-a[class*="rounded-full"][class*="bg-primary"]::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: -130%;
-  width: 85%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.26) 50%, transparent 100%);
-  transform: skewX(-20deg);
-  transition: left 0.5s cubic-bezier(0.32, 0.72, 0, 1);
-  pointer-events: none;
-  z-index: 10;
-}
-
-.ios-slider-btn:hover::before,
-.ios-slider-btn:active::before,
-button:not(:disabled):not(.scroll-cue):not(.no-slider):not([class*="pointer-events-none"]):hover::before,
-button:not(:disabled):not(.scroll-cue):not(.no-slider):not([class*="pointer-events-none"]):active::before,
-a.btn-action:hover::before,
-a.btn-action:active::before,
-a[class*="rounded-full"][class*="bg-primary"]:hover::before,
-a[class*="rounded-full"][class*="bg-primary"]:active::before {
-  left: 140%;
-}
-
 .bulb-row {
   display: flex;
   gap: 10px;

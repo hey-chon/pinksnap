@@ -317,11 +317,17 @@ export default function Home() {
             }
 
             .btn-vibrant-glow:hover {
+              animation-play-state: paused;
               box-shadow: 
-                inset 0 1px 0 rgba(255, 255, 255, 0.7),
+                inset 0 1px 0 rgba(255, 255, 255, 0.8),
                 0 0 0 3px rgba(245, 61, 137, 1),
-                0 0 40px 4px rgba(245, 61, 137, 0.85),
-                0 14px 50px rgba(245, 61, 137, 0.5);
+                0 0 45px 6px rgba(245, 61, 137, 0.92),
+                0 14px 45px rgba(245, 61, 137, 0.55);
+              transform: scale(1.05);
+            }
+
+            .btn-vibrant-glow:active {
+              transform: scale(0.96);
             }
 
             .btn-light-sweep {
@@ -356,7 +362,7 @@ export default function Home() {
               type="button"
               onClick={handleGetStarted}
               data-testid="link-setup"
-              className="home-hero-item ios-slider-btn btn-vibrant-glow group relative inline-flex items-center justify-center px-9 py-4 lg:px-12 lg:py-5 font-black text-white bg-primary rounded-full overflow-hidden transition-all duration-300 hover:scale-105 active:scale-93 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/50 focus-visible:ring-offset-2 z-10 cursor-pointer"
+              className="home-hero-item btn-vibrant-glow group relative inline-flex items-center justify-center px-9 py-4 lg:px-12 lg:py-5 font-black text-white bg-primary rounded-full overflow-hidden transition-all duration-300 hover:scale-105 active:scale-95 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/50 focus-visible:ring-offset-2 z-10 cursor-pointer"
             >
               {/* Active waving sheen sweep */}
               <span className="btn-light-sweep pointer-events-none" />
