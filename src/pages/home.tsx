@@ -369,7 +369,7 @@ export default function Home() {
 
             <div className="flex flex-col sm:items-end gap-1">
               <p className="text-[11px] sm:text-xs font-bold text-foreground/50 tracking-wider uppercase">
-                Curated layouts & editorial prints
+                Curated layouts & Premium Prints
               </p>
               <button
                 type="button"
