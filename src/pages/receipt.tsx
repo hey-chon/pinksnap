@@ -517,7 +517,6 @@ export default function Receipt() {
         </div>
       </div>
 
-      {/* Mobile / Tablet: on the bottom right after the receipt and save contents, visible without scrolling */}
       <div className={`lg:hidden mt-12 sm:mt-16 text-center select-none print:hidden ${revealed ? 'receipt-fade' : 'opacity-0'}`}>
         <h2 className="font-hero text-[5rem] sm:text-[5.75rem] tracking-tighter leading-none uppercase">
           <span className="text-[#1a1520]">PINK</span><span className="text-primary">SNAP</span>
@@ -528,7 +527,7 @@ export default function Receipt() {
       </div>
     </div>
 
-    {/* Right blank side (desktop/laptop only, vertically centered) */}
+
     <div className={`hidden lg:flex flex-col items-center justify-center flex-1 select-none pointer-events-none text-center px-6 ${revealed ? 'receipt-fade' : 'opacity-0'}`}>
       <h2 className="font-hero text-5xl xl:text-7xl 2xl:text-8xl tracking-wider leading-none uppercase">
         <span className="text-[#1a1520]">PINK</span>{' '}
