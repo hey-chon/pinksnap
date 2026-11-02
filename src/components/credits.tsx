@@ -71,14 +71,7 @@ export default function Credits() {
           </h2>
         </div>
 
-        <div className="flex flex-col sm:flex-row md:flex-col sm:items-center md:items-end gap-1 shrink-0 pb-1">
-          <p className="text-[11px] sm:text-xs font-bold text-foreground/50 tracking-wider uppercase">
-            Behind the virtual photobooth
-          </p>
-          <span className="inline-flex items-center gap-1.5 text-xs font-black text-primary uppercase tracking-wider">
-            <Sparkles className="w-3.5 h-3.5" /> CREATORS &amp; FRIENDS
-          </span>
-        </div>
+       
       </div>
 
       {/* Tech Stack Looping Marquee */}
