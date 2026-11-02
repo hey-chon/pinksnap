@@ -119,6 +119,9 @@ export function TopNav({
   );
 }
 
+// Persistent module-level state across route navigations
+let lastKnownTabIdx: number | null = null;
+
 export function BottomNav() {
   const [location, setLocation] = useLocation();
 
@@ -147,10 +150,30 @@ export function BottomNav() {
   };
 
   const activeIdx = getIdxFromPath(location);
-  const [targetIdx, setTargetIdx] = useState<number | null>(activeIdx >= 0 ? activeIdx : null);
 
+  // Initialize at the previous page's position if coming from another tab so transition actually occurs!
+  const [targetIdx, setTargetIdx] = useState<number | null>(() => {
+    if (lastKnownTabIdx !== null && activeIdx !== -1 && lastKnownTabIdx !== activeIdx) {
+      return lastKnownTabIdx;
+    }
+    return activeIdx >= 0 ? activeIdx : null;
+  });
+
+  // Animate from previous position to the new position on page mount
   useEffect(() => {
-    setTargetIdx(activeIdx >= 0 ? activeIdx : null);
+    let raf: number | null = null;
+    if (activeIdx >= 0) {
+      raf = requestAnimationFrame(() => {
+        setTargetIdx(activeIdx);
+        lastKnownTabIdx = activeIdx;
+      });
+    } else {
+      setTargetIdx(null);
+      lastKnownTabIdx = null;
+    }
+    return () => {
+      if (raf !== null) cancelAnimationFrame(raf);
+    };
   }, [activeIdx]);
 
   return (
@@ -186,20 +209,27 @@ export function BottomNav() {
           </div>
         </div>
 
-        {/* iOS Fluid Segmented Dock */}
-        <div className="relative flex items-center p-1 rounded-full bg-[#1b111e] border border-[#331c36] shadow-[inset_0_2px_4px_rgba(0,0,0,0.5)] min-w-[140px] sm:min-w-[280px]">
-          {/* Always-mounted smooth sliding indicator - Clear/Translucent (not pink) */}
+        {/* iOS Fluid Spring Segmented Dock */}
+        <div className="relative flex items-center p-1 rounded-full bg-[#170e1a]/95 border border-white/15 shadow-[inset_0_2px_5px_rgba(0,0,0,0.6)] backdrop-blur-md min-w-[145px] sm:min-w-[290px]">
+          {/* Liquid Crystal Frosted Spring Slider Pill */}
           <div
-            className="absolute top-1 bottom-1 rounded-full bg-white/[0.12] border border-white/20 shadow-[0_2px_8px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.25)] pointer-events-none"
+            className="absolute top-1 bottom-1 rounded-full bg-gradient-to-b from-white/22 to-white/[0.09] border border-white/30 shadow-[0_4px_16px_rgba(0,0,0,0.5),inset_0_1.5px_1px_rgba(255,255,255,0.5),inset_0_-1px_1px_rgba(0,0,0,0.3)] pointer-events-none"
             style={{
               left: '4px',
               width: 'calc((100% - 8px) / 3)',
-              transform: targetIdx !== null ? `translate3d(${targetIdx * 100}%, 0, 0)` : 'translate3d(0, 0, 0) scale(0.9)',
+              transform:
+                targetIdx !== null
+                  ? `translate3d(${targetIdx * 100}%, 0, 0)`
+                  : 'translate3d(0, 0, 0) scale(0.85)',
               opacity: targetIdx !== null ? 1 : 0,
-              transition: 'transform 240ms cubic-bezier(0.2, 0.8, 0.2, 1), opacity 150ms ease',
+              transition:
+                'transform 380ms cubic-bezier(0.34, 1.35, 0.64, 1), opacity 200ms ease',
               willChange: 'transform, opacity',
             }}
-          />
+          >
+            {/* Specular Glint Line */}
+            <span className="absolute inset-x-2 top-0.5 h-[1px] bg-gradient-to-r from-transparent via-white/50 to-transparent pointer-events-none" />
+          </div>
 
           {navTabs.map((tab, idx) => {
             const Icon = tab.icon;
@@ -208,14 +238,27 @@ export function BottomNav() {
               <Link
                 key={tab.href}
                 href={tab.href}
-                onClick={() => setTargetIdx(idx)}
+                onClick={() => {
+                  if (activeIdx !== -1) {
+                    lastKnownTabIdx = activeIdx;
+                  }
+                  setTargetIdx(idx);
+                }}
                 data-testid={tab.testId}
-                className={`relative z-10 flex-1 flex items-center justify-center gap-1.5 px-2.5 sm:px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-black transition-colors duration-150 active:scale-95 cursor-pointer select-none ${
-                  isActive ? 'text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]' : 'text-white/60 hover:text-white'
+                className={`relative z-10 flex-1 flex items-center justify-center gap-1.5 px-2.5 sm:px-3.5 py-1.5 rounded-full text-xs sm:text-sm transition-all duration-200 active:scale-95 cursor-pointer select-none ${
+                  isActive
+                    ? 'text-white font-black drop-shadow-[0_1px_3px_rgba(0,0,0,0.85)]'
+                    : 'text-white/55 hover:text-white/85 font-bold'
                 }`}
               >
-                <Icon className={`w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0 transition-transform ${isActive ? 'text-white stroke-[2.5] scale-105' : 'text-white/60'}`} />
-                <span className="hidden sm:inline">{tab.label}</span>
+                <Icon
+                  className={`w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0 transition-transform duration-300 ease-[cubic-bezier(0.34,1.4,0.64,1)] ${
+                    isActive
+                      ? 'text-white stroke-[2.5] scale-110 drop-shadow-[0_0_8px_rgba(255,255,255,0.4)]'
+                      : 'text-white/55'
+                  }`}
+                />
+                <span className="hidden sm:inline tracking-wider uppercase">{tab.label}</span>
               </Link>
             );
           })}
