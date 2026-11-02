@@ -67,7 +67,7 @@ export default function Credits() {
             id="credits-title"
             className="font-hero text-[clamp(1.45rem,5.5vw,4.25rem)] tracking-tight text-foreground leading-[0.92] uppercase whitespace-nowrap"
           >
-            MADE WITH <span className="text-primary">GOOD HELP.</span>
+            MADE WITH <span className="text-primary cinematic-glow-pink">GOOD HELP.</span>
           </h2>
         </div>
 

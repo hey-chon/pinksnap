@@ -229,24 +229,137 @@ export default function Home() {
 
           <h1 className="home-hero-item font-hero text-[clamp(2.5rem,9vw,4.5rem)] lg:text-[5.5rem] xl:text-[6.2rem] text-foreground mt-5 lg:mt-7 mb-4 lg:mb-5 leading-[.9]">
             WELCOME TO <br />
-            <span className="text-primary drop-shadow-sm">PINKSNAP.</span>
+            <span className="text-primary cinematic-glow-pink">PINKSNAP.</span>
           </h1>
 
           <p className="home-hero-item text-[10px] sm:text-sm lg:text-base font-black text-foreground/60 mb-8 lg:mb-10 tracking-[.22em] uppercase">
             YOUR VIRTUAL PHOTOBOOTH.
           </p>
 
+          <style>{`
+            .cinematic-glow-pink {
+              text-shadow: 
+                0 0 20px rgba(245, 61, 137, 0.45),
+                0 0 45px rgba(245, 61, 137, 0.25),
+                0 0 75px rgba(245, 61, 137, 0.12);
+              animation: cinematicGlowPulse 4s ease-in-out infinite alternate;
+            }
+
+            @keyframes cinematicGlowPulse {
+              0% {
+                text-shadow: 
+                  0 0 16px rgba(245, 61, 137, 0.4),
+                  0 0 38px rgba(245, 61, 137, 0.2);
+              }
+              100% {
+                text-shadow: 
+                  0 0 26px rgba(245, 61, 137, 0.65),
+                  0 0 55px rgba(245, 61, 137, 0.35),
+                  0 0 85px rgba(245, 61, 137, 0.18);
+              }
+            }
+
+            .btn-wave-ring {
+              position: absolute;
+              border-radius: 9999px;
+              pointer-events: none;
+              border: 1.5px solid rgba(245, 61, 137, 0.7);
+            }
+
+            .btn-wave-1 {
+              animation: btnWaveRipple 2.6s cubic-bezier(0.15, 0.85, 0.25, 1) infinite;
+            }
+
+            .btn-wave-2 {
+              animation: btnWaveRipple 2.6s cubic-bezier(0.15, 0.85, 0.25, 1) infinite 1.3s;
+            }
+
+            @keyframes btnWaveRipple {
+              0% {
+                inset: 0px;
+                opacity: 0.9;
+                box-shadow: 0 0 14px rgba(245, 61, 137, 0.75);
+              }
+              50% {
+                opacity: 0.45;
+              }
+              100% {
+                inset: -15px;
+                opacity: 0;
+                box-shadow: 0 0 28px rgba(245, 61, 137, 0);
+              }
+            }
+
+            .btn-vibrant-glow {
+              box-shadow: 
+                inset 0 1px 0 rgba(255, 255, 255, 0.5),
+                0 0 0 1.5px rgba(245, 61, 137, 0.55),
+                0 0 20px rgba(245, 61, 137, 0.5),
+                0 8px 30px rgba(245, 61, 137, 0.35);
+              animation: btnGlowBreathing 2.6s ease-in-out infinite;
+            }
+
+            @keyframes btnGlowBreathing {
+              0%, 100% {
+                box-shadow: 
+                  inset 0 1px 0 rgba(255, 255, 255, 0.5),
+                  0 0 0 1.5px rgba(245, 61, 137, 0.5),
+                  0 0 18px rgba(245, 61, 137, 0.45),
+                  0 8px 28px rgba(245, 61, 137, 0.3);
+              }
+              50% {
+                box-shadow: 
+                  inset 0 1px 0 rgba(255, 255, 255, 0.7),
+                  0 0 0 2.5px rgba(245, 61, 137, 0.85),
+                  0 0 32px 2px rgba(245, 61, 137, 0.75),
+                  0 10px 42px rgba(245, 61, 137, 0.45);
+              }
+            }
+
+            .btn-vibrant-glow:hover {
+              box-shadow: 
+                inset 0 1px 0 rgba(255, 255, 255, 0.7),
+                0 0 0 3px rgba(245, 61, 137, 1),
+                0 0 40px 4px rgba(245, 61, 137, 0.85),
+                0 14px 50px rgba(245, 61, 137, 0.5);
+            }
+
+            .btn-light-sweep {
+              position: absolute;
+              inset: 0;
+              background: linear-gradient(
+                105deg,
+                transparent 20%,
+                rgba(255, 255, 255, 0.3) 50%,
+                transparent 80%
+              );
+              transform: translateX(-150%);
+              animation: lightSweepWave 3.6s ease-in-out infinite;
+            }
+
+            @keyframes lightSweepWave {
+              0%, 30% {
+                transform: translateX(-150%);
+              }
+              70%, 100% {
+                transform: translateX(150%);
+              }
+            }
+          `}</style>
+
           <div className="relative inline-block mt-4 mb-4 lg:mt-5 lg:mb-6">
-            {/* Ambient glow ring behind the button */}
-            <div className="absolute inset-0 -inset-x-3 -inset-y-3 rounded-full bg-primary/20 blur-xl animate-pulse pointer-events-none" />
+            {/* Luminous idle wave rings expanding outward from padding */}
+            <span className="btn-wave-ring btn-wave-1" />
+            <span className="btn-wave-ring btn-wave-2" />
+
             <button
               type="button"
               onClick={handleGetStarted}
               data-testid="link-setup"
-              className="home-hero-item group relative inline-flex items-center justify-center px-9 py-4 lg:px-12 lg:py-5 font-black text-white bg-primary rounded-full overflow-hidden shadow-[0_0_30px_rgba(245,61,137,0.4),0_0_60px_rgba(245,61,137,0.15)] hover:shadow-[0_0_40px_rgba(245,61,137,0.55),0_0_80px_rgba(245,61,137,0.2)] transition-all duration-300 hover:scale-105 active:scale-95 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/50 focus-visible:ring-offset-2 z-10"
+              className="home-hero-item btn-vibrant-glow group relative inline-flex items-center justify-center px-9 py-4 lg:px-12 lg:py-5 font-black text-white bg-primary rounded-full overflow-hidden transition-all duration-300 hover:scale-105 active:scale-95 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/50 focus-visible:ring-offset-2 z-10 cursor-pointer"
             >
-              {/* Inner shimmer sweep */}
-              <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-out pointer-events-none" />
+              {/* Active waving sheen sweep */}
+              <span className="btn-light-sweep pointer-events-none" />
               <span className="relative flex items-center gap-2 text-sm sm:text-base lg:text-lg font-black tracking-wider uppercase">
                 GET STARTED
               </span>
@@ -367,7 +480,7 @@ export default function Home() {
                 id="artisan-showcase-title"
                 className="font-hero text-5xl sm:text-7xl md:text-8xl tracking-tight text-foreground leading-[0.88] uppercase"
               >
-                ARTISAN <span className="text-primary">STRIPS.</span>
+                ARTISAN <span className="text-primary cinematic-glow-pink">STRIPS.</span>
               </h2>
             </div>
 
