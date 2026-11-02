@@ -224,7 +224,7 @@ export default function Receipt() {
   })();
 
   const actionBtn =
-    'flex items-center justify-center gap-2 min-h-[44px] px-4 py-3.5 bg-white border border-black/10 text-black/70 font-black text-xs tracking-wider rounded-xl shadow-sm hover:bg-black/5 active:bg-black/10 active:opacity-85 transition-colors touch-manipulation select-none outline-none focus:outline-none';
+    'ios-slider-btn flex items-center justify-center gap-2 min-h-[44px] px-4 py-3.5 bg-white border border-black/10 text-black/70 font-black text-xs tracking-wider rounded-xl shadow-sm hover:bg-black/5 active:bg-black/10 active:opacity-85 transition-all touch-manipulation select-none outline-none focus:outline-none';
 
   return (
     <div className={`min-h-[100dvh] flex flex-col items-center justify-center px-4 py-8 sm:py-12 bg-[#f5f0eb] pb-[max(2rem,env(safe-area-inset-bottom))] overflow-x-hidden ${printTarget === 'strip' ? 'is-printing-strip' : 'is-printing-receipt'}`}>

@@ -159,7 +159,7 @@ export default function Setup() {
         </div>
 
         <div className="mt-8 sm:mt-10 pb-14 w-full max-w-sm flex justify-center">
-          <Link href="/studio" onClick={() => clearShots()} data-testid="link-continue" className="w-full inline-flex items-center justify-center px-6 py-4 sm:px-8 sm:py-5 font-black text-primary-foreground bg-primary rounded-full shadow-xl shadow-primary/30 hover:shadow-2xl hover:shadow-primary/40 transition-all active:scale-[0.98] text-base sm:text-lg gap-2 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/50 focus-visible:ring-offset-2">
+          <Link href="/studio" onClick={() => clearShots()} data-testid="link-continue" className="ios-slider-btn btn-action w-full inline-flex items-center justify-center px-6 py-4 sm:px-8 sm:py-5 font-black text-primary-foreground bg-primary rounded-full shadow-xl shadow-primary/30 hover:shadow-2xl hover:shadow-primary/40 transition-all active:scale-[0.93] text-base sm:text-lg gap-2 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/50 focus-visible:ring-offset-2 cursor-pointer">
             ENTER THE BOOTH <ArrowRight className="w-5 h-5 sm:w-6 sm:h-6" />
           </Link>
         </div>

@@ -356,7 +356,7 @@ export default function Home() {
               type="button"
               onClick={handleGetStarted}
               data-testid="link-setup"
-              className="home-hero-item btn-vibrant-glow group relative inline-flex items-center justify-center px-9 py-4 lg:px-12 lg:py-5 font-black text-white bg-primary rounded-full overflow-hidden transition-all duration-300 hover:scale-105 active:scale-95 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/50 focus-visible:ring-offset-2 z-10 cursor-pointer"
+              className="home-hero-item ios-slider-btn btn-vibrant-glow group relative inline-flex items-center justify-center px-9 py-4 lg:px-12 lg:py-5 font-black text-white bg-primary rounded-full overflow-hidden transition-all duration-300 hover:scale-105 active:scale-93 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/50 focus-visible:ring-offset-2 z-10 cursor-pointer"
             >
               {/* Active waving sheen sweep */}
               <span className="btn-light-sweep pointer-events-none" />
