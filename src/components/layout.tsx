@@ -192,9 +192,9 @@ export function BottomNav() {
 
         {/* iOS Fluid Segmented Dock */}
         <div className="relative flex items-center p-1 rounded-full bg-[#1b111e] border border-[#331c36] shadow-[inset_0_2px_4px_rgba(0,0,0,0.5)] min-w-[140px] sm:min-w-[280px]">
-          {/* Always-mounted smooth sliding indicator */}
+          {/* Always-mounted smooth sliding indicator - Clear/Translucent (not pink) */}
           <div
-            className="absolute top-1 bottom-1 rounded-full bg-gradient-to-r from-primary via-[#ff4d94] to-[#f53d89] shadow-[0_2px_12px_rgba(245,61,137,0.55),inset_0_1px_1px_rgba(255,255,255,0.45)] pointer-events-none"
+            className="absolute top-1 bottom-1 rounded-full bg-white/[0.12] border border-white/20 shadow-[0_2px_8px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.25)] pointer-events-none"
             style={{
               left: '4px',
               width: 'calc((100% - 8px) / 3)',
