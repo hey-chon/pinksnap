@@ -237,12 +237,16 @@ export default function Home() {
           </p>
 
           <div className="relative inline-block mt-4 mb-4 lg:mt-5 lg:mb-6">
+            {/* Ambient glow ring behind the button */}
+            <div className="absolute inset-0 -inset-x-3 -inset-y-3 rounded-full bg-primary/20 blur-xl animate-pulse pointer-events-none" />
             <button
               type="button"
               onClick={handleGetStarted}
               data-testid="link-setup"
-              className="home-hero-item group relative inline-flex items-center justify-center px-9 py-4 lg:px-12 lg:py-5 font-black text-white bg-primary rounded-full overflow-hidden shadow-xl shadow-primary/30 hover:shadow-2xl hover:shadow-primary/40 transition-all hover:scale-105 active:scale-95 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/50 focus-visible:ring-offset-2 z-10"
+              className="home-hero-item group relative inline-flex items-center justify-center px-9 py-4 lg:px-12 lg:py-5 font-black text-white bg-primary rounded-full overflow-hidden shadow-[0_0_30px_rgba(245,61,137,0.4),0_0_60px_rgba(245,61,137,0.15)] hover:shadow-[0_0_40px_rgba(245,61,137,0.55),0_0_80px_rgba(245,61,137,0.2)] transition-all duration-300 hover:scale-105 active:scale-95 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/50 focus-visible:ring-offset-2 z-10"
             >
+              {/* Inner shimmer sweep */}
+              <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-out pointer-events-none" />
               <span className="relative flex items-center gap-2 text-sm sm:text-base lg:text-lg font-black tracking-wider uppercase">
                 GET STARTED
               </span>
