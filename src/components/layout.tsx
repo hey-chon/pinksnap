@@ -11,6 +11,47 @@ function Bulbs({ count = 10 }: { count?: number }) {
   );
 }
 
+function PremiumCameraBadge() {
+  return (
+    <div className="relative group/camera select-none">
+      {/* Ambient pink pulse blur */}
+      <div className="absolute -inset-1 rounded-[16px] bg-gradient-to-r from-primary via-[#ff5c9f] to-primary opacity-60 blur-md group-hover/camera:opacity-90 group-hover/camera:blur-lg transition-all duration-300" />
+
+      {/* Luxury Metallic/Enamel Camera Housing */}
+      <div className="relative w-10 h-10 sm:w-11 sm:h-11 rounded-[14px] bg-gradient-to-br from-[#ff6ba9] via-[#f53d89] to-[#b31454] p-[1.5px] shadow-[0_8px_20px_rgba(245,61,137,0.55),0_2px_6px_rgba(0,0,0,0.4)] group-hover/camera:rotate-[-5deg] group-hover/camera:scale-110 active:scale-90 transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)]">
+        {/* Chamfered inner body */}
+        <div className="w-full h-full rounded-[12.5px] bg-gradient-to-b from-[#ff5a9c] via-[#f53d89] to-[#9e0f49] p-1 flex items-center justify-center relative overflow-hidden shadow-[inset_0_1.5px_1px_rgba(255,255,255,0.7),inset_0_-2px_4px_rgba(0,0,0,0.45)]">
+          {/* Specular 45deg lens sweep */}
+          <div className="absolute -top-6 -left-6 w-16 h-16 bg-gradient-to-br from-white/40 via-transparent to-transparent rotate-45 pointer-events-none group-hover/camera:translate-x-3 group-hover/camera:translate-y-3 transition-transform duration-500" />
+
+          {/* Sapphire Optical Sensor dot */}
+          <div className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-amber-300 shadow-[0_0_4px_#ffd15c,inset_0_0.5px_0.5px_#fff]" />
+
+          {/* Camera body and lens reflection */}
+          <div className="relative flex items-center justify-center">
+            <Camera className="w-5 h-5 sm:w-5.5 sm:h-5.5 text-white stroke-[2.2] drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]" />
+            <div className="absolute w-2 h-2 rounded-full bg-gradient-to-tr from-[#16061c] to-[#78f2ff]/70 border border-white/60 shadow-[0_0_3px_rgba(120,242,255,0.9)] pointer-events-none" />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PremiumHomeBadge() {
+  return (
+    <div className="relative group/home select-none">
+      <div className="absolute -inset-1 rounded-[16px] bg-gradient-to-r from-primary via-[#ff5c9f] to-primary opacity-60 blur-md group-hover/home:opacity-90 group-hover/home:blur-lg transition-all duration-300" />
+      <div className="relative w-10 h-10 sm:w-11 sm:h-11 rounded-[14px] bg-gradient-to-br from-[#ff6ba9] via-[#f53d89] to-[#b31454] p-[1.5px] shadow-[0_8px_20px_rgba(245,61,137,0.55),0_2px_6px_rgba(0,0,0,0.4)] group-hover/home:rotate-[-5deg] group-hover/home:scale-110 active:scale-90 transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)]">
+        <div className="w-full h-full rounded-[12.5px] bg-gradient-to-b from-[#ff5a9c] via-[#f53d89] to-[#9e0f49] p-1 flex items-center justify-center relative overflow-hidden shadow-[inset_0_1.5px_1px_rgba(255,255,255,0.7),inset_0_-2px_4px_rgba(0,0,0,0.45)]">
+          <div className="absolute -top-6 -left-6 w-16 h-16 bg-gradient-to-br from-white/40 via-transparent to-transparent rotate-45 pointer-events-none group-hover/home:translate-x-3 group-hover/home:translate-y-3 transition-transform duration-500" />
+          <Home className="w-5 h-5 sm:w-5.5 sm:h-5.5 text-white stroke-[2.2] drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function TopNav({
   backTo,
   onBack,
@@ -37,7 +78,7 @@ export function TopNav({
               }
             }}
             data-testid="button-back"
-            className="p-2 sm:p-2.5 bg-[#251828] hover:bg-[#342038] rounded-full transition-all border border-[#3d2542] hover:border-pink-500/50 active:scale-95 cursor-pointer shadow-sm"
+            className="ios-slider-btn p-2 sm:p-2.5 bg-[#251828] hover:bg-[#342038] rounded-full transition-all border border-[#3d2542] hover:border-pink-500/50 active:scale-90 cursor-pointer shadow-sm"
             aria-label="Go back"
           >
             <ChevronLeft className="w-5 h-5 text-white" />
@@ -46,9 +87,7 @@ export function TopNav({
         
         {isHome ? (
           <div data-testid="link-brand" aria-label="PinkSnap home" className="flex items-center gap-2 sm:gap-2.5 group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-xl cursor-default">
-            <div className="bg-primary text-primary-foreground p-2 sm:p-2.5 rounded-[13px] group-hover:rotate-[-4deg] group-hover:scale-105 transition-transform shadow-[0_7px_20px_rgba(245,61,137,.5)]">
-              <Camera className="w-5 h-5 sm:w-6 sm:h-6 stroke-[2.5]" />
-            </div>
+            <PremiumCameraBadge />
             <div className="flex flex-col leading-[.78]">
               <span className="font-display text-[22px] sm:text-[26px] text-white">PINK</span>
               <span className="font-display text-[22px] sm:text-[26px] text-primary">SNAP</span>
@@ -56,9 +95,7 @@ export function TopNav({
           </div>
         ) : (
           <Link href="/" onClick={resetAppFlow} data-testid="link-brand" aria-label="PinkSnap home" className="flex items-center gap-2 sm:gap-2.5 group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-xl cursor-pointer">
-            <div className="bg-primary text-primary-foreground p-2 sm:p-2.5 rounded-[13px] group-hover:rotate-[-4deg] group-hover:scale-105 transition-transform shadow-[0_7px_20px_rgba(245,61,137,.5)]">
-              <Home className="w-5 h-5 sm:w-6 sm:h-6 stroke-[2.5]" />
-            </div>
+            <PremiumHomeBadge />
             <div className="flex flex-col leading-[.78]">
               <span className="font-display text-[22px] sm:text-[26px] text-white">PINK</span>
               <span className="font-display text-[22px] sm:text-[26px] text-primary">SNAP</span>
@@ -78,7 +115,7 @@ export function TopNav({
         <Link
           href="/chat"
           data-testid="link-chat-header"
-          className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-black uppercase tracking-wider text-white/90 hover:text-white px-3 py-1.5 rounded-full bg-[#251828] hover:bg-[#342038] border border-[#3d2542] hover:border-pink-500/50 transition-all active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary shadow-sm"
+          className="ios-slider-btn inline-flex items-center gap-1.5 text-xs sm:text-sm font-black uppercase tracking-wider text-white/90 hover:text-white px-3.5 py-1.5 rounded-full bg-[#251828] hover:bg-[#342038] border border-[#3d2542] hover:border-pink-500/50 transition-all active:scale-92 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary shadow-sm"
         >
           <MessageCircle className="w-4 h-4" />
           <span className="hidden sm:inline">Chat</span>
@@ -103,6 +140,14 @@ export function BottomNav() {
     window.setTimeout(scrollToCreator, 120);
   };
 
+  const navTabs = [
+    { href: '/how-it-works', label: 'DIAGRAM', icon: HelpCircle, testId: 'nav-how-it-works', matches: (loc: string) => loc === '/how-it-works' },
+    { href: '/gallery', label: 'GALLERY', icon: Images, testId: 'nav-gallery', matches: (loc: string) => loc === '/gallery' },
+    { href: '/profile', label: 'ACCOUNT', icon: UserRound, testId: 'nav-profile', matches: (loc: string) => loc === '/profile' || loc === '/auth' },
+  ];
+
+  const activeTabIdx = navTabs.findIndex(tab => tab.matches(location));
+
   return (
     <footer className="w-full shrink-0 z-50 booth-marquee booth-footer">
       <div className="flex items-center justify-between gap-2 py-2.5 px-3 sm:py-3 sm:px-6">
@@ -111,7 +156,7 @@ export function BottomNav() {
             type="button"
             onClick={openCreator}
             data-testid="button-creator"
-            className="creator-nav-button inline-flex items-center gap-1.5 sm:gap-2 rounded-full px-2.5 sm:px-3 py-1.5 text-xs font-black tracking-[.12em] text-white/90 bg-[#251828] hover:bg-[#342038] border border-[#3d2542] hover:border-pink-500/50 hover:text-primary transition-all active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary cursor-pointer shadow-sm"
+            className="ios-slider-btn creator-nav-button inline-flex items-center gap-1.5 sm:gap-2 rounded-full px-2.5 sm:px-3 py-1.5 text-xs font-black tracking-[.12em] text-white/90 bg-[#251828] hover:bg-[#342038] border border-[#3d2542] hover:border-pink-500/50 hover:text-primary transition-all active:scale-92 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary cursor-pointer shadow-sm"
           >
             <UserRound className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />
             <span>DEVELOPER</span>
@@ -136,43 +181,36 @@ export function BottomNav() {
           </div>
         </div>
 
-        <div className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-bold">
-          <Link
-            href="/how-it-works"
-            data-testid="nav-how-it-works"
-            className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-full transition-all group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
-              location === '/how-it-works'
-                ? 'text-primary bg-[#2c152a] border border-primary/50 font-black'
-                : 'text-white/75 hover:text-white hover:bg-[#251828] border border-transparent hover:border-[#3d2542]'
-            }`}
-          >
-            <HelpCircle className="w-4 h-4 group-hover:scale-110 transition-transform" />
-            <span className="hidden sm:inline">DIAGRAM</span>
-          </Link>
-          <Link
-            href="/gallery"
-            data-testid="nav-gallery"
-            className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-full transition-all group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
-              location === '/gallery'
-                ? 'text-primary bg-[#2c152a] border border-primary/50 font-black'
-                : 'text-white/75 hover:text-white hover:bg-[#251828] border border-transparent hover:border-[#3d2542]'
-            }`}
-          >
-            <Images className="w-4 h-4 group-hover:scale-110 transition-transform" />
-            <span className="hidden sm:inline">GALLERY</span>
-          </Link>
-          <Link
-            href="/profile"
-            data-testid="nav-profile"
-            className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-full transition-all group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
-              location === '/profile' || location === '/auth'
-                ? 'text-primary bg-[#2c152a] border border-primary/50 font-black'
-                : 'text-white/75 hover:text-white hover:bg-[#251828] border border-transparent hover:border-[#3d2542]'
-            }`}
-          >
-            <UserRound className="w-4 h-4 group-hover:scale-110 transition-transform" />
-            <span className="hidden sm:inline">ACCOUNT</span>
-          </Link>
+        {/* iOS 26 Fluid Segmented Slider Bar */}
+        <div className="relative grid grid-cols-3 p-1 rounded-full bg-[#1b111e] border border-[#331c36] shadow-[inset_0_2px_5px_rgba(0,0,0,0.5)]">
+          {/* Smooth Sliding Pill Indicator */}
+          {activeTabIdx !== -1 && (
+            <div
+              className="absolute top-1 bottom-1 left-1 rounded-full bg-gradient-to-r from-primary via-[#ff4d94] to-[#f53d89] shadow-[0_2px_14px_rgba(245,61,137,0.65),inset_0_1px_1px_rgba(255,255,255,0.45)] transition-transform duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] pointer-events-none"
+              style={{
+                width: 'calc((100% - 8px) / 3)',
+                transform: `translateX(calc(${activeTabIdx} * 100%))`,
+              }}
+            />
+          )}
+
+          {navTabs.map((tab) => {
+            const Icon = tab.icon;
+            const isActive = tab.matches(location);
+            return (
+              <Link
+                key={tab.href}
+                href={tab.href}
+                data-testid={tab.testId}
+                className={`ios-slider-btn relative z-10 flex items-center justify-center gap-1.5 px-2.5 sm:px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-black transition-colors duration-200 cursor-pointer ${
+                  isActive ? 'text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]' : 'text-white/60 hover:text-white'
+                }`}
+              >
+                <Icon className={`w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0 ${isActive ? 'text-white stroke-[2.5]' : 'text-white/60'}`} />
+                <span className="hidden sm:inline">{tab.label}</span>
+              </Link>
+            );
+          })}
         </div>
       </div>
     </footer>
