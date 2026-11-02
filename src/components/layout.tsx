@@ -15,15 +15,12 @@ function Bulbs({ count = 10 }: { count?: number }) {
 function PremiumCameraBadge() {
   return (
     <div className="relative group/camera select-none">
-      {/* Ambient pink pulse blur */}
-      <div className="absolute -inset-1 rounded-[16px] bg-gradient-to-r from-primary via-[#ff5c9f] to-primary opacity-60 blur-md group-hover/camera:opacity-90 group-hover/camera:blur-lg transition-all duration-300" />
-
-      {/* Luxury Metallic/Enamel Camera Housing - No blue or cyan */}
-      <div className="relative w-10 h-10 sm:w-11 sm:h-11 rounded-[14px] bg-gradient-to-br from-[#ff6ba9] via-[#f53d89] to-[#b31454] p-[1.5px] shadow-[0_8px_20px_rgba(245,61,137,0.55),0_2px_6px_rgba(0,0,0,0.4)] group-hover/camera:rotate-[-5deg] group-hover/camera:scale-110 active:scale-90 transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)]">
+      {/* Luxury Metallic/Enamel Camera Housing - No glow blur */}
+      <div className="relative w-10 h-10 sm:w-11 sm:h-11 rounded-[14px] bg-gradient-to-br from-[#ff6ba9] via-[#f53d89] to-[#b31454] p-[1.5px] shadow-[0_4px_12px_rgba(0,0,0,0.4)] group-hover/camera:rotate-[-5deg] group-hover/camera:scale-105 active:scale-95 transition-all duration-200">
         {/* Chamfered inner body */}
-        <div className="w-full h-full rounded-[12.5px] bg-gradient-to-b from-[#ff5a9c] via-[#f53d89] to-[#9e0f49] p-1 flex items-center justify-center relative overflow-hidden shadow-[inset_0_1.5px_1px_rgba(255,255,255,0.7),inset_0_-2px_4px_rgba(0,0,0,0.45)]">
+        <div className="w-full h-full rounded-[12.5px] bg-gradient-to-b from-[#ff5a9c] via-[#f53d89] to-[#9e0f49] p-1 flex items-center justify-center relative overflow-hidden shadow-[inset_0_1.5px_1px_rgba(255,255,255,0.6),inset_0_-2px_4px_rgba(0,0,0,0.4)]">
           {/* Specular 45deg lens sweep */}
-          <div className="absolute -top-6 -left-6 w-16 h-16 bg-gradient-to-br from-white/40 via-transparent to-transparent rotate-45 pointer-events-none group-hover/camera:translate-x-3 group-hover/camera:translate-y-3 transition-transform duration-500" />
+          <div className="absolute -top-6 -left-6 w-16 h-16 bg-gradient-to-br from-white/30 via-transparent to-transparent rotate-45 pointer-events-none" />
 
           {/* Camera hardware icon */}
           <div className="relative flex items-center justify-center">
@@ -38,10 +35,9 @@ function PremiumCameraBadge() {
 function PremiumHomeBadge() {
   return (
     <div className="relative group/home select-none">
-      <div className="absolute -inset-1 rounded-[16px] bg-gradient-to-r from-primary via-[#ff5c9f] to-primary opacity-60 blur-md group-hover/home:opacity-90 group-hover/home:blur-lg transition-all duration-300" />
-      <div className="relative w-10 h-10 sm:w-11 sm:h-11 rounded-[14px] bg-gradient-to-br from-[#ff6ba9] via-[#f53d89] to-[#b31454] p-[1.5px] shadow-[0_8px_20px_rgba(245,61,137,0.55),0_2px_6px_rgba(0,0,0,0.4)] group-hover/home:rotate-[-5deg] group-hover/home:scale-110 active:scale-90 transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)]">
-        <div className="w-full h-full rounded-[12.5px] bg-gradient-to-b from-[#ff5a9c] via-[#f53d89] to-[#9e0f49] p-1 flex items-center justify-center relative overflow-hidden shadow-[inset_0_1.5px_1px_rgba(255,255,255,0.7),inset_0_-2px_4px_rgba(0,0,0,0.45)]">
-          <div className="absolute -top-6 -left-6 w-16 h-16 bg-gradient-to-br from-white/40 via-transparent to-transparent rotate-45 pointer-events-none group-hover/home:translate-x-3 group-hover/home:translate-y-3 transition-transform duration-500" />
+      <div className="relative w-10 h-10 sm:w-11 sm:h-11 rounded-[14px] bg-gradient-to-br from-[#ff6ba9] via-[#f53d89] to-[#b31454] p-[1.5px] shadow-[0_4px_12px_rgba(0,0,0,0.4)] group-hover/home:rotate-[-5deg] group-hover/home:scale-105 active:scale-95 transition-all duration-200">
+        <div className="w-full h-full rounded-[12.5px] bg-gradient-to-b from-[#ff5a9c] via-[#f53d89] to-[#9e0f49] p-1 flex items-center justify-center relative overflow-hidden shadow-[inset_0_1.5px_1px_rgba(255,255,255,0.6),inset_0_-2px_4px_rgba(0,0,0,0.4)]">
+          <div className="absolute -top-6 -left-6 w-16 h-16 bg-gradient-to-br from-white/30 via-transparent to-transparent rotate-45 pointer-events-none" />
           <Home className="w-5 h-5 sm:w-5.5 sm:h-5.5 text-white stroke-[2.4] drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]" />
         </div>
       </div>
@@ -75,7 +71,7 @@ export function TopNav({
               }
             }}
             data-testid="button-back"
-            className="p-2 sm:p-2.5 bg-[#251828] hover:bg-[#342038] rounded-full transition-all border border-[#3d2542] hover:border-pink-500/50 active:scale-95 cursor-pointer shadow-sm"
+            className="p-2 sm:p-2.5 bg-[#251828] hover:bg-[#342038] rounded-full transition-all border border-[#3d2542] hover:border-white/25 active:scale-95 cursor-pointer shadow-sm"
             aria-label="Go back"
           >
             <ChevronLeft className="w-5 h-5 text-white" />
@@ -112,7 +108,7 @@ export function TopNav({
         <Link
           href="/chat"
           data-testid="link-chat-header"
-          className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-black uppercase tracking-wider text-white/90 hover:text-white px-3.5 py-1.5 rounded-full bg-[#251828] hover:bg-[#342038] border border-[#3d2542] hover:border-pink-500/50 transition-all active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary shadow-sm"
+          className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-black uppercase tracking-wider text-white/90 hover:text-white px-3.5 py-1.5 rounded-full bg-[#251828] hover:bg-[#342038] border border-[#3d2542] hover:border-white/25 transition-all active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary shadow-sm"
         >
           <MessageCircle className="w-4 h-4" />
           <span className="hidden sm:inline">Chat</span>
@@ -165,7 +161,7 @@ export function BottomNav() {
             type="button"
             onClick={openCreator}
             data-testid="button-creator"
-            className="creator-nav-button inline-flex items-center gap-1.5 sm:gap-2 rounded-full px-2.5 sm:px-3 py-1.5 text-xs font-black tracking-[.12em] text-white/90 bg-[#251828] hover:bg-[#342038] border border-[#3d2542] hover:border-pink-500/50 hover:text-primary transition-all active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary cursor-pointer shadow-sm"
+            className="creator-nav-button inline-flex items-center gap-1.5 sm:gap-2 rounded-full px-2.5 sm:px-3 py-1.5 text-xs font-black tracking-[.12em] text-white/90 bg-[#251828] hover:bg-[#342038] border border-[#3d2542] hover:border-white/25 hover:text-white transition-all active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary cursor-pointer shadow-sm"
           >
             <UserRound className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />
             <span>DEVELOPER</span>
