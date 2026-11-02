@@ -37,7 +37,7 @@ export function TopNav({
               }
             }}
             data-testid="button-back"
-            className="p-2 sm:p-2.5 bg-white/[0.08] hover:bg-white/[0.18] rounded-full transition-all border border-white/20 hover:border-white/40 shadow-[inset_0_1px_1px_rgba(255,255,255,0.25)] backdrop-blur-md active:scale-95 cursor-pointer"
+            className="p-2 sm:p-2.5 bg-[#251828] hover:bg-[#342038] rounded-full transition-all border border-[#3d2542] hover:border-pink-500/50 active:scale-95 cursor-pointer shadow-sm"
             aria-label="Go back"
           >
             <ChevronLeft className="w-5 h-5 text-white" />
@@ -78,7 +78,7 @@ export function TopNav({
         <Link
           href="/chat"
           data-testid="link-chat-header"
-          className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-black uppercase tracking-wider text-white/85 hover:text-white px-3 py-1.5 rounded-full bg-white/[0.07] hover:bg-white/[0.14] border border-white/15 hover:border-white/35 backdrop-blur-md shadow-[inset_0_1px_1px_rgba(255,255,255,0.18)] transition-all active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-black uppercase tracking-wider text-white/90 hover:text-white px-3 py-1.5 rounded-full bg-[#251828] hover:bg-[#342038] border border-[#3d2542] hover:border-pink-500/50 transition-all active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary shadow-sm"
         >
           <MessageCircle className="w-4 h-4" />
           <span className="hidden sm:inline">Chat</span>
@@ -111,7 +111,7 @@ export function BottomNav() {
             type="button"
             onClick={openCreator}
             data-testid="button-creator"
-            className="creator-nav-button inline-flex items-center gap-1.5 sm:gap-2 rounded-full px-2.5 sm:px-3 py-1.5 text-xs font-black tracking-[.12em] text-white/85 bg-white/[0.07] hover:bg-white/[0.14] border border-white/15 hover:border-pink-500/50 hover:text-primary hover:shadow-[0_0_14px_rgba(245,61,137,0.35)] backdrop-blur-md shadow-[inset_0_1px_1px_rgba(255,255,255,0.18)] transition-all active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary cursor-pointer"
+            className="creator-nav-button inline-flex items-center gap-1.5 sm:gap-2 rounded-full px-2.5 sm:px-3 py-1.5 text-xs font-black tracking-[.12em] text-white/90 bg-[#251828] hover:bg-[#342038] border border-[#3d2542] hover:border-pink-500/50 hover:text-primary transition-all active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary cursor-pointer shadow-sm"
           >
             <UserRound className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />
             <span>DEVELOPER</span>
@@ -142,8 +142,8 @@ export function BottomNav() {
             data-testid="nav-how-it-works"
             className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-full transition-all group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
               location === '/how-it-works'
-                ? 'text-primary bg-primary/15 border border-primary/35 shadow-[0_0_12px_rgba(245,61,137,0.25),inset_0_1px_1px_rgba(255,255,255,0.2)] font-black'
-                : 'text-white/75 hover:text-white hover:bg-white/[0.08] border border-transparent hover:border-white/15'
+                ? 'text-primary bg-[#2c152a] border border-primary/50 font-black'
+                : 'text-white/75 hover:text-white hover:bg-[#251828] border border-transparent hover:border-[#3d2542]'
             }`}
           >
             <HelpCircle className="w-4 h-4 group-hover:scale-110 transition-transform" />
@@ -154,8 +154,8 @@ export function BottomNav() {
             data-testid="nav-gallery"
             className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-full transition-all group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
               location === '/gallery'
-                ? 'text-primary bg-primary/15 border border-primary/35 shadow-[0_0_12px_rgba(245,61,137,0.25),inset_0_1px_1px_rgba(255,255,255,0.2)] font-black'
-                : 'text-white/75 hover:text-white hover:bg-white/[0.08] border border-transparent hover:border-white/15'
+                ? 'text-primary bg-[#2c152a] border border-primary/50 font-black'
+                : 'text-white/75 hover:text-white hover:bg-[#251828] border border-transparent hover:border-[#3d2542]'
             }`}
           >
             <Images className="w-4 h-4 group-hover:scale-110 transition-transform" />
@@ -166,8 +166,8 @@ export function BottomNav() {
             data-testid="nav-profile"
             className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-full transition-all group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
               location === '/profile' || location === '/auth'
-                ? 'text-primary bg-primary/15 border border-primary/35 shadow-[0_0_12px_rgba(245,61,137,0.25),inset_0_1px_1px_rgba(255,255,255,0.2)] font-black'
-                : 'text-white/75 hover:text-white hover:bg-white/[0.08] border border-transparent hover:border-white/15'
+                ? 'text-primary bg-[#2c152a] border border-primary/50 font-black'
+                : 'text-white/75 hover:text-white hover:bg-[#251828] border border-transparent hover:border-[#3d2542]'
             }`}
           >
             <UserRound className="w-4 h-4 group-hover:scale-110 transition-transform" />

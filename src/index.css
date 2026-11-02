@@ -772,15 +772,9 @@ img { max-width: 100%; }
 
 .booth-marquee {
   position: relative;
-  background: linear-gradient(180deg, rgba(26, 15, 25, 0.78) 0%, rgba(14, 8, 15, 0.85) 100%);
-  backdrop-filter: blur(24px) saturate(190%);
-  -webkit-backdrop-filter: blur(24px) saturate(190%);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow: 
-    inset 0 1px 0 0 rgba(255, 255, 255, 0.18),
-    inset 0 -1px 0 0 rgba(255, 255, 255, 0.06),
-    0 16px 36px -12px rgba(0, 0, 0, 0.6),
-    0 2px 14px -2px rgba(245, 61, 137, 0.16);
+  background: #151019;
+  border-bottom: 2px solid #251827;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.45);
 }
 
 .booth-marquee::after {
@@ -789,11 +783,10 @@ img { max-width: 100%; }
   left: 0;
   right: 0;
   bottom: 0;
-  height: 1.5px;
-  background: linear-gradient(90deg, rgba(245, 61, 137, 0.15) 0%, rgba(245, 61, 137, 0.9) 25%, rgba(255, 184, 107, 0.8) 50%, rgba(120, 242, 255, 0.8) 75%, rgba(245, 61, 137, 0.15) 100%);
-  background-size: 200% 100%;
-  animation: marquee-glide 10s linear infinite;
-  box-shadow: 0 0 12px rgba(245, 61, 137, 0.5), 0 0 3px rgba(255, 255, 255, 0.7);
+  height: 2px;
+  background: linear-gradient(90deg, #f53d89, #ffb86b, #78f2ff, #f53d89);
+  background-size: 300% 100%;
+  animation: marquee-glide 9s linear infinite;
   pointer-events: none;
 }
 
@@ -1139,12 +1132,8 @@ html, body { overflow-x: hidden; }
 
 .booth-footer {
   border-bottom: none;
-  border-top: 1px solid rgba(255, 255, 255, 0.14);
-  box-shadow: 
-    inset 0 1px 0 0 rgba(255, 255, 255, 0.22),
-    inset 0 -1px 0 0 rgba(255, 255, 255, 0.05),
-    0 -16px 36px -12px rgba(0, 0, 0, 0.6),
-    0 -2px 14px -2px rgba(245, 61, 137, 0.16);
+  border-top: 2px solid #251827;
+  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.45);
   padding-bottom: min(env(safe-area-inset-bottom), 10px);
 }
 
