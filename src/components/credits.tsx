@@ -75,12 +75,12 @@ export default function Credits() {
       </div>
 
       {/* Tech Stack Looping Marquee */}
-      <div className="creator-marquee-wrapper overflow-hidden rounded-2xl border border-white/80 bg-white/55 shadow-sm backdrop-blur-md mb-6 p-1">
-        <div className="creator-marquee-track flex gap-3 py-3 px-4">
+      <div className="creator-marquee-wrapper pointer-events-none select-none overflow-hidden rounded-2xl border border-white/80 bg-white/55 shadow-sm backdrop-blur-md mb-6 p-1">
+        <div className="creator-marquee-track pointer-events-none select-none flex gap-3 py-3 px-4">
           {[...loopTools, ...loopTools].map((tool, index) => {
             const Icon = tool.icon;
             return (
-              <div key={`${tool.name}-${index}`} className="inline-flex items-center gap-2 rounded-full bg-white/80 border border-pink-100 px-3.5 py-1.5 text-xs font-bold text-foreground/80 shrink-0 shadow-xs hover:border-primary/40 transition-colors">
+              <div key={`${tool.name}-${index}`} className="inline-flex items-center gap-2 rounded-full bg-white/80 border border-pink-100 px-3.5 py-1.5 text-xs font-bold text-foreground/80 shrink-0 shadow-xs pointer-events-none select-none">
                 <Icon className="w-4 h-4 text-primary" />
                 <span>{tool.name}</span>
               </div>
