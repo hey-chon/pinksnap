@@ -128,8 +128,14 @@ function ArtisanShowcaseCard({
   return (
     <button
       type="button"
-      onClick={onSelect}
-      className="group relative flex flex-col items-center shrink-0 text-left focus:outline-none cursor-pointer bg-transparent"
+      onClick={(e) => {
+        if (typeof window !== 'undefined' && window.matchMedia('(hover: none), (pointer: coarse)').matches) {
+          e.preventDefault();
+          return;
+        }
+        onSelect();
+      }}
+      className="group relative flex flex-col items-center shrink-0 text-left focus:outline-none bg-transparent pointer-events-none select-none lg:pointer-events-auto lg:select-auto cursor-default lg:cursor-pointer"
       title={`Try ${template.label} Artisan theme`}
     >
       {/* Strip frame with natural aspect ratio and clear background */}

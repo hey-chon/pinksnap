@@ -57,6 +57,14 @@ export function TopNav({
   const [location] = useLocation();
   const isHome = location === '/';
 
+  const scrollToTop = () => {
+    const mainEl = document.querySelector('main');
+    if (mainEl) {
+      mainEl.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   return (
     <header className="booth-marquee w-full flex min-h-[68px] sm:min-h-[76px] items-center justify-between gap-2 px-3 py-2.5 sm:px-4 sm:py-3 md:px-6 shrink-0 relative z-50 pt-[calc(.75rem+env(safe-area-inset-top))]">
       <div className="flex items-center gap-2 sm:gap-4 min-w-0">
@@ -79,15 +87,30 @@ export function TopNav({
         )}
         
         {isHome ? (
-          <div data-testid="link-brand" aria-label="PinkSnap home" className="flex items-center gap-2 sm:gap-2.5 group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-xl cursor-default">
+          <button
+            type="button"
+            onClick={scrollToTop}
+            data-testid="link-brand"
+            aria-label="Back to top"
+            className="flex items-center gap-2 sm:gap-2.5 group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-xl cursor-pointer select-none text-left"
+          >
             <PremiumCameraBadge />
             <div className="flex flex-col leading-[.78]">
               <span className="font-display text-[22px] sm:text-[26px] text-white">PINK</span>
               <span className="font-display text-[22px] sm:text-[26px] text-primary">SNAP</span>
             </div>
-          </div>
+          </button>
         ) : (
-          <Link href="/" onClick={resetAppFlow} data-testid="link-brand" aria-label="PinkSnap home" className="flex items-center gap-2 sm:gap-2.5 group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-xl cursor-pointer">
+          <Link
+            href="/"
+            onClick={() => {
+              resetAppFlow();
+              scrollToTop();
+            }}
+            data-testid="link-brand"
+            aria-label="PinkSnap home"
+            className="flex items-center gap-2 sm:gap-2.5 group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-xl cursor-pointer select-none text-left"
+          >
             <PremiumHomeBadge />
             <div className="flex flex-col leading-[.78]">
               <span className="font-display text-[22px] sm:text-[26px] text-white">PINK</span>

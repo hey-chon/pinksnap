@@ -100,8 +100,9 @@ html, body, #root {
   min-height: 100%;
 }
 
-html {
+html, body, main {
   scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
 }
 
 body {
@@ -1366,6 +1367,22 @@ html, body { overflow-x: hidden; }
 
 .artisan-marquee-track:hover {
   animation-play-state: paused;
+}
+
+/* On mobile phones & tablets without hover, make artisan showcase completely untouchable */
+@media (hover: none), (pointer: coarse), (max-width: 1023px) {
+  .artisan-marquee-wrapper,
+  .artisan-marquee-track,
+  .artisan-marquee-track button {
+    pointer-events: none !important;
+    user-select: none !important;
+    -webkit-user-select: none !important;
+    -webkit-touch-callout: none !important;
+    cursor: default !important;
+  }
+  .artisan-marquee-track:hover {
+    animation-play-state: running !important;
+  }
 }
 
 /* ==========================================================================
