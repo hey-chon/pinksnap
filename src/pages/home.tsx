@@ -471,7 +471,7 @@ export default function Home() {
           {/* ── Feedback CTA ── */}
           <div className="mt-4 sm:mt-6 mb-8 sm:mb-12 flex flex-col items-center justify-center text-center gap-1">
             <p className="text-foreground/70 font-medium text-[10px] sm:text-sm">
-              Want to give some feedback? Join the community chat
+              Want to give some feedback and chat? Join the community
             </p>
             <Link href="/chat" className="inline-flex items-center gap-1 text-[9px] sm:text-xs font-black text-primary hover:text-primary/80 uppercase tracking-wider transition-colors">
               OPEN COMMUNITY CHAT <ArrowRight className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
