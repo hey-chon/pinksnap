@@ -375,7 +375,7 @@ export default function AdminPage() {
                   <span>Role: Creator</span>
                 </span>
                 <h1 className="font-hero text-[2rem] leading-[1] sm:text-3xl text-foreground">
-                  CONTROL <span className="text-purple-600">CENTER</span>
+                  CONTROL <span className="text-purple-600">PANEL</span>
                 </h1>
               </div>
             </div>
