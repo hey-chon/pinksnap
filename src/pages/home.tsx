@@ -505,7 +505,7 @@ export default function Home() {
                 onClick={handleGetStarted}
                 className="inline-flex items-center gap-1.5 text-xs font-black text-primary hover:text-primary/80 uppercase tracking-wider transition-all hover:translate-x-0.5 cursor-pointer"
               >
-                TRY ARTISAN THEMES <ArrowRight className="w-3.5 h-3.5" />
+                TRY ARTISAN <ArrowRight className="w-3.5 h-3.5" />
               </button>
             </div>
           </div>
