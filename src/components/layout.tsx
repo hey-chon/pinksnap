@@ -168,7 +168,7 @@ export function BottomNav() {
   const getIdxFromPath = (path: string) => {
     if (path === '/how-it-works') return 0;
     if (path === '/gallery') return 1;
-    if (path === '/profile' || path === '/auth') return 2;
+    if (path === '/profile' || path === '/auth' || path.startsWith('/u/') || path.startsWith('/profile/')) return 2;
     return -1;
   };
 
@@ -261,7 +261,24 @@ export function BottomNav() {
               <Link
                 key={tab.href}
                 href={tab.href}
-                onClick={() => {
+                onClick={(e) => {
+                  if (tab.href === '/profile') {
+                    const search = typeof window !== 'undefined' ? window.location.search : '';
+                    const isVisitingOtherWall =
+                      search.includes('user=') ||
+                      location.startsWith('/u/') ||
+                      (location.startsWith('/profile/') && location !== '/profile');
+
+                    if (isVisitingOtherWall) {
+                      e.preventDefault();
+                      setLocation('/profile');
+                      if (typeof window !== 'undefined') {
+                        window.history.pushState({}, '', '/profile');
+                        window.dispatchEvent(new Event('pinksnap:nav-profile'));
+                        window.dispatchEvent(new PopStateEvent('popstate'));
+                      }
+                    }
+                  }
                   if (activeIdx !== -1) {
                     lastKnownTabIdx = activeIdx;
                   }
