@@ -51,6 +51,28 @@ const formatTime = (isoString: string) => {
 
 const POPULAR_EMOJIS = ['✨', '💖', '📸', '✌️', '🌸', '🎀', '🎉', '🔥', '👏', '😍'];
 
+function ChatMessageAvatar({ avatarSrc, nameDisplay }: { avatarSrc?: string; nameDisplay: string }) {
+  const [hasError, setHasError] = useState(false);
+  const initial = (nameDisplay || 'U').slice(0, 1).toUpperCase();
+
+  return (
+    <span className={`pixel-avatar ${toneFor(nameDisplay)} flex items-center justify-center`} aria-hidden="true">
+      {avatarSrc && !hasError ? (
+        <img
+          src={avatarSrc}
+          alt={nameDisplay}
+          className="w-full h-full object-cover"
+          loading="lazy"
+          referrerPolicy="no-referrer"
+          onError={() => setHasError(true)}
+        />
+      ) : (
+        <span className="font-black text-xs text-white/95 select-none">{initial}</span>
+      )}
+    </span>
+  );
+}
+
 export default function CommunityChat() {
   const { user, isAuthenticated, isAdmin } = useAuth();
   const { toast } = useToast();
@@ -286,20 +308,7 @@ export default function CommunityChat() {
                     className="shrink-0 transition-transform hover:scale-105 active:scale-95"
                     title={`View ${nameDisplay}'s public profile wall`}
                   >
-                    <span className={`pixel-avatar ${toneFor(nameDisplay)}`} aria-hidden="true">
-                      {avatarSrc ? (
-                        <img
-                          src={avatarSrc}
-                          alt=""
-                          className="w-full h-full object-cover"
-                          loading="lazy"
-                          referrerPolicy="no-referrer"
-                          onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
-                        />
-                      ) : (
-                        nameDisplay.slice(0, 1).toUpperCase()
-                      )}
-                    </span>
+                    <ChatMessageAvatar avatarSrc={avatarSrc} nameDisplay={nameDisplay} />
                   </Link>
 
                   <div className="pixel-bubble relative">

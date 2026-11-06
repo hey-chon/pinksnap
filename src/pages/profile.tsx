@@ -281,20 +281,35 @@ export default function ProfilePage() {
           } catch {}
         }
 
-        // Role override check (e.g. for rezn1r)
+        // Role check: Jimson is always Creator, Rezn1r is always Contributor
         let resolvedRole = baseData.role || 'user';
-        if (typeof window !== 'undefined') {
+        const isTargetRezn1r =
+          targetUserId === '8366e1a3-f9a4-44ca-8425-7af932c4fe66' ||
+          baseData.display_name?.toLowerCase().includes('rezn1r');
+        const isTargetCreator =
+          targetUserId === '3375e2f7-c77a-458d-b6aa-ae2aca636b16' ||
+          baseData.display_name?.toLowerCase() === 'jimson';
+
+        if (isTargetRezn1r) {
+          resolvedRole = 'contributor';
+        } else if (isTargetCreator) {
+          resolvedRole = 'admin';
+        } else if (typeof window !== 'undefined') {
           try {
             const storedOverrides = JSON.parse(localStorage.getItem('pinksnap_role_overrides') || '{}');
             if (targetUserId && storedOverrides[targetUserId]) resolvedRole = storedOverrides[targetUserId];
           } catch {}
         }
 
+        const resolvedAvatarUrl = isTargetCreator
+          ? normalizeAvatarUrl(baseData.avatar_url) || 'https://gthbvhefwctugvmouqrg.supabase.co/storage/v1/object/public/avatars/3375e2f7-c77a-458d-b6aa-ae2aca636b16/avatar-f93617eb-ef2b-404e-9b34-049e1f1949be.webp'
+          : normalizeAvatarUrl(baseData.avatar_url) || null;
+
         if (!isCancelled) {
           setPublicProfile({
             id: baseData.id,
             displayName: baseData.display_name || 'PinkSnap Member',
-            avatarUrl: baseData.avatar_url || null,
+            avatarUrl: resolvedAvatarUrl,
             role: resolvedRole,
             bio: resolvedBio,
             wallStripIds: resolvedWallStrips,

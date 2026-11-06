@@ -42,6 +42,47 @@ const formatJoinedDate = (isoString?: string) => {
   }
 };
 
+function DirectoryUserAvatar({
+  avatarSrc,
+  displayName,
+  isAdmin,
+}: {
+  avatarSrc?: string;
+  displayName: string;
+  isAdmin?: boolean;
+}) {
+  const [hasError, setHasError] = useState(false);
+  const initial = (displayName || 'U').slice(0, 1).toUpperCase();
+
+  return (
+    <div className="relative shrink-0">
+      <span
+        className={`pixel-avatar w-8 h-8 ${toneFor(
+          displayName
+        )} flex items-center justify-center rounded-lg overflow-hidden border border-black/15 shadow-xs`}
+      >
+        {avatarSrc && !hasError ? (
+          <img
+            src={avatarSrc}
+            alt={displayName}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+            loading="lazy"
+            referrerPolicy="no-referrer"
+            onError={() => setHasError(true)}
+          />
+        ) : (
+          <span className="font-black text-xs text-white/95 select-none">{initial}</span>
+        )}
+      </span>
+      {isAdmin && (
+        <span className="absolute -top-1 -right-1 p-0.5 bg-primary text-white rounded-full shadow-xs">
+          <Crown className="w-2 h-2" />
+        </span>
+      )}
+    </div>
+  );
+}
+
 export default function ChatUsersDirectory() {
   const { user: currentUser } = useAuth();
   const [users, setUsers] = useState<DirectoryUser[]>([]);
@@ -88,11 +129,31 @@ export default function ChatUsersDirectory() {
   const filteredUsers = useMemo(() => {
     let list = [...users];
 
+    // Strict Role assignments: Jimson is always Creator, Rezn1r is always Contributor
+    list = list.map((u) => {
+      const isJimson = u.id === '3375e2f7-c77a-458d-b6aa-ae2aca636b16' || u.display_name?.toLowerCase() === 'jimson';
+      const isRezn1r = u.id === '8366e1a3-f9a4-44ca-8425-7af932c4fe66' || (u.display_name?.toLowerCase() || '').includes('rezn1r');
+      if (isJimson) {
+        return {
+          ...u,
+          role: 'admin',
+          avatar_url: normalizeAvatarUrl(u.avatar_url) || 'https://gthbvhefwctugvmouqrg.supabase.co/storage/v1/object/public/avatars/3375e2f7-c77a-458d-b6aa-ae2aca636b16/avatar-f93617eb-ef2b-404e-9b34-049e1f1949be.webp',
+        };
+      }
+      if (isRezn1r) {
+        return { ...u, role: 'contributor' };
+      }
+      return u;
+    });
+
     // Role overrides from localStorage if present
     if (typeof window !== 'undefined') {
       try {
         const storedOverrides = JSON.parse(localStorage.getItem('pinksnap_role_overrides') || '{}');
         list = list.map((u) => {
+          if (u.id === '3375e2f7-c77a-458d-b6aa-ae2aca636b16' || u.id === '8366e1a3-f9a4-44ca-8425-7af932c4fe66') {
+            return u;
+          }
           if (storedOverrides[u.id]) {
             return { ...u, role: storedOverrides[u.id] };
           }
@@ -293,29 +354,11 @@ export default function ChatUsersDirectory() {
                     </span>
 
                     {/* Avatar */}
-                    <div className="relative shrink-0">
-                      <span className={`pixel-avatar w-8 h-8 ${toneFor(displayName)} flex items-center justify-center rounded-lg overflow-hidden border border-black/15 shadow-xs`}>
-                        {avatarSrc ? (
-                          <img
-                            src={avatarSrc}
-                            alt={displayName}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                            loading="lazy"
-                            referrerPolicy="no-referrer"
-                            onError={(e) => {
-                              (e.currentTarget as HTMLImageElement).style.display = 'none';
-                            }}
-                          />
-                        ) : (
-                          displayName.slice(0, 1).toUpperCase()
-                        )}
-                      </span>
-                      {isAdmin && (
-                        <span className="absolute -top-1 -right-1 p-0.5 bg-primary text-white rounded-full shadow-xs">
-                          <Crown className="w-2 h-2" />
-                        </span>
-                      )}
-                    </div>
+                    <DirectoryUserAvatar
+                      avatarSrc={avatarSrc}
+                      displayName={displayName}
+                      isAdmin={isAdmin}
+                    />
 
                     {/* Name & Role */}
                     <div className="flex flex-col min-w-0 text-left">

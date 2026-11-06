@@ -39,12 +39,13 @@ export function useCommunityChat(room: ChatRoomId = 'general') {
             roleOverride = storedOverrides[userId] || (data.email ? storedOverrides[data.email.toLowerCase()] : undefined);
           } catch {}
         }
-        const isRezn1r = ((data as any).email?.toLowerCase() === 'rezn1r@proton.me') || data.display_name?.toLowerCase().includes('rezn1r');
-        const resolvedRole: UserRole = roleOverride || (isRezn1r ? 'contributor' : ((data.role as UserRole) || 'user'));
+        const isJimson = userId === '3375e2f7-c77a-458d-b6aa-ae2aca636b16' || data.display_name?.toLowerCase() === 'jimson';
+        const isRezn1r = userId === '8366e1a3-f9a4-44ca-8425-7af932c4fe66' || ((data as any).email?.toLowerCase() === 'rezn1r@proton.me') || data.display_name?.toLowerCase().includes('rezn1r');
+        const resolvedRole: UserRole = isJimson ? 'admin' : (isRezn1r ? 'contributor' : (roleOverride || ((data.role as UserRole) || 'user')));
 
         const profile = {
           displayName: data.display_name,
-          avatarUrl: normalizeAvatarUrl(data.avatar_url),
+          avatarUrl: normalizeAvatarUrl(data.avatar_url) || (isJimson ? 'https://gthbvhefwctugvmouqrg.supabase.co/storage/v1/object/public/avatars/3375e2f7-c77a-458d-b6aa-ae2aca636b16/avatar-f93617eb-ef2b-404e-9b34-049e1f1949be.webp' : undefined),
           role: resolvedRole,
         };
         profilesCache.current.set(userId, profile);
@@ -66,12 +67,13 @@ export function useCommunityChat(room: ChatRoomId = 'general') {
             roleOverride = storedOverrides[userId] || (pData.email ? storedOverrides[pData.email.toLowerCase()] : undefined);
           } catch {}
         }
-        const isRezn1r = ((pData as any).email?.toLowerCase() === 'rezn1r@proton.me') || pData.display_name?.toLowerCase().includes('rezn1r');
-        const resolvedRole: UserRole = roleOverride || (isRezn1r ? 'contributor' : ((pData.role as UserRole) || 'user'));
+        const isJimson = userId === '3375e2f7-c77a-458d-b6aa-ae2aca636b16' || pData.display_name?.toLowerCase() === 'jimson';
+        const isRezn1r = userId === '8366e1a3-f9a4-44ca-8425-7af932c4fe66' || ((pData as any).email?.toLowerCase() === 'rezn1r@proton.me') || pData.display_name?.toLowerCase().includes('rezn1r');
+        const resolvedRole: UserRole = isJimson ? 'admin' : (isRezn1r ? 'contributor' : (roleOverride || ((pData.role as UserRole) || 'user')));
 
         const profile: { displayName: string; avatarUrl?: string; role: UserRole } = {
           displayName: pData.display_name,
-          avatarUrl: normalizeAvatarUrl(pData.avatar_url),
+          avatarUrl: normalizeAvatarUrl(pData.avatar_url) || (isJimson ? 'https://gthbvhefwctugvmouqrg.supabase.co/storage/v1/object/public/avatars/3375e2f7-c77a-458d-b6aa-ae2aca636b16/avatar-f93617eb-ef2b-404e-9b34-049e1f1949be.webp' : undefined),
           role: resolvedRole,
         };
         profilesCache.current.set(userId, profile);
@@ -152,13 +154,14 @@ export function useCommunityChat(room: ChatRoomId = 'general') {
           if (profiles && profiles.length > 0) {
             profiles.forEach(p => {
               if (p.id) {
-                const isRezn1r = ((p as any).email?.toLowerCase() === 'rezn1r@proton.me') || p.display_name?.toLowerCase().includes('rezn1r');
+                const isJimson = p.id === '3375e2f7-c77a-458d-b6aa-ae2aca636b16' || p.display_name?.toLowerCase() === 'jimson';
+                const isRezn1r = p.id === '8366e1a3-f9a4-44ca-8425-7af932c4fe66' || ((p as any).email?.toLowerCase() === 'rezn1r@proton.me') || p.display_name?.toLowerCase().includes('rezn1r');
                 const roleOverride = storedOverrides[p.id] || ((p as any).email ? storedOverrides[(p as any).email.toLowerCase()] : undefined);
-                const resolvedRole: UserRole = roleOverride || (isRezn1r ? 'contributor' : (p.role as UserRole) || 'user');
+                const resolvedRole: UserRole = isJimson ? 'admin' : (isRezn1r ? 'contributor' : (roleOverride || (p.role as UserRole) || 'user'));
 
                 profilesCache.current.set(p.id, {
                   displayName: p.display_name || 'Member',
-                  avatarUrl: normalizeAvatarUrl(p.avatar_url),
+                  avatarUrl: normalizeAvatarUrl(p.avatar_url) || (isJimson ? 'https://gthbvhefwctugvmouqrg.supabase.co/storage/v1/object/public/avatars/3375e2f7-c77a-458d-b6aa-ae2aca636b16/avatar-f93617eb-ef2b-404e-9b34-049e1f1949be.webp' : undefined),
                   role: resolvedRole,
                 });
               }
@@ -176,13 +179,14 @@ export function useCommunityChat(room: ChatRoomId = 'general') {
             if (fallbackProfiles && fallbackProfiles.length > 0) {
               fallbackProfiles.forEach(p => {
                 if (p.id) {
-                  const isRezn1r = ((p as any).email?.toLowerCase() === 'rezn1r@proton.me') || p.display_name?.toLowerCase().includes('rezn1r');
+                  const isJimson = p.id === '3375e2f7-c77a-458d-b6aa-ae2aca636b16' || p.display_name?.toLowerCase() === 'jimson';
+                  const isRezn1r = p.id === '8366e1a3-f9a4-44ca-8425-7af932c4fe66' || ((p as any).email?.toLowerCase() === 'rezn1r@proton.me') || p.display_name?.toLowerCase().includes('rezn1r');
                   const roleOverride = storedOverrides[p.id] || ((p as any).email ? storedOverrides[(p as any).email.toLowerCase()] : undefined);
-                  const resolvedRole: UserRole = roleOverride || (isRezn1r ? 'contributor' : (p.role as UserRole) || 'user');
+                  const resolvedRole: UserRole = isJimson ? 'admin' : (isRezn1r ? 'contributor' : (roleOverride || (p.role as UserRole) || 'user'));
 
                   profilesCache.current.set(p.id, {
                     displayName: p.display_name || 'Member',
-                    avatarUrl: normalizeAvatarUrl(p.avatar_url),
+                    avatarUrl: normalizeAvatarUrl(p.avatar_url) || (isJimson ? 'https://gthbvhefwctugvmouqrg.supabase.co/storage/v1/object/public/avatars/3375e2f7-c77a-458d-b6aa-ae2aca636b16/avatar-f93617eb-ef2b-404e-9b34-049e1f1949be.webp' : undefined),
                     role: resolvedRole,
                   });
                 }

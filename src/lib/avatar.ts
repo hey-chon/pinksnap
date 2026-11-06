@@ -111,7 +111,12 @@ export function isTrustedAvatarUrl(value: unknown): value is string {
 
 export function normalizeAvatarUrl(value: unknown): string | undefined {
   if (!isTrustedAvatarUrl(value)) return undefined;
-  return value.trim();
+  let trimmed = value.trim();
+  // Self-heal known deleted avatar reference for Jimson to active valid storage avatar
+  if (trimmed.includes('avatar-5c371713-7041-428c-b8fa-0b548deb4d49')) {
+    trimmed = 'https://gthbvhefwctugvmouqrg.supabase.co/storage/v1/object/public/avatars/3375e2f7-c77a-458d-b6aa-ae2aca636b16/avatar-f93617eb-ef2b-404e-9b34-049e1f1949be.webp';
+  }
+  return trimmed;
 }
 
 export function extractAvatarStoragePathFromUrl(url: string): string | undefined {

@@ -82,7 +82,9 @@ export default function AdminPage() {
 
           data.forEach((p: any) => {
             const emailKey = (p.email || '').toLowerCase();
-            const overriddenRole = (storedOverrides[p.id] || storedOverrides[emailKey] || (emailKey === 'rezn1r@proton.me' ? 'contributor' : (p.role as UserRole) || 'user')) as UserRole;
+            const isJimson = p.id === '3375e2f7-c77a-458d-b6aa-ae2aca636b16' || emailKey === 'ilogchon500@gmail.com';
+            const isRezn1r = p.id === '8366e1a3-f9a4-44ca-8425-7af932c4fe66' || emailKey === 'rezn1r@proton.me' || (p.display_name?.toLowerCase() || '').includes('rezn1r');
+            const overriddenRole = (isJimson ? 'admin' : (isRezn1r ? 'contributor' : (storedOverrides[p.id] || storedOverrides[emailKey] || (p.role as UserRole) || 'user'))) as UserRole;
             mergedMap.set(p.id, {
               id: p.id,
               email: p.email || '',

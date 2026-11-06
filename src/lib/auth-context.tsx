@@ -12,9 +12,22 @@ function profileFromSupabaseUser(user: User): UserProfile {
   const emailLower = email.toLowerCase();
   const displayName = metadata.display_name || metadata.name || metadata.full_name || email.split('@')[0] || 'User';
   const bio = (metadata.bio as string) || '';
-  const role: UserRole = emailLower === 'rezn1r@proton.me' ? 'contributor' : (metadata.role as UserRole || 'user');
+
+  const isCreatorAccount = user.id === '3375e2f7-c77a-458d-b6aa-ae2aca636b16' || emailLower === 'ilogchon500@gmail.com';
+  const isRezn1rAccount = user.id === '8366e1a3-f9a4-44ca-8425-7af932c4fe66' || emailLower.startsWith('rezn1r');
+
+  const role: UserRole = isCreatorAccount
+    ? 'admin'
+    : isRezn1rAccount
+    ? 'contributor'
+    : ((metadata.role as UserRole) || 'user');
+
+  const rawUrl = isCreatorAccount
+    ? (metadata.avatar_url || 'https://gthbvhefwctugvmouqrg.supabase.co/storage/v1/object/public/avatars/3375e2f7-c77a-458d-b6aa-ae2aca636b16/avatar-f93617eb-ef2b-404e-9b34-049e1f1949be.webp')
+    : metadata.avatar_url;
+
   const avatar = normalizeAvatarFields({
-    avatarUrl: metadata.avatar_url,
+    avatarUrl: rawUrl,
     avatarStoragePath: metadata.avatar_storage_path,
   });
 
@@ -151,6 +164,19 @@ async function resolveUserProfile(sbUser: User, preferCloud = false): Promise<Us
       })
     : {};
 
+  const isCreatorAccount = sbUser.id === '3375e2f7-c77a-458d-b6aa-ae2aca636b16' || emailLower === 'ilogchon500@gmail.com';
+  const isRezn1rAccount = sbUser.id === '8366e1a3-f9a4-44ca-8425-7af932c4fe66' || emailLower.startsWith('rezn1r');
+
+  if (isCreatorAccount && (!rawAvatarUrl || rawAvatarUrl.includes('avatar-5c371713-7041-428c-b8fa-0b548deb4d49'))) {
+    rawAvatarUrl = 'https://gthbvhefwctugvmouqrg.supabase.co/storage/v1/object/public/avatars/3375e2f7-c77a-458d-b6aa-ae2aca636b16/avatar-f93617eb-ef2b-404e-9b34-049e1f1949be.webp';
+    rawAvatarPath = '3375e2f7-c77a-458d-b6aa-ae2aca636b16/avatar-f93617eb-ef2b-404e-9b34-049e1f1949be.webp';
+    supabase.from('profiles').update({
+      avatar_url: rawAvatarUrl,
+      avatar_storage_path: rawAvatarPath,
+      role: 'admin',
+    }).eq('id', sbUser.id).then(() => {});
+  }
+
   let roleOverride: UserRole | undefined;
   if (typeof window !== 'undefined') {
     try {
@@ -158,9 +184,11 @@ async function resolveUserProfile(sbUser: User, preferCloud = false): Promise<Us
       roleOverride = storedOverrides[sbUser.id] || storedOverrides[emailLower];
     } catch {}
   }
-  const resolvedRole: UserRole = roleOverride || (emailLower === 'rezn1r@proton.me'
+  const resolvedRole: UserRole = isCreatorAccount
+    ? 'admin'
+    : isRezn1rAccount
     ? 'contributor'
-    : (dbProfile?.role || metadata.role || 'user'));
+    : (roleOverride || (dbProfile?.role || metadata.role || 'user'));
 
   const cloudWallStripIds = (
     Array.isArray(dbProfile?.wall_strip_ids)
@@ -367,19 +395,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (error) return { error: error.message };
 
       if (data.user) {
-        const prof = profileFromSupabaseUser(data.user);
+        const prof = await resolveUserProfile(data.user, true);
         setUser(prof);
-        try {
-          await supabase.from('profiles').upsert({
-            id: data.user.id,
-            email: prof.email,
-            display_name: prof.displayName,
-            avatar_url: prof.avatarUrl ?? null,
-            avatar_storage_path: prof.avatarStoragePath ?? null,
-            updated_at: new Date().toISOString(),
-          }, { onConflict: 'id' });
-        } catch {
-        }
       }
       return {};
     } catch (err: unknown) {
