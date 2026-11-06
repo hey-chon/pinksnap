@@ -716,6 +716,7 @@ export function useAuth(): AuthState {
       session: null,
       role: 'user',
       isLoading: false,
+      isConfigured: isSupabaseConfigured,
       isAuthenticated: false,
       isAdmin: false,
       isContributor: false,

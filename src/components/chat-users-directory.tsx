@@ -1,17 +1,12 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { Link } from 'wouter';
 import {
-  Users,
   Search,
   RefreshCw,
   Sparkles,
   Crown,
   Zap,
-  User,
-  Calendar,
   ExternalLink,
-  Flame,
-  Trophy,
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { normalizeAvatarUrl } from '@/lib/avatar';
@@ -58,9 +53,9 @@ function DirectoryUserAvatar({
   return (
     <div className="relative shrink-0">
       <span
-        className={`pixel-avatar w-10 h-10 sm:w-11 sm:h-11 ${toneFor(
+        className={`pixel-avatar w-8 h-8 ${toneFor(
           displayName
-        )} flex items-center justify-center rounded-xl overflow-hidden border-2 border-black/20 shadow-sm`}
+        )} flex items-center justify-center rounded-lg overflow-hidden border border-black/20 shadow-xs`}
       >
         {avatarSrc && !hasError ? (
           <img
@@ -72,12 +67,12 @@ function DirectoryUserAvatar({
             onError={() => setHasError(true)}
           />
         ) : (
-          <span className="font-black text-sm text-white/95 select-none">{initial}</span>
+          <span className="font-black text-xs text-white/95 select-none">{initial}</span>
         )}
       </span>
       {isAdmin && (
-        <span className="absolute -top-1.5 -right-1.5 p-1 bg-primary text-white rounded-full shadow-md border border-white">
-          <Crown className="w-2.5 h-2.5 stroke-[2.5]" />
+        <span className="absolute -top-1 -right-1 p-0.5 bg-primary text-white rounded-full shadow-xs">
+          <Crown className="w-2 h-2" />
         </span>
       )}
     </div>
@@ -89,13 +84,11 @@ export default function ChatUsersDirectory() {
   const [users, setUsers] = useState<DirectoryUser[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeFilter, setActiveFilter] = useState<'all' | 'creators' | 'members'>('all');
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const fetchUsers = async () => {
     setIsRefreshing(true);
     try {
-      // 1. Try querying profiles table directly to get full fields including created_at
       const { data: profilesData, error: profilesError } = await supabase
         .from('profiles')
         .select('id, display_name, avatar_url, role, created_at')
@@ -107,7 +100,6 @@ export default function ChatUsersDirectory() {
         return;
       }
 
-      // 2. Fallback to profiles_public view if profiles query is restricted
       const { data: publicData, error: publicError } = await supabase
         .from('profiles_public')
         .select('id, display_name, avatar_url, role');
@@ -128,7 +120,6 @@ export default function ChatUsersDirectory() {
     fetchUsers();
   }, []);
 
-  // Filter and rank users (Creators and Admins top of the leaderboard, then by created_at)
   const filteredUsers = useMemo(() => {
     let list = [...users];
 
@@ -149,7 +140,6 @@ export default function ChatUsersDirectory() {
       return u;
     });
 
-    // Role overrides from localStorage if present
     if (typeof window !== 'undefined') {
       try {
         const storedOverrides = JSON.parse(localStorage.getItem('pinksnap_role_overrides') || '{}');
@@ -165,20 +155,11 @@ export default function ChatUsersDirectory() {
       } catch {}
     }
 
-    // Filter by tab
-    if (activeFilter === 'creators') {
-      list = list.filter((u) => u.role === 'admin' || u.role === 'contributor');
-    } else if (activeFilter === 'members') {
-      list = list.filter((u) => u.role !== 'admin' && u.role !== 'contributor');
-    }
-
-    // Search query filter
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase().trim();
       list = list.filter((u) => (u.display_name || 'Member').toLowerCase().includes(q));
     }
 
-    // Sort: Admins / Creators first, then contributors, then newest members
     return list.sort((a, b) => {
       const roleWeight = (r: string | null) => (r === 'admin' ? 3 : r === 'contributor' ? 2 : 1);
       const weightDiff = roleWeight(b.role) - roleWeight(a.role);
@@ -188,66 +169,46 @@ export default function ChatUsersDirectory() {
       }
       return 0;
     });
-  }, [users, activeFilter, searchQuery]);
-
-  const creatorsCount = useMemo(
-    () => users.filter((u) => u.role === 'admin' || u.role === 'contributor').length,
-    [users]
-  );
+  }, [users, searchQuery]);
 
   return (
     <div className="w-full flex flex-col">
-      {/* Directory Section Header matching Community Lounge */}
-      <div className="w-full flex items-center justify-between mb-4">
-        <h2 className="font-hero text-lg sm:text-xl text-foreground flex items-center gap-2">
-          <span>PINKSNAP USERS</span>
-          <span className="text-[10px] font-mono font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full border border-primary/20 flex items-center gap-1">
-            <Trophy className="w-3 h-3 text-primary" />
-            <span>MEMBERS</span>
-          </span>
-        </h2>
-      </div>
-
-      {/* Retro Pixel Card Window */}
-      <div className="pixel-panel shadow-2xl relative w-full flex flex-col overflow-hidden">
-        {/* Pixel Titlebar */}
-        <div className="pixel-titlebar relative flex items-center justify-between">
-          <span className="pixel-dots" aria-hidden="true">
-            <i /><i /><i />
-          </span>
-          <span className="pixel-text absolute left-1/2 -translate-x-1/2 text-[10px] tracking-wider font-bold whitespace-nowrap">
-            USER DIRECTORY
-          </span>
-          <div className="flex items-center gap-2 ml-auto">
-            <button
-              type="button"
-              onClick={fetchUsers}
-              disabled={isRefreshing}
-              title="Refresh member list"
-              className={`hover:rotate-180 transition-transform duration-300 text-white/80 hover:text-white cursor-pointer ${
-                isRefreshing ? 'animate-spin' : ''
-              }`}
-            >
-              <RefreshCw className="w-3 h-3" />
-            </button>
-            <span className="pixel-online">
-              <span className="pixel-live-dot bg-pink-400 shadow-[0_0_8px_#f472b6]" />
-              <span className="pixel-text text-[9px] uppercase">{users.length} PROFILES</span>
+      {/* Compact Retro Pixel Window */}
+      <div className="pixel-panel shadow-xl relative w-full flex flex-col overflow-hidden">
+        {/* Pixel Titlebar: Clean header without profile counter */}
+        <div className="pixel-titlebar relative flex items-center justify-between px-3 py-2">
+          <div className="flex items-center gap-2">
+            <span className="pixel-dots" aria-hidden="true">
+              <i /><i /><i />
+            </span>
+            <span className="pixel-text text-[10px] tracking-wider font-bold uppercase whitespace-nowrap">
+              PINKSNAP USERS
             </span>
           </div>
+
+          <button
+            type="button"
+            onClick={fetchUsers}
+            disabled={isRefreshing}
+            title="Refresh member list"
+            className={`hover:rotate-180 transition-transform duration-300 text-white/80 hover:text-white cursor-pointer ${
+              isRefreshing ? 'animate-spin' : ''
+            }`}
+          >
+            <RefreshCw className="w-3 h-3" />
+          </button>
         </div>
 
-        {/* Filter Tabs & Search Bar */}
-        <div className="p-2.5 bg-[#fff4f8] border-b-2 border-[#2a1f33]/30 flex flex-col gap-2">
-          {/* Search Input */}
+        {/* Clean Search Input */}
+        <div className="p-2 bg-[#fff4f8] border-b-2 border-[#2a1f33]/30">
           <div className="relative w-full">
             <Search className="w-3.5 h-3.5 text-foreground/40 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search members to stalk..."
-              className="w-full pl-8 pr-3 py-1.5 bg-white border border-[#2a1f33]/30 rounded-lg text-xs font-medium placeholder:text-foreground/40 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary text-foreground"
+              placeholder="Search members..."
+              className="w-full pl-8 pr-3 py-1 bg-white border border-[#2a1f33]/30 rounded-lg text-xs font-medium placeholder:text-foreground/40 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary text-foreground"
             />
             {searchQuery && (
               <button
@@ -259,49 +220,11 @@ export default function ChatUsersDirectory() {
               </button>
             )}
           </div>
-
-          {/* Filter Pills */}
-          <div className="flex items-center gap-1.5 text-[10px] font-bold">
-            <button
-              type="button"
-              onClick={() => setActiveFilter('all')}
-              className={`px-2.5 py-1 rounded-md transition-all cursor-pointer font-bold ${
-                activeFilter === 'all'
-                  ? 'bg-primary text-white shadow-xs font-black'
-                  : 'bg-white/80 text-foreground/60 hover:text-foreground hover:bg-white border border-pink-100'
-              }`}
-            >
-              All ({users.length})
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveFilter('creators')}
-              className={`px-2.5 py-1 rounded-md transition-all cursor-pointer font-bold flex items-center gap-1 ${
-                activeFilter === 'creators'
-                  ? 'bg-primary text-white shadow-xs font-black'
-                  : 'bg-white/80 text-foreground/60 hover:text-foreground hover:bg-white border border-pink-100'
-              }`}
-            >
-              <Crown className="w-2.5 h-2.5" />
-              <span>Creators ({creatorsCount})</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveFilter('members')}
-              className={`px-2.5 py-1 rounded-md transition-all cursor-pointer font-bold ${
-                activeFilter === 'members'
-                  ? 'bg-primary text-white shadow-xs font-black'
-                  : 'bg-white/80 text-foreground/60 hover:text-foreground hover:bg-white border border-pink-100'
-              }`}
-            >
-              Members ({users.length - creatorsCount})
-            </button>
-          </div>
         </div>
 
-        {/* Scrollable Members List - Expanded & Spacious */}
+        {/* Compact Scrollable Members List */}
         <div
-          className="flex flex-col gap-2.5 p-3 overflow-y-auto min-h-[460px] max-h-[540px] xl:max-h-[640px] scrollbar-thin scrollbar-thumb-pink-200"
+          className="flex flex-col gap-1.5 p-2 overflow-y-auto max-h-[360px] sm:max-h-[390px] scrollbar-thin scrollbar-thumb-pink-200"
           style={{
             backgroundImage:
               'linear-gradient(rgba(245, 61, 137, .04) 1px, transparent 1px), linear-gradient(90deg, rgba(245, 61, 137, .04) 1px, transparent 1px)',
@@ -309,15 +232,14 @@ export default function ChatUsersDirectory() {
           }}
         >
           {isLoading ? (
-            <div className="py-16 flex flex-col items-center justify-center gap-2 text-center">
-              <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-              <span className="pixel-text text-[10px] text-foreground/50">LOADING USERS...</span>
+            <div className="py-10 flex flex-col items-center justify-center gap-2 text-center">
+              <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+              <span className="pixel-text text-[9px] text-foreground/50">LOADING USERS...</span>
             </div>
           ) : filteredUsers.length === 0 ? (
-            <div className="py-14 flex flex-col items-center justify-center text-center text-foreground/50 gap-1.5">
-              <Sparkles className="w-6 h-6 text-primary/40 animate-pulse" />
-              <p className="text-sm font-bold">No members found</p>
-              <p className="text-xs text-foreground/40">Try searching for a different name</p>
+            <div className="py-8 flex flex-col items-center justify-center text-center text-foreground/50 gap-1">
+              <Sparkles className="w-4 h-4 text-primary/40 animate-pulse" />
+              <p className="text-xs font-bold">No members found</p>
             </div>
           ) : (
             filteredUsers.map((member, idx) => {
@@ -332,31 +254,29 @@ export default function ChatUsersDirectory() {
                 <Link
                   key={member.id}
                   href={`/profile?user=${member.id}`}
-                  className={`group flex items-center justify-between gap-3 p-2.5 sm:p-3 rounded-2xl border transition-all duration-150 cursor-pointer ${
+                  className={`group flex items-center justify-between gap-2 p-2 rounded-xl border transition-all duration-150 cursor-pointer ${
                     isCurrentUser
-                      ? 'bg-pink-100/80 border-pink-300 shadow-xs'
-                      : 'bg-white/95 hover:bg-white border-pink-100/90 hover:border-pink-300 hover:shadow-sm hover:scale-[1.01]'
+                      ? 'bg-pink-100/70 border-pink-300 shadow-xs'
+                      : 'bg-white/90 hover:bg-white border-pink-100 hover:border-pink-300 hover:shadow-sm hover:scale-[1.01]'
                   }`}
                   title={`Stalk ${displayName}'s profile wall`}
                 >
                   {/* Left: Rank & Avatar */}
-                  <div className="flex items-center gap-3 min-w-0">
-                    {/* Rank Number Badge */}
+                  <div className="flex items-center gap-2 min-w-0">
                     <span
-                      className={`text-xs font-black w-6 text-center shrink-0 ${
+                      className={`text-[10px] font-black w-4 text-center shrink-0 ${
                         rank === 1
-                          ? 'text-amber-500 font-extrabold text-sm'
+                          ? 'text-amber-500 font-extrabold'
                           : rank === 2
-                          ? 'text-slate-400 font-extrabold text-sm'
+                          ? 'text-slate-400 font-extrabold'
                           : rank === 3
-                          ? 'text-amber-700 font-extrabold text-sm'
-                          : 'text-foreground/40'
+                          ? 'text-amber-700 font-extrabold'
+                          : 'text-foreground/35'
                       }`}
                     >
-                      #{rank}
+                      {rank}
                     </span>
 
-                    {/* Avatar */}
                     <DirectoryUserAvatar
                       avatarSrc={avatarSrc}
                       displayName={displayName}
@@ -365,30 +285,30 @@ export default function ChatUsersDirectory() {
 
                     {/* Name & Role */}
                     <div className="flex flex-col min-w-0 text-left">
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-sm font-black text-foreground truncate max-w-[130px] sm:max-w-[150px] group-hover:text-primary transition-colors">
+                      <div className="flex items-center gap-1">
+                        <span className="text-xs font-black text-foreground truncate max-w-[95px] group-hover:text-primary transition-colors">
                           {displayName}
                         </span>
                         {isCurrentUser && (
-                          <span className="text-[9px] font-black bg-pink-200 text-primary px-1.5 py-0.2 rounded-md">
+                          <span className="text-[7px] font-black bg-pink-200 text-primary px-1 py-0.2 rounded">
                             YOU
                           </span>
                         )}
                       </div>
 
-                      <div className="flex items-center gap-1 text-[11px] mt-0.5">
+                      <div className="flex items-center gap-1 text-[9px]">
                         {isAdmin ? (
-                          <span className="text-[9px] font-black tracking-wider uppercase text-primary inline-flex items-center gap-1">
-                            <Crown className="w-2.5 h-2.5 stroke-[2.5]" />
+                          <span className="text-[8px] font-black tracking-wider uppercase text-primary inline-flex items-center gap-0.5">
+                            <Crown className="w-2 h-2 stroke-[2.5]" />
                             <span>CREATOR</span>
                           </span>
                         ) : isContributor ? (
-                          <span className="text-[9px] font-black tracking-wider uppercase text-amber-600 inline-flex items-center gap-1">
-                            <Zap className="w-2.5 h-2.5 fill-current" />
+                          <span className="text-[8px] font-black tracking-wider uppercase text-amber-600 inline-flex items-center gap-0.5">
+                            <Zap className="w-2 h-2 fill-current" />
                             <span>CONTRIBUTOR</span>
                           </span>
                         ) : (
-                          <span className="text-[10px] font-semibold text-foreground/50">
+                          <span className="text-[9px] font-medium text-foreground/45">
                             {formatJoinedDate(member.created_at)}
                           </span>
                         )}
@@ -398,9 +318,9 @@ export default function ChatUsersDirectory() {
 
                   {/* Right: Action Pill */}
                   <div className="shrink-0">
-                    <span className="text-xs font-black text-primary/80 group-hover:text-primary group-hover:bg-primary/10 px-2.5 py-1.5 rounded-xl border border-pink-200/60 group-hover:border-primary/30 transition-all inline-flex items-center gap-1 bg-pink-50/50">
+                    <span className="text-[10px] font-black text-primary/70 group-hover:text-primary group-hover:bg-primary/10 px-2 py-0.5 rounded-lg border border-transparent group-hover:border-primary/20 transition-all inline-flex items-center gap-0.5">
                       <span>Wall</span>
-                      <ExternalLink className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
+                      <ExternalLink className="w-2.5 h-2.5 group-hover:translate-x-0.5 transition-transform" />
                     </span>
                   </div>
                 </Link>
@@ -408,16 +328,7 @@ export default function ChatUsersDirectory() {
             })
           )}
         </div>
-
-        {/* Footer info pill */}
-        <div className="px-3 py-1.5 bg-[#fff2f6] border-t border-[#2a1f33]/15 text-[10px] text-foreground/60 flex items-center justify-between">
-          <span className="inline-flex items-center gap-1 text-[9px] font-bold text-foreground/50">
-            <Sparkles className="w-3 h-3 text-primary" /> Stalk public profile walls
-          </span>
-          <span className="text-[9px] font-mono text-primary font-bold">PINKSNAP</span>
-        </div>
       </div>
     </div>
   );
 }
-
