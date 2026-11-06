@@ -82,8 +82,8 @@ function saveLocalProfile(userId: string, data: { displayName?: string; bio?: st
   } catch {}
 }
 
-async function resolveUserProfile(sbUser: User): Promise<UserProfile> {
-  const localCache = getLocalProfile(sbUser.id);
+async function resolveUserProfile(sbUser: User, preferCloud = false): Promise<UserProfile> {
+  const localCache = preferCloud ? null : getLocalProfile(sbUser.id);
   const metadata = sbUser.user_metadata || {};
   const email = sbUser.email || '';
   const emailLower = email.toLowerCase();
@@ -101,26 +101,23 @@ async function resolveUserProfile(sbUser: User): Promise<UserProfile> {
     console.warn('[Supabase Auth] profiles fetch notice:', err);
   }
 
-  // Priority: Database profile row > local saved profile edits > JWT metadata > email handle fallback
+  // When preferCloud is true (cross-device sync / tab refocus), DB wins over stale localStorage.
+  // When preferCloud is false (initial load), local cache provides instant optimistic values.
   const resolvedDisplayName =
-    localCache?.displayName ||
-    dbProfile?.display_name ||
-    metadata.display_name ||
-    metadata.name ||
-    metadata.full_name ||
-    email.split('@')[0] ||
-    'User';
+    (preferCloud
+      ? (dbProfile?.display_name || metadata.display_name || metadata.name || metadata.full_name)
+      : (localCache?.displayName || dbProfile?.display_name || metadata.display_name || metadata.name || metadata.full_name)
+    ) || email.split('@')[0] || 'User';
 
-  const resolvedBio =
-    (localCache?.bio !== undefined ? localCache.bio : undefined) ??
-    dbProfile?.bio ??
-    metadata.bio ??
-    '';
+  const resolvedBio = preferCloud
+    ? (dbProfile?.bio ?? metadata.bio ?? '')
+    : ((localCache?.bio !== undefined ? localCache.bio : undefined) ?? dbProfile?.bio ?? metadata.bio ?? '');
 
   // Check if avatar was explicitly removed by user
-  const isAvatarExplicitlyCleared =
+  const isAvatarExplicitlyCleared = !preferCloud && (
     localCache?.avatarUrl === null ||
-    (typeof window !== 'undefined' && localStorage.getItem(`pinksnap_avatar_cleared_${sbUser.id}`) === 'true');
+    (typeof window !== 'undefined' && localStorage.getItem(`pinksnap_avatar_cleared_${sbUser.id}`) === 'true')
+  );
 
   let rawAvatarUrl: string | undefined;
   let rawAvatarPath: string | undefined;
@@ -129,6 +126,10 @@ async function resolveUserProfile(sbUser: User): Promise<UserProfile> {
     // User explicitly removed their photo! Do not resurrect old cloud avatar!
     rawAvatarUrl = undefined;
     rawAvatarPath = undefined;
+  } else if (preferCloud) {
+    // Cloud takes priority for cross-device sync
+    rawAvatarUrl = dbProfile?.avatar_url || metadata.avatar_url || undefined;
+    rawAvatarPath = dbProfile?.avatar_storage_path || metadata.avatar_storage_path || undefined;
   } else {
     rawAvatarUrl =
       localCache?.avatarUrl ||
@@ -194,12 +195,19 @@ async function resolveUserProfile(sbUser: User): Promise<UserProfile> {
     } catch {}
   }
 
-  // Ensure local cache preserves the resolved name and bio
+  // Sync resolved values back to local cache so every device stays up-to-date
   saveLocalProfile(sbUser.id, {
     displayName: resolvedDisplayName,
     bio: resolvedBio,
+    avatarUrl: avatar.avatarUrl ?? null,
+    avatarStoragePath: avatar.avatarStoragePath ?? null,
     wallStripIds: cloudWallStripIds,
   });
+
+  // When syncing from cloud, clear the "avatar cleared" flag if the cloud has an avatar
+  if (preferCloud && avatar.avatarUrl && typeof window !== 'undefined') {
+    localStorage.removeItem(`pinksnap_avatar_cleared_${sbUser.id}`);
+  }
 
   return profile;
 }
@@ -231,7 +239,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (!targetUser) return;
 
       setSupabaseUser(targetUser);
-      const prof = await resolveUserProfile(targetUser);
+      const prof = await resolveUserProfile(targetUser, true);
       setUser(prev => {
         if (
           prev &&
@@ -319,7 +327,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           filter: `id=eq.${user.id}`,
         },
         async () => {
-          await refreshProfile();
+          await refreshProfile(true);
         }
       )
       .subscribe();
@@ -327,7 +335,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Re-verify cloud profile when device wakes, tab becomes active, or window gains focus
     const handleActiveSync = () => {
       if (typeof document !== 'undefined' && document.visibilityState === 'visible') {
-        refreshProfile();
+        refreshProfile(true);
       }
     };
 
