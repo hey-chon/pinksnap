@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { Link, useLocation } from 'wouter';
 import { TopNav, BottomNav } from '@/components/layout';
 import { ArrowRight, Camera, Download, LayoutGrid, MessageCircle, Sparkles, Wand2 } from 'lucide-react';
@@ -81,41 +81,49 @@ function ArtisanShowcaseCard({
           rendered.current = true;
           observer.disconnect();
 
-          // Render to an offscreen canvas, then convert to a static image
-          const dpr = Math.min(2, window.devicePixelRatio || 2);
-          const targetHeight = 320;
-          const targetWidth = Math.round(template.nw * (targetHeight / template.nh));
-          const renderScale = (targetHeight * dpr) / template.nh;
-          const renderW = Math.round(targetWidth * dpr);
-          const renderH = Math.round(targetHeight * dpr);
+          // Use requestIdleCallback (or setTimeout fallback) to stagger rendering
+          // and avoid blocking the main thread on page load
+          const scheduleRender = (typeof window !== 'undefined' && 'requestIdleCallback' in window)
+            ? (cb: () => void) => (window as any).requestIdleCallback(cb, { timeout: 800 })
+            : (cb: () => void) => setTimeout(cb, 60);
 
-          const canvas = document.createElement('canvas');
-          canvas.width = renderW;
-          canvas.height = renderH;
-          const ctx = canvas.getContext('2d');
-          if (!ctx) return;
-          ctx.imageSmoothingEnabled = true;
-          ctx.imageSmoothingQuality = 'high';
-          const now = Date.now();
+          scheduleRender(() => {
+            // Render to an offscreen canvas, then convert to a static image
+            const dpr = Math.min(2, window.devicePixelRatio || 2);
+            const targetHeight = 320;
+            const targetWidth = Math.round(template.nw * (targetHeight / template.nh));
+            const renderScale = (targetHeight * dpr) / template.nh;
+            const renderW = Math.round(targetWidth * dpr);
+            const renderH = Math.round(targetHeight * dpr);
 
-          const render = async () => {
-            if (template.paintBgAsync) {
-              await template.paintBgAsync(ctx, renderW, renderH, renderScale, now);
-            } else {
-              template.paintBg(ctx, renderW, renderH, renderScale, now);
-            }
-            if (template.paintFgAsync) {
-              await template.paintFgAsync(ctx, renderW, renderH, renderScale, now);
-            } else {
-              template.paintFg(ctx, renderW, renderH, renderScale, now);
-            }
-            // Convert canvas to static image to free up the canvas GPU context
-            setImgSrc(canvas.toDataURL('image/png'));
-          };
-          render();
+            const canvas = document.createElement('canvas');
+            canvas.width = renderW;
+            canvas.height = renderH;
+            const ctx = canvas.getContext('2d');
+            if (!ctx) return;
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = 'high';
+            const now = Date.now();
+
+            const render = async () => {
+              if (template.paintBgAsync) {
+                await template.paintBgAsync(ctx, renderW, renderH, renderScale, now);
+              } else {
+                template.paintBg(ctx, renderW, renderH, renderScale, now);
+              }
+              if (template.paintFgAsync) {
+                await template.paintFgAsync(ctx, renderW, renderH, renderScale, now);
+              } else {
+                template.paintFg(ctx, renderW, renderH, renderScale, now);
+              }
+              // Convert canvas to static image to free up the canvas GPU context
+              setImgSrc(canvas.toDataURL('image/png'));
+            };
+            render();
+          });
         }
       },
-      { rootMargin: '200px' },
+      { rootMargin: '0px' },
     );
 
     observer.observe(el);
@@ -185,6 +193,26 @@ export default function Home() {
   const mainRef = useRef<HTMLElement>(null);
   const [scrollY, setScrollY] = useState(0);
   const [activeStep, setActiveStep] = useState(0);
+
+  // Lazy-mount the heavy artisan showcase only when user scrolls near it
+  const artisanSentinelRef = useRef<HTMLDivElement>(null);
+  const [showArtisan, setShowArtisan] = useState(false);
+
+  useEffect(() => {
+    const el = artisanSentinelRef.current;
+    if (!el || showArtisan) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setShowArtisan(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: '300px' },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [showArtisan]);
 
   const handleGetStarted = () => {
     sessionStorage.setItem('ps_has_entered_app', 'true');
@@ -481,6 +509,8 @@ export default function Home() {
         </section>
 
         {/* ── ARTISAN STRIPS — Cinematic Showcase Loop ── */}
+        <div ref={artisanSentinelRef} />
+        {showArtisan && (
         <section aria-labelledby="artisan-showcase-title" className="relative z-10 w-full max-w-6xl mx-auto pt-10 sm:pt-16 pb-8 sm:pb-14 mt-4 sm:mt-8">
           {/* Cinematic Header */}
           <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 mb-6 px-1">
@@ -526,6 +556,7 @@ export default function Home() {
             </div>
           </div>
         </section>
+        )}
 
         <Credits />
       </main>
