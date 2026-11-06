@@ -56,7 +56,7 @@ export interface PublicWallStrip {
   id: string;
   url: string;
   date: number;
-  frame?: string;
+  frame: string;
   layout?: string;
 }
 
@@ -66,11 +66,17 @@ export function parseWallStripEntry(entry: string): PublicWallStrip | null {
     try {
       const parsed = JSON.parse(entry);
       if (parsed && typeof parsed.id === 'string') {
-        return parsed as PublicWallStrip;
+        return {
+          id: parsed.id,
+          url: parsed.url || '',
+          date: typeof parsed.date === 'number' ? parsed.date : Date.now(),
+          frame: parsed.frame || 'classic',
+          layout: parsed.layout || 'vertical-4',
+        };
       }
     } catch {}
   }
-  return { id: entry, url: '', date: Date.now() };
+  return { id: entry, url: '', date: Date.now(), frame: 'classic', layout: 'vertical-4' };
 }
 
 export function getWallStripId(entry: string): string {
