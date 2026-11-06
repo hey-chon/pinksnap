@@ -8,6 +8,31 @@ import { validateMessageContent } from '@/lib/word-filter';
 import { globalChatRateLimiter } from '@/lib/rate-limiter';
 import type { RealtimeChannel } from '@supabase/supabase-js';
 
+// Shared persistent profile cache across all chat views & rooms
+export const globalProfilesCache = new Map<string, { displayName: string; avatarUrl?: string; role: UserRole }>();
+
+export function seedProfilesCache(
+  profiles: Array<{ id: string; display_name?: string | null; avatar_url?: string | null; role?: string | null }>
+) {
+  profiles.forEach((p) => {
+    if (!p.id) return;
+    const isJimson = p.id === '3375e2f7-c77a-458d-b6aa-ae2aca636b16' || p.display_name?.toLowerCase() === 'jimson';
+    const isRezn1r = p.id === '8366e1a3-f9a4-44ca-8425-7af932c4fe66' || (p.display_name?.toLowerCase() || '').includes('rezn1r');
+    const role: UserRole = isJimson ? 'admin' : (isRezn1r ? 'contributor' : ((p.role as UserRole) || 'user'));
+    const avatarUrl =
+      normalizeAvatarUrl(p.avatar_url) ||
+      (isJimson
+        ? 'https://gthbvhefwctugvmouqrg.supabase.co/storage/v1/object/public/avatars/3375e2f7-c77a-458d-b6aa-ae2aca636b16/avatar-f93617eb-ef2b-404e-9b34-049e1f1949be.webp'
+        : undefined);
+
+    globalProfilesCache.set(p.id, {
+      displayName: p.display_name || 'Member',
+      avatarUrl,
+      role,
+    });
+  });
+}
+
 export function useCommunityChat(room: ChatRoomId = 'general') {
   const { user, isAuthenticated, isAdmin } = useAuth();
   const [messages, setMessages] = useState<CommunityMessage[]>([]);
@@ -17,16 +42,16 @@ export function useCommunityChat(room: ChatRoomId = 'general') {
   const [errorNotice, setErrorNotice] = useState<string | null>(null);
 
   const channelRef = useRef<RealtimeChannel | null>(null);
-  const profilesCache = useRef<Map<string, { displayName: string; avatarUrl?: string; role: UserRole }>>(new Map());
+  const profilesCache = globalProfilesCache;
 
   const getProfileForUser = useCallback(async (userId: string) => {
-    if (profilesCache.current.has(userId)) {
-      return profilesCache.current.get(userId)!;
+    if (profilesCache.has(userId)) {
+      return profilesCache.get(userId)!;
     }
 
     try {
       const { data } = await supabase
-        .from('profiles_public')
+        .from('profiles')
         .select('id, email, display_name, avatar_url, role')
         .eq('id', userId)
         .maybeSingle();
@@ -48,35 +73,7 @@ export function useCommunityChat(room: ChatRoomId = 'general') {
           avatarUrl: normalizeAvatarUrl(data.avatar_url) || (isJimson ? 'https://gthbvhefwctugvmouqrg.supabase.co/storage/v1/object/public/avatars/3375e2f7-c77a-458d-b6aa-ae2aca636b16/avatar-f93617eb-ef2b-404e-9b34-049e1f1949be.webp' : undefined),
           role: resolvedRole,
         };
-        profilesCache.current.set(userId, profile);
-        return profile;
-      }
-
-      // Fallback: try profiles table
-      const { data: pData } = await supabase
-        .from('profiles')
-        .select('id, email, display_name, avatar_url, role')
-        .eq('id', userId)
-        .maybeSingle();
-
-      if (pData && pData.display_name) {
-        let roleOverride: UserRole | undefined;
-        if (typeof window !== 'undefined') {
-          try {
-            const storedOverrides = JSON.parse(localStorage.getItem('pinksnap_role_overrides') || '{}');
-            roleOverride = storedOverrides[userId] || (pData.email ? storedOverrides[pData.email.toLowerCase()] : undefined);
-          } catch {}
-        }
-        const isJimson = userId === '3375e2f7-c77a-458d-b6aa-ae2aca636b16' || pData.display_name?.toLowerCase() === 'jimson';
-        const isRezn1r = userId === '8366e1a3-f9a4-44ca-8425-7af932c4fe66' || ((pData as any).email?.toLowerCase() === 'rezn1r@proton.me') || pData.display_name?.toLowerCase().includes('rezn1r');
-        const resolvedRole: UserRole = isJimson ? 'admin' : (isRezn1r ? 'contributor' : (roleOverride || ((pData.role as UserRole) || 'user')));
-
-        const profile: { displayName: string; avatarUrl?: string; role: UserRole } = {
-          displayName: pData.display_name,
-          avatarUrl: normalizeAvatarUrl(pData.avatar_url) || (isJimson ? 'https://gthbvhefwctugvmouqrg.supabase.co/storage/v1/object/public/avatars/3375e2f7-c77a-458d-b6aa-ae2aca636b16/avatar-f93617eb-ef2b-404e-9b34-049e1f1949be.webp' : undefined),
-          role: resolvedRole,
-        };
-        profilesCache.current.set(userId, profile);
+        profilesCache.set(userId, profile);
         return profile;
       }
 
@@ -85,7 +82,7 @@ export function useCommunityChat(room: ChatRoomId = 'general') {
         avatarUrl: undefined,
         role: 'user',
       };
-      profilesCache.current.set(userId, fallback);
+      profilesCache.set(userId, fallback);
       return fallback;
     } catch {
       const fallback: { displayName: string; avatarUrl?: string; role: UserRole } = {
@@ -93,7 +90,7 @@ export function useCommunityChat(room: ChatRoomId = 'general') {
         avatarUrl: undefined,
         role: 'user',
       };
-      profilesCache.current.set(userId, fallback);
+      profilesCache.set(userId, fallback);
       return fallback;
     }
   }, []);
