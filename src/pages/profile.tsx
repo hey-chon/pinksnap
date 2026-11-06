@@ -946,7 +946,7 @@ export default function ProfilePage() {
         </div>
       )}
 
-      <TopNav backTo="/" title="MY PROFILE" />
+      <TopNav backTo="/" title={isOwner ? "MY PROFILE" : `${(effectiveUser?.displayName || 'USER').toUpperCase()}'S WALL`} />
 
       <main className="flex-1 overflow-y-auto scrollbar-hide pb-12 relative z-10">
         {/* ── Modern Social Media Cover Banner ── */}
@@ -981,30 +981,30 @@ export default function ProfilePage() {
         {/* ── Main Profile Container ── */}
         <div className="max-w-3xl mx-auto px-3.5 sm:px-6">
           {/* ── Social Profile Card (Completely Solves Mobile Overlap) ── */}
-          <div className={`relative -mt-14 sm:-mt-16 mb-5 rounded-3xl p-4 sm:p-7 backdrop-blur-sm ${isAdmin ? 'bg-[#0e0f13]/[0.97] border border-orange-900/40 shadow-[0_12px_45px_-12px_rgba(255,100,0,0.12)]' : 'bg-white/95 border border-pink-100/90 shadow-[0_12px_45px_-12px_rgba(245,61,137,0.18)]'}`}>
+          <div className={`relative -mt-14 sm:-mt-16 mb-5 rounded-3xl p-4 sm:p-7 backdrop-blur-sm ${isProfileAdmin ? 'bg-[#0e0f13]/[0.97] border border-orange-900/40 shadow-[0_12px_45px_-12px_rgba(255,100,0,0.12)]' : 'bg-white/95 border border-pink-100/90 shadow-[0_12px_45px_-12px_rgba(245,61,137,0.18)]'}`}>
             {/* Cute Scrapbook Washi Tape Sticker on Card */}
-            <div className={`absolute -top-2.5 left-1/2 -translate-x-1/2 w-20 sm:w-24 h-4 rounded-xs rotate-[-1.5deg] border shadow-xs pointer-events-none z-20 ${isAdmin ? 'bg-gradient-to-r from-orange-800/60 via-orange-700/70 to-orange-800/60 border-orange-600/30' : 'bg-gradient-to-r from-pink-300/80 via-pink-200/95 to-pink-300/80 border-white/80'}`} />
+            <div className={`absolute -top-2.5 left-1/2 -translate-x-1/2 w-20 sm:w-24 h-4 rounded-xs rotate-[-1.5deg] border shadow-xs pointer-events-none z-20 ${isProfileAdmin ? 'bg-gradient-to-r from-orange-800/60 via-orange-700/70 to-orange-800/60 border-orange-600/30' : 'bg-gradient-to-r from-pink-300/80 via-pink-200/95 to-pink-300/80 border-white/80'}`} />
             
             {/* ROW 1: Avatar + Action Buttons (Twitter / Instagram Header Row) */}
             <div className="flex items-end justify-between gap-3 relative">
-              {/* Profile Avatar with direct click-to-change functions */}
+              {/* Profile Avatar with direct click-to-change functions (owner only) */}
               <div className="relative shrink-0">
                 <button
                   type="button"
-                  onClick={handleAvatarClick}
-                  disabled={isUploadingAvatar}
-                  title="Change profile photo"
-                  className="group relative block rounded-full focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/40 active:scale-95 transition-transform cursor-pointer"
+                  onClick={isOwner ? handleAvatarClick : undefined}
+                  disabled={!isOwner || isUploadingAvatar}
+                  title={isOwner ? "Change profile photo" : `${effectiveUser?.displayName}'s profile photo`}
+                  className={`group relative block rounded-full focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/40 ${isOwner ? 'active:scale-95 transition-transform cursor-pointer' : 'cursor-default'}`}
                   style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
                 >
                   <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-white border-4 border-white shadow-xl flex items-center justify-center text-primary font-display text-4xl sm:text-5xl overflow-hidden ring-4 ring-pink-500/10">
                     {safeAvatarSrc && !avatarLoadError ? (
                       <img
-                        key={user?.avatarUrl}
+                        key={effectiveUser?.avatarUrl}
                         src={safeAvatarSrc}
-                        alt={user?.displayName}
+                        alt={effectiveUser?.displayName}
                         onError={() => setAvatarLoadError(true)}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        className={`w-full h-full object-cover ${isOwner ? 'group-hover:scale-105' : ''} transition-transform duration-300`}
                         referrerPolicy="no-referrer"
                         crossOrigin="anonymous"
                       />
@@ -1019,9 +1019,9 @@ export default function ProfilePage() {
                       <Loader2 className="w-6 h-6 animate-spin text-primary mb-0.5" />
                       <span>Saving...</span>
                     </div>
-                  ) : (
+                  ) : isOwner ? (
                     <>
-                      {/* Hover Camera Overlay */}
+                      {/* Hover Camera Overlay for owner */}
                       <div className="absolute inset-0 rounded-full bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-white text-[9px] font-bold">
                         <Camera className="w-5 h-5 mb-0.5" />
                         <span>Change</span>
@@ -1032,7 +1032,7 @@ export default function ProfilePage() {
                         <Camera className="w-3.5 h-3.5" />
                       </div>
                     </>
-                  )}
+                  ) : null}
                 </button> 
               </div>
 
@@ -1054,12 +1054,12 @@ export default function ProfilePage() {
             {/* ROW 2: Name & Identity (Dedicated Block — GUARANTEED NEVER OVERLAPPED BY AVATAR) */}
             <div className="mt-4 sm:mt-5 space-y-2">
               <div className="flex flex-wrap items-center gap-2">
-                <h1 className={`font-hero text-2xl sm:text-3xl tracking-tight leading-tight break-words ${isAdmin ? 'text-white' : 'text-foreground'}`}>
-                  {user?.displayName}
+                <h1 className={`font-hero text-2xl sm:text-3xl tracking-tight leading-tight break-words ${isProfileAdmin ? 'text-white' : 'text-foreground'}`}>
+                  {effectiveUser?.displayName}
                 </h1>
                 
                 {/* Verified Checkmark (Shown for Admin and Contributor) */}
-                {isAdmin && (
+                {isProfileAdmin && (
                   <span
                     title="Verified Creator"
                     className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-purple-600 text-white shadow-sm shrink-0"
@@ -1067,7 +1067,7 @@ export default function ProfilePage() {
                     <Check className="w-3 h-3 stroke-[3]" />
                   </span>
                 )}
-                {isContributor && (
+                {isProfileContributor && (
                   <span
                     title="Verified Contributor"
                     className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-amber-500 text-white shadow-sm shrink-0"
@@ -1079,19 +1079,19 @@ export default function ProfilePage() {
                 {/* Role Badge — CREATOR+ glows with an animated flame */}
                 <span
                   className={`shrink-0 inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[9px] sm:text-[10px] font-black uppercase tracking-wider border ${
-                    isAdmin
+                    isProfileAdmin
                       ? 'creator-plus-badge text-white border-transparent bg-black/40'
-                      : isContributor
+                      : isProfileContributor
                       ? 'bg-amber-100 text-amber-900 border border-amber-300/80 shadow-xs'
                       : 'bg-primary/10 text-primary border border-primary/20'
                   }`}
                 >
-                  {isAdmin ? (
+                  {isProfileAdmin ? (
                     <>
                       <Flame className="creator-flame w-3 h-3 stroke-[2.5] fill-none text-orange-500" aria-hidden="true" />
                       <span>CREATOR</span>
                     </>
-                  ) : isContributor ? (
+                  ) : isProfileContributor ? (
                     <>
                       <Zap className="w-3 h-3 fill-current stroke-none" aria-hidden="true" />
                       <span>CONTRIBUTOR</span>
@@ -1104,7 +1104,7 @@ export default function ProfilePage() {
 
               {/* Metadata without the username handle — 100% untouchable & unclickable on iOS/Android */}
               <div
-                className={`flex flex-wrap items-center gap-x-3.5 gap-y-1 text-xs font-medium select-none pointer-events-none ${isAdmin ? 'text-white/45' : 'text-foreground/55'}`}
+                className={`flex flex-wrap items-center gap-x-3.5 gap-y-1 text-xs font-medium select-none pointer-events-none ${isProfileAdmin ? 'text-white/45' : 'text-foreground/55'}`}
                 style={{
                   pointerEvents: 'none',
                   WebkitUserSelect: 'none',
@@ -1112,34 +1112,24 @@ export default function ProfilePage() {
                   touchAction: 'none',
                 }}
               >
-                <span
-                  className="flex items-center gap-1 truncate max-w-full select-none pointer-events-none cursor-default"
-                  style={{
-                    pointerEvents: 'none',
-                    WebkitUserSelect: 'none',
-                    userSelect: 'none',
-                    touchAction: 'none',
-                  }}
-                  aria-label="Account email"
-                >
-                  <Mail className="w-3 h-3 text-primary/70 shrink-0 select-none pointer-events-none" />
+                {/* Email row: Strictly visible to the account owner ONLY. Never leaked to visitors/stalkers. */}
+                {isOwner && user?.email && (
                   <span
-                    className={`truncate select-none pointer-events-none cursor-default no-underline font-medium inline-flex items-center ${isAdmin ? 'text-white/45' : 'text-foreground/55'}`}
-                    style={{
-                      pointerEvents: 'none',
-                      WebkitUserSelect: 'none',
-                      userSelect: 'none',
-                      touchAction: 'none',
-                      textDecoration: 'none',
-                    }}
+                    className="flex items-center gap-1 truncate max-w-full select-none pointer-events-none cursor-default"
+                    aria-label="Account email"
                   >
-                    <span>{emailName}</span>
-                    <span aria-hidden="true" style={{ display: 'none' }}>__</span>
-                    <span aria-hidden="true">@</span>
-                    <span aria-hidden="true" style={{ display: 'none' }}>__</span>
-                    <span>{emailDomain}</span>
+                    <Mail className="w-3 h-3 text-primary/70 shrink-0 select-none pointer-events-none" />
+                    <span
+                      className={`truncate select-none pointer-events-none cursor-default no-underline font-medium inline-flex items-center ${isProfileAdmin ? 'text-white/45' : 'text-foreground/55'}`}
+                    >
+                      <span>{emailName}</span>
+                      <span aria-hidden="true" style={{ display: 'none' }}>__</span>
+                      <span aria-hidden="true">@</span>
+                      <span aria-hidden="true" style={{ display: 'none' }}>__</span>
+                      <span>{emailDomain}</span>
+                    </span>
                   </span>
-                </span>
+                )}
                 <span
                   className="flex items-center gap-1 shrink-0 select-none pointer-events-none cursor-default"
                   style={{
@@ -1154,20 +1144,20 @@ export default function ProfilePage() {
               </div>
 
               {/* Custom User Bio */}
-              {bio ? (
-                <p className={`text-xs sm:text-sm font-medium leading-relaxed pt-1 whitespace-pre-wrap break-words ${isAdmin ? 'text-white/65' : 'text-foreground/80'}`}>
-                  {bio}
+              {(isOwner ? bio : effectiveUser?.bio) ? (
+                <p className={`text-xs sm:text-sm font-medium leading-relaxed pt-1 whitespace-pre-wrap break-words ${isProfileAdmin ? 'text-white/65' : 'text-foreground/80'}`}>
+                  {isOwner ? bio : effectiveUser?.bio}
                 </p>
               ) : (
-                <p className={`text-xs italic font-medium pt-1 ${isAdmin ? 'text-white/30' : 'text-foreground/40'}`}>
-                  No bio yet. Tap &ldquo;Settings&rdquo; to add your bio!
+                <p className={`text-xs italic font-medium pt-1 ${isProfileAdmin ? 'text-white/30' : 'text-foreground/40'}`}>
+                  {isOwner ? 'No bio yet. Tap "Settings" to add your bio!' : 'No bio shared yet.'}
                 </p>
               )}
             </div>
 
             {/* ROW 3: Social Media Stats Counters — Customized By Role */}
-            <div className={`mt-5 pt-4 border-t grid grid-cols-3 gap-2 text-center ${isAdmin ? 'border-white/[0.06]' : 'border-black/[0.06]'}`}>
-              {isAdmin ? (
+            <div className={`mt-5 pt-4 border-t grid grid-cols-3 gap-2 text-center ${isProfileAdmin ? 'border-white/[0.06]' : 'border-black/[0.06]'}`}>
+              {isProfileAdmin ? (
                 /* ── CREATOR ROLE: Clean, refined dark card with subtle accent ── */
                 <>
                   <button
@@ -1208,7 +1198,7 @@ export default function ProfilePage() {
                     </p>
                   </div>
                 </>
-              ) : isContributor ? (
+              ) : isProfileContributor ? (
                 /* ── CONTRIBUTOR ROLE: Basic clean amber look ── */
                 <>
                   <button
@@ -1286,19 +1276,28 @@ export default function ProfilePage() {
           </div>
 
           {/* ── Zero-Knowledge Vault Minimized Hyperlink ── */}
-          <div className="flex items-center justify-center mb-5">
-            <button
-              type="button"
-              onClick={() => setShowVaultModal(true)}
-              className="inline-flex items-center gap-2 text-xs font-black text-foreground/60 hover:text-primary transition-all underline underline-offset-4 decoration-primary/40 hover:decoration-primary cursor-pointer py-1 px-3 rounded-full hover:bg-primary/[0.04] group"
-            >
-              <Shield className="w-3.5 h-3.5 text-primary group-hover:scale-110 transition-transform" />
-              <span>Zero-Knowledge Photo Vault</span>
-              <span className="text-[9px] bg-primary/10 text-primary px-1.5 py-0.5 rounded font-black no-underline">
-                AES-256-GCM
-              </span>
-            </button>
-          </div>
+          {isOwner ? (
+            <div className="flex items-center justify-center mb-5">
+              <button
+                type="button"
+                onClick={() => setShowVaultModal(true)}
+                className="inline-flex items-center gap-2 text-xs font-black text-foreground/60 hover:text-primary transition-all underline underline-offset-4 decoration-primary/40 hover:decoration-primary cursor-pointer py-1 px-3 rounded-full hover:bg-primary/[0.04] group"
+              >
+                <Shield className="w-3.5 h-3.5 text-primary group-hover:scale-110 transition-transform" />
+                <span>Zero-Knowledge Photo Vault</span>
+                <span className="text-[9px] bg-primary/10 text-primary px-1.5 py-0.5 rounded font-black no-underline">
+                  AES-256-GCM
+                </span>
+              </button>
+            </div>
+          ) : (
+            <div className="flex items-center justify-center mb-5">
+              <div className="inline-flex items-center gap-1.5 text-[11px] font-bold text-foreground/50 py-1 px-3.5 rounded-full bg-white/70 border border-pink-100 shadow-xs select-none">
+                <Shield className="w-3.5 h-3.5 text-primary" />
+                <span>Public Profile Wall · Anti-Theft Guard Active 🛡️</span>
+              </div>
+            </div>
+          )}
 
           {/* ── Social Profile Feed Tabs ── */}
           <div className="flex items-center justify-center p-1 bg-white rounded-2xl border border-pink-100 shadow-sm mb-5 gap-1">
@@ -1355,7 +1354,7 @@ export default function ProfilePage() {
                   <p className="text-foreground/60 text-xs sm:text-sm max-w-sm mx-auto mb-5 sm:mb-6 leading-relaxed">
                     {isOwner
                       ? 'Strips in your gallery are private by default. Pick your favorite snapshots to showcase here on your public wall.'
-                      : 'This user has not posted any public photo strips yet.'}
+                      : `${effectiveUser?.displayName || 'This member'} hasn't posted any photo strips to their wall yet.`}
                   </p>
                 </div>
               ) : (
