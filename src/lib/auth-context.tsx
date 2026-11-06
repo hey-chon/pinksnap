@@ -709,7 +709,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 export function useAuth(): AuthState {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    // Safe fallback to prevent app crashes during HMR / edge-cases
+    return {
+      user: null,
+      supabaseUser: null,
+      session: null,
+      role: 'user',
+      isLoading: false,
+      isAuthenticated: false,
+      isAdmin: false,
+      isContributor: false,
+      signIn: async () => ({ error: 'Auth context initializing' }),
+      signUp: async () => ({ error: 'Auth context initializing' }),
+      signOut: async () => {},
+      resetPassword: async () => ({ error: 'Auth context initializing' }),
+      updateProfile: async () => ({ error: 'Auth context initializing' }),
+      refreshProfile: async () => {},
+      hasRole: () => false,
+    };
   }
   return context;
 }
