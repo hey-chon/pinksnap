@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useMemo } from 'react';
+import { Link } from 'wouter';
 import {
   Hash,
   Send,
@@ -280,25 +281,37 @@ export default function CommunityChat() {
                   key={m.id}
                   className={`pixel-msg group relative ${m.mine ? 'is-mine' : ''}`}
                 >
-                  <span className={`pixel-avatar ${toneFor(nameDisplay)}`} aria-hidden="true">
-                    {avatarSrc ? (
-                      <img
-                        src={avatarSrc}
-                        alt=""
-                        className="w-full h-full object-cover"
-                        loading="lazy"
-                        referrerPolicy="no-referrer"
-                        onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
-                      />
-                    ) : (
-                      nameDisplay.slice(0, 1).toUpperCase()
-                    )}
-                  </span>
+                  <Link
+                    href={`/profile?user=${m.userId}`}
+                    className="shrink-0 transition-transform hover:scale-105 active:scale-95"
+                    title={`View ${nameDisplay}'s public profile wall`}
+                  >
+                    <span className={`pixel-avatar ${toneFor(nameDisplay)}`} aria-hidden="true">
+                      {avatarSrc ? (
+                        <img
+                          src={avatarSrc}
+                          alt=""
+                          className="w-full h-full object-cover"
+                          loading="lazy"
+                          referrerPolicy="no-referrer"
+                          onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+                        />
+                      ) : (
+                        nameDisplay.slice(0, 1).toUpperCase()
+                      )}
+                    </span>
+                  </Link>
 
                   <div className="pixel-bubble relative">
                     <div className="pixel-meta">
                       <div className="flex items-center gap-1.5">
-                        <span className="pixel-text font-black">{nameDisplay}</span>
+                        <Link
+                          href={`/profile?user=${m.userId}`}
+                          className="pixel-text font-black hover:underline cursor-pointer"
+                          title={`View ${nameDisplay}'s profile wall`}
+                        >
+                          {nameDisplay}
+                        </Link>
                         {isMsgAdmin && (
                           <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-primary text-white text-[8px] font-black tracking-widest leading-none shadow-xs">
                             <Crown className="w-2.5 h-2.5 stroke-[2.5]" aria-hidden="true" />

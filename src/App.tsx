@@ -201,8 +201,23 @@ function Router() {
       <Route path="/privacy-policy" component={PrivacyPolicy} />
       <Route path="/terms" component={TermsOfService} />
       <Route path="/terms-of-service" component={TermsOfService} />
+      <Route path="/u/:id">
+        {() => <ProfilePage />}
+      </Route>
+      <Route path="/profile/:id">
+        {() => <ProfilePage />}
+      </Route>
       <Route path="/profile">
-        {() => <ProtectedRoute component={ProfilePage} />}
+        {() => {
+          const search = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+          const hasUserQuery = Boolean(search?.get('user'));
+          // If viewing another user's public profile wall via ?user=XYZ, allow public access without requiring login
+          if (hasUserQuery) {
+            return <ProfilePage />;
+          }
+          // Otherwise, accessing own personal profile requires authentication
+          return <ProtectedRoute component={ProfilePage} />;
+        }}
       </Route>
       <Route path="/admin">
         {() => <ProtectedRoute component={AdminPage} requiredRole="admin" />}

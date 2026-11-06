@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Link, useLocation } from 'wouter';
+import { Link, useLocation, useParams } from 'wouter';
 import { TopNav, BottomNav } from '@/components/layout';
 import { useAuth } from '@/hooks/use-auth';
 import { useAppContext } from '@/lib/store';
@@ -13,7 +13,7 @@ import {
   normalizeAvatarUrl,
 } from '@/lib/avatar';
 import { sanitizeAvatarForUpload, validateAvatarFile, fileToAvatarDataUrl } from '@/lib/avatar-upload';
-import { downloadImage } from '@/lib/image-utils';
+import { downloadImage, dataUrlToBlob, createGalleryPreview } from '@/lib/image-utils';
 import {
   User,
   Mail,
