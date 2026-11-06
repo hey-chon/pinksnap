@@ -137,6 +137,24 @@ async function preparePublicWallStrip(
   };
 }
 
+async function syncPublicWallJson(userId: string, currentBio: string, wallEntries: string[]) {
+  try {
+    const payload = JSON.stringify({
+      bio: currentBio || '',
+      wallStrips: wallEntries,
+      updatedAt: Date.now(),
+    });
+    const blob = new Blob([payload], { type: 'application/json' });
+    await supabase.storage.from(AVATAR_BUCKET).upload(`${userId}/wall.json`, blob, {
+      upsert: true,
+      cacheControl: '60',
+      contentType: 'application/json',
+    });
+  } catch (err) {
+    console.warn('[Wall] Sync public wall.json notice:', err);
+  }
+}
+
 export default function ProfilePage() {
   const [, setLocation] = useLocation();
   const routeParams = useParams<{ id?: string }>();
@@ -162,27 +180,131 @@ export default function ProfilePage() {
 
   useEffect(() => {
     if (isOwner || !targetUserId) return;
+    let isCancelled = false;
     setIsLoadingPublicProfile(true);
-    supabase
-      .from('profiles_public')
-      .select('id, display_name, avatar_url, role, bio, wall_strip_ids')
-      .eq('id', targetUserId)
-      .maybeSingle()
-      .then(({ data, error }) => {
-        setIsLoadingPublicProfile(false);
-        if (data && !error) {
-          setPublicProfile({
-            id: data.id,
-            displayName: data.display_name || 'PinkSnap Member',
-            avatarUrl: data.avatar_url || null,
-            role: data.role || 'user',
-            bio: data.bio || '',
-            wallStripIds: Array.isArray(data.wall_strip_ids) ? data.wall_strip_ids : [],
-          });
+
+    async function loadTargetProfile() {
+      try {
+        let baseData: {
+          id: string;
+          display_name?: string | null;
+          avatar_url?: string | null;
+          role?: string | null;
+          created_at?: string;
+          bio?: string | null;
+          wall_strip_ids?: string[] | null;
+        } | null = null;
+
+        // Tier 1: Try profiles_public with all columns
+        const tryFull = await supabase
+          .from('profiles_public')
+          .select('id, display_name, avatar_url, role, bio, wall_strip_ids')
+          .eq('id', targetUserId)
+          .maybeSingle();
+
+        if (tryFull.data && !tryFull.error) {
+          baseData = tryFull.data;
         } else {
-          setPublicProfile(null);
+          // Tier 2: Try profiles_public with core schema columns (id, display_name, avatar_url, role)
+          const tryCore = await supabase
+            .from('profiles_public')
+            .select('id, display_name, avatar_url, role')
+            .eq('id', targetUserId)
+            .maybeSingle();
+
+          if (tryCore.data && !tryCore.error) {
+            baseData = tryCore.data;
+          } else {
+            // Tier 3: Try profiles table directly (fallback if view is unavailable)
+            const tryProfiles = await supabase
+              .from('profiles')
+              .select('id, display_name, avatar_url, role, created_at')
+              .eq('id', targetUserId)
+              .maybeSingle();
+
+            if (tryProfiles.data && !tryProfiles.error) {
+              baseData = tryProfiles.data;
+            }
+          }
         }
-      });
+
+        if (!baseData || isCancelled) {
+          if (!isCancelled) setPublicProfile(null);
+          return;
+        }
+
+        // Now resolve bio and wall strips
+        let resolvedBio = baseData.bio || '';
+        let resolvedWallStrips: string[] = Array.isArray(baseData.wall_strip_ids) ? baseData.wall_strip_ids : [];
+
+        // Check if user has a wall.json in the avatars storage bucket
+        try {
+          const { data: wallBlob, error: wallErr } = await supabase.storage
+            .from(AVATAR_BUCKET)
+            .download(`${targetUserId}/wall.json`);
+
+          if (!wallErr && wallBlob) {
+            const jsonText = await wallBlob.text();
+            const parsed = JSON.parse(jsonText);
+            if (parsed && typeof parsed.bio === 'string' && !resolvedBio) {
+              resolvedBio = parsed.bio;
+            }
+            if (parsed && Array.isArray(parsed.wallStrips) && resolvedWallStrips.length === 0) {
+              resolvedWallStrips = parsed.wallStrips;
+            }
+          }
+        } catch {}
+
+        // Local cache fallback (e.g. if viewing on same browser or localStorage has cached data)
+        if (typeof window !== 'undefined') {
+          try {
+            if (!resolvedBio) {
+              const localBio = localStorage.getItem(`pinksnap_user_bio_${targetUserId}`);
+              if (localBio) resolvedBio = localBio;
+            }
+            if (resolvedWallStrips.length === 0) {
+              const localWall = localStorage.getItem(`pinksnap_wall_strips_${targetUserId}`);
+              if (localWall) {
+                const parsed = JSON.parse(localWall);
+                if (Array.isArray(parsed)) resolvedWallStrips = parsed;
+              }
+            }
+          } catch {}
+        }
+
+        // Role override check (e.g. for rezn1r)
+        let resolvedRole = baseData.role || 'user';
+        if (typeof window !== 'undefined') {
+          try {
+            const storedOverrides = JSON.parse(localStorage.getItem('pinksnap_role_overrides') || '{}');
+            if (targetUserId && storedOverrides[targetUserId]) resolvedRole = storedOverrides[targetUserId];
+          } catch {}
+        }
+
+        if (!isCancelled) {
+          setPublicProfile({
+            id: baseData.id,
+            displayName: baseData.display_name || 'PinkSnap Member',
+            avatarUrl: baseData.avatar_url || null,
+            role: resolvedRole,
+            bio: resolvedBio,
+            wallStripIds: resolvedWallStrips,
+            createdAt: baseData.created_at,
+          });
+        }
+      } catch (err) {
+        console.warn('[Public Profile] Error resolving profile:', err);
+        if (!isCancelled) setPublicProfile(null);
+      } finally {
+        if (!isCancelled) setIsLoadingPublicProfile(false);
+      }
+    }
+
+    loadTargetProfile();
+
+    return () => {
+      isCancelled = true;
+    };
   }, [isOwner, targetUserId]);
 
   const effectiveUser = isOwner
@@ -703,6 +825,7 @@ export default function ProfilePage() {
             variant: 'destructive',
           });
         }
+        syncPublicWallJson(user.id, bio, nextRawEntries);
       } catch (syncErr) {
         console.error('[Wall Sync] Failed to update wall strips:', syncErr);
       }
@@ -742,6 +865,7 @@ export default function ProfilePage() {
           // Cloud sync across phone, laptop, and tablet
           updateProfile({ wallStripIds: next }).catch(() => {});
           supabase.storage.from(AVATAR_BUCKET).remove([`${user.id}/wall-${id}.webp`]).catch(() => {});
+          syncPublicWallJson(user.id, bio, next);
           return next;
         });
       }
@@ -784,6 +908,7 @@ export default function ProfilePage() {
       } else {
         setDisplayName(trimmedDisplayName);
         setBio(trimmedBio);
+        syncPublicWallJson(user!.id, trimmedBio, postedRawEntries);
 
         if (typeof window !== 'undefined' && user?.id) {
           localStorage.setItem(`pinksnap_user_name_${user.id}`, trimmedDisplayName);
