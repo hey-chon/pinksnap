@@ -299,9 +299,9 @@ export default function ChatUsersDirectory() {
           </div>
         </div>
 
-        {/* Scrollable Members List */}
+        {/* Scrollable Members List - Expanded & Spacious */}
         <div
-          className="flex flex-col gap-2 p-2.5 overflow-y-auto max-h-[380px] xl:max-h-[420px] scrollbar-thin scrollbar-thumb-pink-200"
+          className="flex flex-col gap-2.5 p-3 overflow-y-auto min-h-[460px] max-h-[540px] xl:max-h-[640px] scrollbar-thin scrollbar-thumb-pink-200"
           style={{
             backgroundImage:
               'linear-gradient(rgba(245, 61, 137, .04) 1px, transparent 1px), linear-gradient(90deg, rgba(245, 61, 137, .04) 1px, transparent 1px)',
@@ -309,15 +309,15 @@ export default function ChatUsersDirectory() {
           }}
         >
           {isLoading ? (
-            <div className="py-12 flex flex-col items-center justify-center gap-2 text-center">
-              <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-              <span className="pixel-text text-[9px] text-foreground/50">LOADING USERS...</span>
+            <div className="py-16 flex flex-col items-center justify-center gap-2 text-center">
+              <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+              <span className="pixel-text text-[10px] text-foreground/50">LOADING USERS...</span>
             </div>
           ) : filteredUsers.length === 0 ? (
-            <div className="py-10 flex flex-col items-center justify-center text-center text-foreground/50 gap-1.5">
-              <Sparkles className="w-5 h-5 text-primary/40 animate-pulse" />
-              <p className="text-xs font-bold">No members found</p>
-              <p className="text-[10px] text-foreground/40">Try searching for a different name</p>
+            <div className="py-14 flex flex-col items-center justify-center text-center text-foreground/50 gap-1.5">
+              <Sparkles className="w-6 h-6 text-primary/40 animate-pulse" />
+              <p className="text-sm font-bold">No members found</p>
+              <p className="text-xs text-foreground/40">Try searching for a different name</p>
             </div>
           ) : (
             filteredUsers.map((member, idx) => {
@@ -332,28 +332,28 @@ export default function ChatUsersDirectory() {
                 <Link
                   key={member.id}
                   href={`/profile?user=${member.id}`}
-                  className={`group flex items-center justify-between gap-2.5 p-2 rounded-xl border transition-all duration-150 cursor-pointer ${
+                  className={`group flex items-center justify-between gap-3 p-2.5 sm:p-3 rounded-2xl border transition-all duration-150 cursor-pointer ${
                     isCurrentUser
-                      ? 'bg-pink-100/70 border-pink-300 shadow-xs'
-                      : 'bg-white/90 hover:bg-white border-pink-100 hover:border-pink-300 hover:shadow-sm hover:scale-[1.01]'
+                      ? 'bg-pink-100/80 border-pink-300 shadow-xs'
+                      : 'bg-white/95 hover:bg-white border-pink-100/90 hover:border-pink-300 hover:shadow-sm hover:scale-[1.01]'
                   }`}
                   title={`Stalk ${displayName}'s profile wall`}
                 >
                   {/* Left: Rank & Avatar */}
-                  <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="flex items-center gap-3 min-w-0">
                     {/* Rank Number Badge */}
                     <span
-                      className={`text-[9px] font-black w-4 text-center shrink-0 ${
+                      className={`text-xs font-black w-6 text-center shrink-0 ${
                         rank === 1
-                          ? 'text-amber-500 font-extrabold'
+                          ? 'text-amber-500 font-extrabold text-sm'
                           : rank === 2
-                          ? 'text-slate-400 font-extrabold'
+                          ? 'text-slate-400 font-extrabold text-sm'
                           : rank === 3
-                          ? 'text-amber-700 font-extrabold'
-                          : 'text-foreground/35'
+                          ? 'text-amber-700 font-extrabold text-sm'
+                          : 'text-foreground/40'
                       }`}
                     >
-                      {rank}
+                      #{rank}
                     </span>
 
                     {/* Avatar */}
@@ -366,29 +366,29 @@ export default function ChatUsersDirectory() {
                     {/* Name & Role */}
                     <div className="flex flex-col min-w-0 text-left">
                       <div className="flex items-center gap-1.5">
-                        <span className="text-xs font-black text-foreground truncate max-w-[110px] group-hover:text-primary transition-colors">
+                        <span className="text-sm font-black text-foreground truncate max-w-[130px] sm:max-w-[150px] group-hover:text-primary transition-colors">
                           {displayName}
                         </span>
                         {isCurrentUser && (
-                          <span className="text-[8px] font-black bg-pink-200/90 text-primary px-1 py-0.2 rounded">
+                          <span className="text-[9px] font-black bg-pink-200 text-primary px-1.5 py-0.2 rounded-md">
                             YOU
                           </span>
                         )}
                       </div>
 
-                      <div className="flex items-center gap-1 text-[10px]">
+                      <div className="flex items-center gap-1 text-[11px] mt-0.5">
                         {isAdmin ? (
-                          <span className="text-[8px] font-black tracking-wider uppercase text-primary inline-flex items-center gap-0.5">
-                            <Crown className="w-2 h-2 stroke-[2.5]" />
+                          <span className="text-[9px] font-black tracking-wider uppercase text-primary inline-flex items-center gap-1">
+                            <Crown className="w-2.5 h-2.5 stroke-[2.5]" />
                             <span>CREATOR</span>
                           </span>
                         ) : isContributor ? (
-                          <span className="text-[8px] font-black tracking-wider uppercase text-amber-600 inline-flex items-center gap-0.5">
-                            <Zap className="w-2 h-2 fill-current" />
+                          <span className="text-[9px] font-black tracking-wider uppercase text-amber-600 inline-flex items-center gap-1">
+                            <Zap className="w-2.5 h-2.5 fill-current" />
                             <span>CONTRIBUTOR</span>
                           </span>
                         ) : (
-                          <span className="text-[9px] font-medium text-foreground/45">
+                          <span className="text-[10px] font-semibold text-foreground/50">
                             {formatJoinedDate(member.created_at)}
                           </span>
                         )}
@@ -398,9 +398,9 @@ export default function ChatUsersDirectory() {
 
                   {/* Right: Action Pill */}
                   <div className="shrink-0">
-                    <span className="text-[10px] font-black text-primary/70 group-hover:text-primary group-hover:bg-primary/10 px-2 py-1 rounded-full border border-transparent group-hover:border-primary/20 transition-all inline-flex items-center gap-1">
+                    <span className="text-xs font-black text-primary/80 group-hover:text-primary group-hover:bg-primary/10 px-2.5 py-1.5 rounded-xl border border-pink-200/60 group-hover:border-primary/30 transition-all inline-flex items-center gap-1 bg-pink-50/50">
                       <span>Wall</span>
-                      <ExternalLink className="w-2.5 h-2.5 group-hover:translate-x-0.5 transition-transform" />
+                      <ExternalLink className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
                     </span>
                   </div>
                 </Link>
