@@ -289,7 +289,7 @@ export function AuthModal({
             {isSignup ? (
               <>WELCOME TO <span className="text-primary">PINKSNAP</span></>
             ) : (
-              <>WELCOME <span className="text-primary">BACK</span></>
+              <>HI, <span className="text-primary">WELCOME!</span></>
             )}
           </h2>
 
@@ -325,7 +325,7 @@ export function AuthModal({
       <div className="text-center mb-6">
         <h2 className="auth-header-title font-display text-3xl sm:text-4xl text-foreground tracking-wide">
           {mode === 'signin' && (
-            <>WELCOME <span className="text-primary">BACK!</span></>
+            <>HI, <span className="text-primary">WELCOME!</span></>
           )}
           {mode === 'signup' && (
             <>JOIN <span className="text-primary">PINKSNAP</span></>

@@ -90,7 +90,7 @@ export default function AuthPage() {
 
           {/* Title */}
           <h1 className="font-hero text-3xl sm:text-4xl text-foreground tracking-wide mb-1">
-            WELCOME <span className="text-primary">BACK!</span>
+            HI, <span className="text-primary">WELCOME!</span>
           </h1>
 
           <p className="text-xs sm:text-sm text-foreground/60 font-medium mb-6">
