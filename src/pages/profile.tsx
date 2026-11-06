@@ -182,10 +182,6 @@ export default function ProfilePage() {
         } else {
           setPublicProfile(null);
         }
-      })
-      .catch(() => {
-        setIsLoadingPublicProfile(false);
-        setPublicProfile(null);
       });
   }, [isOwner, targetUserId]);
 
