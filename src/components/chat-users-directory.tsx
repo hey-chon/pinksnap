@@ -16,6 +16,7 @@ import {
 import { supabase } from '@/lib/supabase';
 import { normalizeAvatarUrl } from '@/lib/avatar';
 import { useAuth } from '@/hooks/use-auth';
+import { seedProfilesCache } from '@/hooks/use-community-chat';
 
 export interface DirectoryUser {
   id: string;
@@ -57,9 +58,9 @@ function DirectoryUserAvatar({
   return (
     <div className="relative shrink-0">
       <span
-        className={`pixel-avatar w-8 h-8 ${toneFor(
+        className={`pixel-avatar w-10 h-10 sm:w-11 sm:h-11 ${toneFor(
           displayName
-        )} flex items-center justify-center rounded-lg overflow-hidden border border-black/15 shadow-xs`}
+        )} flex items-center justify-center rounded-xl overflow-hidden border-2 border-black/20 shadow-sm`}
       >
         {avatarSrc && !hasError ? (
           <img
@@ -71,12 +72,12 @@ function DirectoryUserAvatar({
             onError={() => setHasError(true)}
           />
         ) : (
-          <span className="font-black text-xs text-white/95 select-none">{initial}</span>
+          <span className="font-black text-sm text-white/95 select-none">{initial}</span>
         )}
       </span>
       {isAdmin && (
-        <span className="absolute -top-1 -right-1 p-0.5 bg-primary text-white rounded-full shadow-xs">
-          <Crown className="w-2 h-2" />
+        <span className="absolute -top-1.5 -right-1.5 p-1 bg-primary text-white rounded-full shadow-md border border-white">
+          <Crown className="w-2.5 h-2.5 stroke-[2.5]" />
         </span>
       )}
     </div>
@@ -102,6 +103,7 @@ export default function ChatUsersDirectory() {
 
       if (profilesData && !profilesError && profilesData.length > 0) {
         setUsers(profilesData);
+        seedProfilesCache(profilesData);
         return;
       }
 
@@ -112,6 +114,7 @@ export default function ChatUsersDirectory() {
 
       if (publicData && !publicError && publicData.length > 0) {
         setUsers(publicData);
+        seedProfilesCache(publicData);
       }
     } catch (err) {
       console.warn('[Users Directory] Failed to fetch users:', err);
