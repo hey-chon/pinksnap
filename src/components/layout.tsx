@@ -271,12 +271,12 @@ export function BottomNav() {
 
                     if (isVisitingOtherWall) {
                       e.preventDefault();
-                      setLocation('/profile');
                       if (typeof window !== 'undefined') {
                         window.history.pushState({}, '', '/profile');
-                        window.dispatchEvent(new Event('pinksnap:nav-profile'));
                         window.dispatchEvent(new PopStateEvent('popstate'));
+                        window.dispatchEvent(new Event('pinksnap:nav-profile'));
                       }
+                      setLocation('/profile');
                     }
                   }
                   if (activeIdx !== -1) {

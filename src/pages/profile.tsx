@@ -195,7 +195,11 @@ export default function ProfilePage() {
   const [isLoadingPublicProfile, setIsLoadingPublicProfile] = useState(false);
 
   useEffect(() => {
-    if (isOwner || !targetUserId) return;
+    if (isOwner || !targetUserId) {
+      setPublicProfile(null);
+      setIsLoadingPublicProfile(false);
+      return;
+    }
     let isCancelled = false;
     setIsLoadingPublicProfile(true);
 
@@ -211,17 +215,17 @@ export default function ProfilePage() {
           wall_strip_ids?: string[] | null;
         } | null = null;
 
-        // Tier 1: Try profiles_public with all columns
-        const tryFull = await supabase
-          .from('profiles_public')
-          .select('id, display_name, avatar_url, role, bio, wall_strip_ids')
+        // Tier 1: Query profiles table directly to retrieve id, display_name, avatar_url, role, and real created_at
+        const tryProfiles = await supabase
+          .from('profiles')
+          .select('id, display_name, avatar_url, role, created_at')
           .eq('id', targetUserId)
           .maybeSingle();
 
-        if (tryFull.data && !tryFull.error) {
-          baseData = tryFull.data;
+        if (tryProfiles.data && !tryProfiles.error) {
+          baseData = tryProfiles.data;
         } else {
-          // Tier 2: Try profiles_public with core schema columns (id, display_name, avatar_url, role)
+          // Tier 2: Try profiles_public view with core columns (id, display_name, avatar_url, role)
           const tryCore = await supabase
             .from('profiles_public')
             .select('id, display_name, avatar_url, role')
@@ -230,17 +234,6 @@ export default function ProfilePage() {
 
           if (tryCore.data && !tryCore.error) {
             baseData = tryCore.data;
-          } else {
-            // Tier 3: Try profiles table directly (fallback if view is unavailable)
-            const tryProfiles = await supabase
-              .from('profiles')
-              .select('id, display_name, avatar_url, role, created_at')
-              .eq('id', targetUserId)
-              .maybeSingle();
-
-            if (tryProfiles.data && !tryProfiles.error) {
-              baseData = tryProfiles.data;
-            }
           }
         }
 
@@ -539,12 +532,28 @@ export default function ProfilePage() {
               <p className="text-foreground/70 mb-6 font-medium text-xs leading-relaxed">
                 This PinkSnap profile does not exist or has been removed. Check the link or discover creators in community chat.
               </p>
-              <Link
-                href="/chat"
-                className="w-full py-3.5 bg-primary text-white font-black text-xs uppercase tracking-wider rounded-2xl shadow-lg shadow-primary/30 inline-flex items-center justify-center gap-2 hover:brightness-105 active:scale-98 transition-all"
-              >
-                <Sparkles className="w-4 h-4" /> Open Community Chat
-              </Link>
+              <div className="flex flex-col gap-2.5 w-full">
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (typeof window !== 'undefined') {
+                      window.history.pushState({}, '', '/profile');
+                      window.dispatchEvent(new PopStateEvent('popstate'));
+                      window.dispatchEvent(new Event('pinksnap:nav-profile'));
+                    }
+                    setLocation('/profile');
+                  }}
+                  className="w-full py-3 bg-pink-50 hover:bg-pink-100/80 text-primary font-black text-xs uppercase tracking-wider rounded-2xl inline-flex items-center justify-center gap-2 transition-all cursor-pointer border border-pink-200"
+                >
+                  <User className="w-4 h-4" /> Go to My Profile
+                </button>
+                <Link
+                  href="/chat"
+                  className="w-full py-3.5 bg-primary text-white font-black text-xs uppercase tracking-wider rounded-2xl shadow-lg shadow-primary/30 inline-flex items-center justify-center gap-2 hover:brightness-105 active:scale-98 transition-all"
+                >
+                  <Sparkles className="w-4 h-4" /> Open Community Chat
+                </Link>
+              </div>
             </div>
           </main>
           <BottomNav />
@@ -975,9 +984,12 @@ export default function ProfilePage() {
 
   const initial = (effectiveUser?.displayName || effectiveUser?.email || 'U').charAt(0).toUpperCase();
   const userHandle = (effectiveUser?.displayName || 'star').toLowerCase().replace(/[^a-z0-9_]/g, '');
-  const joinedDate = effectiveUser?.createdAt
-    ? new Date(effectiveUser.createdAt).toLocaleDateString(undefined, { month: 'short', year: 'numeric' })
-    : 'Member';
+  const joinedDate = (() => {
+    if (!effectiveUser?.createdAt) return 'Recently';
+    const dateObj = new Date(effectiveUser.createdAt);
+    if (isNaN(dateObj.getTime())) return 'Recently';
+    return dateObj.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+  })();
   const [emailName = '', emailDomain = ''] = (isOwner && user?.email ? user.email : '').split('@');
 
   return (
@@ -1418,8 +1430,8 @@ export default function ProfilePage() {
 
           </div>
 
-          {/* ── Zero-Knowledge Vault Minimized Hyperlink ── */}
-          {isOwner ? (
+          {/* ── Zero-Knowledge Vault Minimized Hyperlink (Owner Only) ── */}
+          {isOwner && (
             <div className="flex items-center justify-center mb-5">
               <button
                 type="button"
@@ -1432,13 +1444,6 @@ export default function ProfilePage() {
                   AES-256-GCM
                 </span>
               </button>
-            </div>
-          ) : (
-            <div className="flex items-center justify-center mb-5">
-              <div className="inline-flex items-center gap-1.5 text-[11px] font-bold text-foreground/50 py-1 px-3.5 rounded-full bg-white/70 border border-pink-100 shadow-xs select-none">
-                <Shield className="w-3.5 h-3.5 text-primary" />
-                <span>Public Profile Wall · Anti-Theft Guard Active 🛡️</span>
-              </div>
             </div>
           )}
 

@@ -151,7 +151,14 @@ export function UserMenu() {
           <div className="py-1">
             <Link
               href="/profile"
-              onClick={() => setIsOpen(false)}
+              onClick={() => {
+                setIsOpen(false);
+                if (typeof window !== 'undefined' && window.location.search.includes('user=')) {
+                  window.history.pushState({}, '', '/profile');
+                  window.dispatchEvent(new PopStateEvent('popstate'));
+                  window.dispatchEvent(new Event('pinksnap:nav-profile'));
+                }
+              }}
               className="flex items-center gap-2.5 px-4 py-2 text-xs font-bold text-foreground/80 hover:text-primary hover:bg-primary/5 transition-colors"
             >
               <User className="w-4 h-4 text-primary" />
