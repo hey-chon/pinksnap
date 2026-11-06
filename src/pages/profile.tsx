@@ -52,15 +52,95 @@ import {
 
 const MAX_AVATAR_MB = Math.round(AVATAR_MAX_FILE_BYTES / (1024 * 1024));
 
+export interface PublicWallStrip {
+  id: string;
+  url: string;
+  date: number;
+  frame?: string;
+  layout?: string;
+}
+
+export function parseWallStripEntry(entry: string): PublicWallStrip | null {
+  if (!entry) return null;
+  if (typeof entry === 'string' && entry.trim().startsWith('{')) {
+    try {
+      const parsed = JSON.parse(entry);
+      if (parsed && typeof parsed.id === 'string') {
+        return parsed as PublicWallStrip;
+      }
+    } catch {}
+  }
+  return { id: entry, url: '', date: Date.now() };
+}
+
+export function getWallStripId(entry: string): string {
+  if (typeof entry === 'string' && entry.trim().startsWith('{')) {
+    try {
+      const parsed = JSON.parse(entry);
+      if (parsed && typeof parsed.id === 'string') return parsed.id;
+    } catch {}
+  }
+  return entry;
+}
+
+async function preparePublicWallStrip(
+  userId: string,
+  memory: { id: string; url: string; date: number; frame: string; layout?: string }
+): Promise<PublicWallStrip> {
+  let publicUrl = memory.url;
+
+  try {
+    const previewDataUrl = await createGalleryPreview(memory.url);
+    if (previewDataUrl) {
+      try {
+        const blob = dataUrlToBlob(previewDataUrl);
+        const storagePath = `${userId}/wall-${memory.id}.webp`;
+
+        const { error: uploadError } = await supabase.storage
+          .from(AVATAR_BUCKET)
+          .upload(storagePath, blob, {
+            upsert: true,
+            cacheControl: '31536000',
+            contentType: 'image/webp',
+          });
+
+        if (!uploadError) {
+          const { data: pubData } = supabase.storage
+            .from(AVATAR_BUCKET)
+            .getPublicUrl(storagePath);
+          if (pubData?.publicUrl) {
+            publicUrl = pubData.publicUrl;
+          }
+        } else {
+          publicUrl = previewDataUrl;
+        }
+      } catch {
+        publicUrl = previewDataUrl;
+      }
+    }
+  } catch (err) {
+    console.warn('[Wall] Could not optimize strip preview:', err);
+  }
+
+  return {
+    id: memory.id,
+    url: publicUrl,
+    date: memory.date || Date.now(),
+    frame: memory.frame || 'classic',
+    layout: memory.layout || 'vertical-4',
+  };
+}
+
 export default function ProfilePage() {
   const [, setLocation] = useLocation();
+  const routeParams = useParams<{ id?: string }>();
   const { user, updateProfile, signOut, resetPassword, isAdmin, isContributor } = useAuth();
   const { savedMemories, deleteMemory, isLoadingMemories } = useAppContext();
   const { toast } = useToast();
 
-  // Support viewing another user's public profile wall
+  // Support viewing another user's public profile wall via route param (/u/:id, /profile/:id) or query param (?user=XYZ)
   const searchParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
-  const targetUserId = searchParams?.get('user') || null;
+  const targetUserId = routeParams?.id || searchParams?.get('user') || null;
   const isOwner = !targetUserId || (Boolean(user?.id) && user?.id === targetUserId);
 
   const [publicProfile, setPublicProfile] = useState<{
@@ -82,9 +162,9 @@ export default function ProfilePage() {
       .select('id, display_name, avatar_url, role, bio, wall_strip_ids')
       .eq('id', targetUserId)
       .maybeSingle()
-      .then(({ data }) => {
+      .then(({ data, error }) => {
         setIsLoadingPublicProfile(false);
-        if (data) {
+        if (data && !error) {
           setPublicProfile({
             id: data.id,
             displayName: data.display_name || 'PinkSnap Member',
@@ -93,7 +173,13 @@ export default function ProfilePage() {
             bio: data.bio || '',
             wallStripIds: Array.isArray(data.wall_strip_ids) ? data.wall_strip_ids : [],
           });
+        } else {
+          setPublicProfile(null);
         }
+      })
+      .catch(() => {
+        setIsLoadingPublicProfile(false);
+        setPublicProfile(null);
       });
   }, [isOwner, targetUserId]);
 
@@ -112,6 +198,10 @@ export default function ProfilePage() {
         createdAt: publicProfile.createdAt,
       }
     : null;
+
+  const profileRole = effectiveUser?.role || 'user';
+  const isProfileAdmin = profileRole === 'admin';
+  const isProfileContributor = profileRole === 'contributor';
 
   const [displayName, setDisplayName] = useState(user?.displayName || '');
   const [bio, setBio] = useState(user?.bio ?? '');
@@ -150,7 +240,7 @@ export default function ProfilePage() {
   const [showVaultModal, setShowVaultModal] = useState(false);
 
   // Profile wall privacy: only strips explicitly chosen by user are displayed on their wall
-  const [postedStripIds, setPostedStripIds] = useState<string[]>(() => {
+  const [postedRawEntries, setPostedRawEntries] = useState<string[]>(() => {
     if (typeof window === 'undefined' || !user?.id) return [];
     if (Array.isArray(user.wallStripIds) && user.wallStripIds.length > 0) return user.wallStripIds;
     try {
@@ -162,6 +252,10 @@ export default function ProfilePage() {
     } catch {}
     return Array.isArray(user.wallStripIds) ? user.wallStripIds : [];
   });
+
+  const [postedStripIds, setPostedStripIds] = useState<string[]>(() =>
+    postedRawEntries.map(getWallStripId)
+  );
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const cloudSyncTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -184,23 +278,61 @@ export default function ProfilePage() {
   useEffect(() => {
     if (!user?.id || showPostModal) return;
 
-    if (Array.isArray(user.wallStripIds) && user.wallStripIds.length > 0) {
-      setPostedStripIds(user.wallStripIds);
-      try {
-        localStorage.setItem(`pinksnap_wall_strips_${user.id}`, JSON.stringify(user.wallStripIds));
-      } catch {}
-    } else if (typeof window !== 'undefined') {
-      try {
-        const stored = localStorage.getItem(`pinksnap_wall_strips_${user.id}`);
-        if (stored) {
-          const parsed = JSON.parse(stored);
-          if (Array.isArray(parsed) && parsed.length > 0) {
-            setPostedStripIds(parsed);
-          }
-        }
-      } catch {}
-    }
+    const sourceEntries =
+      Array.isArray(user.wallStripIds) && user.wallStripIds.length > 0
+        ? user.wallStripIds
+        : (() => {
+            if (typeof window === 'undefined') return [];
+            try {
+              const stored = localStorage.getItem(`pinksnap_wall_strips_${user.id}`);
+              if (stored) {
+                const parsed = JSON.parse(stored);
+                if (Array.isArray(parsed)) return parsed;
+              }
+            } catch {}
+            return [];
+          })();
+
+    setPostedRawEntries(sourceEntries);
+    setPostedStripIds(sourceEntries.map(getWallStripId));
   }, [user?.id, wallStripIdsKey, showPostModal]);
+
+  // Auto-upgrade any legacy plain ID entries to full public wall strip objects when owner visits
+  useEffect(() => {
+    if (!isOwner || !user?.id || savedMemories.length === 0 || postedRawEntries.length === 0) return;
+    const hasLegacy = postedRawEntries.some((e) => typeof e === 'string' && !e.trim().startsWith('{'));
+    if (!hasLegacy) return;
+
+    let isCancelled = false;
+    (async () => {
+      let changed = false;
+      const upgraded = await Promise.all(
+        postedRawEntries.map(async (entry) => {
+          if (typeof entry === 'string' && entry.trim().startsWith('{')) return entry;
+          const mem = savedMemories.find((m) => m.id === entry);
+          if (mem) {
+            changed = true;
+            const pub = await preparePublicWallStrip(user.id, mem);
+            return JSON.stringify(pub);
+          }
+          return entry;
+        })
+      );
+
+      if (changed && !isCancelled) {
+        setPostedRawEntries(upgraded);
+        setPostedStripIds(upgraded.map(getWallStripId));
+        try {
+          localStorage.setItem(`pinksnap_wall_strips_${user.id}`, JSON.stringify(upgraded));
+        } catch {}
+        updateProfile({ wallStripIds: upgraded }).catch(() => {});
+      }
+    })();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [isOwner, user?.id, savedMemories, postedRawEntries]);
 
   useEffect(() => {
     if (!showVaultModal) return;
@@ -213,24 +345,73 @@ export default function ProfilePage() {
 
   // Prune orphaned wall strip IDs — ONLY after memories have finished loading and exist
   useEffect(() => {
-    if (!user?.id || isLoadingMemories || savedMemories.length === 0 || postedStripIds.length === 0) return;
+    if (!user?.id || isLoadingMemories || savedMemories.length === 0 || postedRawEntries.length === 0) return;
     const memoryIds = new Set(savedMemories.map((m) => m.id));
-    const validIds = postedStripIds.filter((id) => memoryIds.has(id));
-    if (validIds.length !== postedStripIds.length) {
-      setPostedStripIds(validIds);
+    const validEntries = postedRawEntries.filter((entry) => memoryIds.has(getWallStripId(entry)));
+    if (validEntries.length !== postedRawEntries.length) {
+      setPostedRawEntries(validEntries);
+      setPostedStripIds(validEntries.map(getWallStripId));
       try {
-        localStorage.setItem(`pinksnap_wall_strips_${user.id}`, JSON.stringify(validIds));
+        localStorage.setItem(`pinksnap_wall_strips_${user.id}`, JSON.stringify(validEntries));
       } catch {}
       // Sync pruned list to cloud
-      updateProfile({ wallStripIds: validIds }).catch(() => {});
+      updateProfile({ wallStripIds: validEntries }).catch(() => {});
     }
-  }, [savedMemories, postedStripIds, user?.id, isLoadingMemories]);
+  }, [savedMemories, postedRawEntries, user?.id, isLoadingMemories]);
 
-  const postedStrips = isOwner
+  // Derive strips displayed on the wall:
+  // For owners: display high-res strips from savedMemories that are posted.
+  // For visitors: parse the public strips from publicProfile.wallStripIds.
+  const postedStrips: { id: string; url: string; date: number; frame: string; layout?: string }[] = isOwner
     ? savedMemories.filter((m) => postedStripIds.includes(m.id))
-    : savedMemories.filter((m) => (effectiveUser?.wallStripIds || []).includes(m.id));
+    : (publicProfile?.wallStripIds || [])
+        .map(parseWallStripEntry)
+        .filter((s): s is PublicWallStrip => Boolean(s && s.url && s.url.length > 0));
 
-  if (!effectiveUser && !isLoadingPublicProfile) {
+  if (isLoadingPublicProfile) {
+    return (
+      <div className="flex flex-col h-dvh bg-[#fff7fa]">
+        <TopNav backTo="/" title="PROFILE WALL" />
+        <main className="flex-1 flex items-center justify-center p-4">
+          <div className="flex flex-col items-center gap-3 text-center">
+            <div className="w-8 h-8 border-3 border-primary border-t-transparent rounded-full animate-spin" />
+            <p className="font-hero text-sm tracking-wider uppercase text-foreground/60">
+              Loading Profile Wall…
+            </p>
+          </div>
+        </main>
+        <BottomNav />
+      </div>
+    );
+  }
+
+  if (!effectiveUser) {
+    if (targetUserId) {
+      return (
+        <div className="flex flex-col h-dvh bg-[#fff7fa]">
+          <TopNav backTo="/" title="PROFILE WALL" />
+          <main className="flex-1 flex items-center justify-center p-4">
+            <div className="ticket p-8 text-center max-w-sm w-full bg-white shadow-xl rounded-3xl border border-pink-100">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center text-primary shadow-inner">
+                <User className="w-8 h-8" />
+              </div>
+              <h2 className="font-hero text-2xl text-foreground mb-2">USER NOT FOUND</h2>
+              <p className="text-foreground/70 mb-6 font-medium text-xs leading-relaxed">
+                This PinkSnap profile does not exist or has been removed. Check the link or discover creators in community chat.
+              </p>
+              <Link
+                href="/chat"
+                className="w-full py-3.5 bg-primary text-white font-black text-xs uppercase tracking-wider rounded-2xl shadow-lg shadow-primary/30 inline-flex items-center justify-center gap-2 hover:brightness-105 active:scale-98 transition-all"
+              >
+                <Sparkles className="w-4 h-4" /> Open Community Chat
+              </Link>
+            </div>
+          </main>
+          <BottomNav />
+        </div>
+      );
+    }
+
     return (
       <div className="flex flex-col h-dvh bg-[#faf7f9]">
         <TopNav backTo="/" title="MY PROFILE" />
@@ -467,13 +648,13 @@ export default function ProfilePage() {
     }
   };
 
-  const handleTogglePostToWall = (stripId: string, e?: React.MouseEvent | React.TouchEvent) => {
+  const handleTogglePostToWall = async (stripId: string, e?: React.MouseEvent | React.TouchEvent) => {
     e?.stopPropagation();
     if (!user?.id || !isOwner) return;
 
     // Verify ownership of the strip from savedMemories
-    const ownsStrip = savedMemories.some((m) => m.id === stripId);
-    if (!ownsStrip) {
+    const memory = savedMemories.find((m) => m.id === stripId);
+    if (!memory) {
       toast({
         title: 'Access Restricted 🔒',
         description: 'You can only publish photo strips that you personally created and own.',
@@ -482,40 +663,54 @@ export default function ProfilePage() {
       return;
     }
 
-    setPostedStripIds((prev) => {
-      const isPosted = prev.includes(stripId);
-      const next = isPosted ? prev.filter((id) => id !== stripId) : [...prev, stripId];
+    const isPosted = postedStripIds.includes(stripId);
+
+    let nextRawEntries: string[];
+    if (isPosted) {
+      // Remove from wall
+      nextRawEntries = postedRawEntries.filter((entry) => getWallStripId(entry) !== stripId);
+      // Clean up remote public preview if stored
+      supabase.storage.from(AVATAR_BUCKET).remove([`${user.id}/wall-${stripId}.webp`]).catch(() => {});
+    } else {
+      // Publish to wall: prepare public strip object
+      const publicStrip = await preparePublicWallStrip(user.id, memory);
+      nextRawEntries = [
+        ...postedRawEntries.filter((entry) => getWallStripId(entry) !== stripId),
+        JSON.stringify(publicStrip),
+      ];
+    }
+
+    setPostedRawEntries(nextRawEntries);
+    setPostedStripIds(nextRawEntries.map(getWallStripId));
+
+    try {
+      localStorage.setItem(`pinksnap_wall_strips_${user.id}`, JSON.stringify(nextRawEntries));
+    } catch {}
+
+    // Debounce authenticated cloud sync directly to public.profiles.wall_strip_ids
+    if (cloudSyncTimeoutRef.current) {
+      clearTimeout(cloudSyncTimeoutRef.current);
+    }
+    cloudSyncTimeoutRef.current = setTimeout(async () => {
       try {
-        localStorage.setItem(`pinksnap_wall_strips_${user.id}`, JSON.stringify(next));
-      } catch {}
-
-      // Debounce authenticated cloud sync directly to public.profiles.wall_strip_ids
-      if (cloudSyncTimeoutRef.current) {
-        clearTimeout(cloudSyncTimeoutRef.current);
-      }
-      cloudSyncTimeoutRef.current = setTimeout(async () => {
-        try {
-          const res = await updateProfile({ wallStripIds: next });
-          if (res.error) {
-            toast({
-              title: 'Wall Sync Warning',
-              description: res.error,
-              variant: 'destructive',
-            });
-          }
-        } catch (syncErr) {
-          console.error('[Wall Sync] Failed to update wall strips:', syncErr);
+        const res = await updateProfile({ wallStripIds: nextRawEntries });
+        if (res.error) {
+          toast({
+            title: 'Wall Sync Warning',
+            description: res.error,
+            variant: 'destructive',
+          });
         }
-      }, 400);
+      } catch (syncErr) {
+        console.error('[Wall Sync] Failed to update wall strips:', syncErr);
+      }
+    }, 400);
 
-      toast({
-        title: isPosted ? 'Removed from Wall' : 'Published to Wall 🛡️',
-        description: isPosted
-          ? 'Photo strip has been hidden from your public wall.'
-          : 'Live on your wall. Anti-theft protection is active (non-owners cannot save).',
-      });
-
-      return next;
+    toast({
+      title: isPosted ? 'Removed from Wall' : 'Published to Wall 🛡️',
+      description: isPosted
+        ? 'Photo strip has been hidden from your public wall.'
+        : 'Live on your wall. Anti-theft protection is active (stalkers can view, saving is disabled).',
     });
   };
 
@@ -526,7 +721,7 @@ export default function ProfilePage() {
       cloudSyncTimeoutRef.current = null;
     }
     if (user?.id) {
-      updateProfile({ wallStripIds: postedStripIds }).catch(() => {});
+      updateProfile({ wallStripIds: postedRawEntries }).catch(() => {});
     }
   };
 
@@ -536,14 +731,15 @@ export default function ProfilePage() {
       deleteMemory(id);
       if (selectedMemory?.id === id) setSelectedMemory(null);
       if (user?.id) {
-        setPostedStripIds((prev) => {
-          const next = prev.filter((stripId) => stripId !== id);
+        setPostedRawEntries((prev) => {
+          const next = prev.filter((entry) => getWallStripId(entry) !== id);
+          setPostedStripIds(next.map(getWallStripId));
           try {
             localStorage.setItem(`pinksnap_wall_strips_${user.id}`, JSON.stringify(next));
-          } catch {
-          }
+          } catch {}
           // Cloud sync across phone, laptop, and tablet
           updateProfile({ wallStripIds: next }).catch(() => {});
+          supabase.storage.from(AVATAR_BUCKET).remove([`${user.id}/wall-${id}.webp`]).catch(() => {});
           return next;
         });
       }
