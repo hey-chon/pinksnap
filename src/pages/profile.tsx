@@ -162,9 +162,25 @@ export default function ProfilePage() {
   const { savedMemories, deleteMemory, isLoadingMemories } = useAppContext();
   const { toast } = useToast();
 
-  // Support viewing another user's public profile wall via route param (/u/:id, /profile/:id) or query param (?user=XYZ)
-  const searchParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
-  const targetUserId = routeParams?.id || searchParams?.get('user') || null;
+  // Reactive search string to instantly detect URL changes (?user=XYZ to /profile and vice-versa)
+  const [searchString, setSearchString] = useState(() =>
+    typeof window !== 'undefined' ? window.location.search : ''
+  );
+
+  useEffect(() => {
+    const handleUrlChange = () => {
+      setSearchString(typeof window !== 'undefined' ? window.location.search : '');
+    };
+    window.addEventListener('popstate', handleUrlChange);
+    window.addEventListener('pinksnap:nav-profile', handleUrlChange);
+    return () => {
+      window.removeEventListener('popstate', handleUrlChange);
+      window.removeEventListener('pinksnap:nav-profile', handleUrlChange);
+    };
+  }, []);
+
+  const searchParams = React.useMemo(() => new URLSearchParams(searchString), [searchString]);
+  const targetUserId = routeParams?.id || searchParams.get('user') || null;
   const isOwner = !targetUserId || (Boolean(user?.id) && user?.id === targetUserId);
 
   const [publicProfile, setPublicProfile] = useState<{
