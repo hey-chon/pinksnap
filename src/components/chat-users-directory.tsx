@@ -319,7 +319,7 @@ export default function ChatUsersDirectory() {
                   {/* Right: Action Pill */}
                   <div className="shrink-0">
                     <span className="text-[10px] font-black text-primary/70 group-hover:text-primary group-hover:bg-primary/10 px-2 py-0.5 rounded-lg border border-transparent group-hover:border-primary/20 transition-all inline-flex items-center gap-0.5">
-                      <span>Wall</span>
+                      
                       <ExternalLink className="w-2.5 h-2.5 group-hover:translate-x-0.5 transition-transform" />
                     </span>
                   </div>
