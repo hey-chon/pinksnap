@@ -22,7 +22,7 @@ import {
   getArtisanTemplate,
   renderArtisanStrip,
 } from '@/lib/customization';
-import { RefreshCw, Download, Share2, Check, Sparkles, ImageIcon, X, Trash2 } from 'lucide-react';
+import { RefreshCw, Download, Share2, Check, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast.tsx';
 import { createGalleryPreview, createMemoryId, dataUrlToBlob, downloadImage } from '@/lib/image-utils';
 
@@ -656,87 +656,121 @@ export default function Edit() {
       <TopNav onBack={() => window.location.reload()} />
 
       <main className="flex-1 overflow-y-auto flex flex-col items-center px-4 py-6 sm:px-6 sm:py-8">
-        <div className="edit-heading text-center mb-6 sm:mb-8 w-full max-w-4xl">
-          <span className="booth-heading-kicker mb-3">Step 3 of 3 · Print</span>
-          <h1 className="font-hero text-[2rem] leading-[1] sm:text-4xl md:text-5xl mt-4 mb-3">
-            <span className="text-foreground">CHOOSE YOUR </span><span className="text-primary">STRIP.</span>
+        {/* Booth Header */}
+        <div className="text-center mb-6 sm:mb-8 w-full max-w-4xl">
+          <span className="booth-heading-kicker mb-3">Step 3 of 3 · Finishing Lab</span>
+          <h1 className="font-hero text-[2rem] leading-[1] sm:text-4xl md:text-5xl mt-3 mb-2.5">
+            <span className="text-foreground">FINISH YOUR </span><span className="text-primary">PRINT.</span>
           </h1>
-          <p className="text-[11px] sm:text-xs font-bold text-primary uppercase tracking-[.18em] sm:tracking-[.24em] leading-relaxed">
-            Pick a theme, set the mood, keep the print.
+          <p className="text-[11px] sm:text-xs font-bold text-foreground/55 uppercase tracking-[.18em] sm:tracking-[.22em] leading-relaxed">
+            Select your favorite keepsake theme & analog filter
           </p>
         </div>
 
         <div className="flex flex-col xl:flex-row gap-6 sm:gap-8 xl:gap-10 w-full max-w-7xl items-center xl:items-start justify-center pb-14">
 
-          {/* ── LEFT: Preview ───────────────────────────────────────────── */}
+          {/* ── LEFT: Photobooth Viewing Stage (Strip preview is 100% untouched) ── */}
           <div 
-            className="edit-card w-full flex justify-center shrink-0 xl:w-auto xl:sticky xl:top-6"
+            className="w-full flex justify-center shrink-0 xl:w-auto xl:sticky xl:top-6"
             onContextMenu={(e) => e.preventDefault()}
           >
+            <div className="relative p-3.5 sm:p-5 rounded-3xl bg-foreground/[0.02] border border-foreground/10 shadow-sm flex flex-col items-center">
+              {/* Subtle top light slot / booth glass indicator */}
+              <div className="w-14 h-1 rounded-full bg-foreground/15 mb-3" />
 
-            {isArtisan ? (
-              <div className={`strip-shell relative overflow-hidden w-full p-3 sm:p-4 flex flex-col items-center justify-center ${shellClass}`}>
-                <div className="rounded-sm overflow-hidden shadow-2xl border border-white/60 bg-black/5 w-full">
-                  <canvas ref={artisanCanvasRef} className="block pointer-events-none w-full h-auto" />
+              {isArtisan ? (
+                <div className={`strip-shell relative overflow-hidden w-full p-3 sm:p-4 flex flex-col items-center justify-center ${shellClass}`}>
+                  <div className="rounded-sm overflow-hidden shadow-2xl border border-white/60 bg-black/5 w-full">
+                    <canvas ref={artisanCanvasRef} className="block pointer-events-none w-full h-auto" />
+                  </div>
                 </div>
-              </div>
-            ) : (
-              <div ref={stripRef} className={`strip-shell relative overflow-hidden w-full xl:max-w-none p-3 sm:p-4 ${shellClass}`}>
-                <div className={`absolute inset-0 z-0 ${activeFrame.className}`} />
+              ) : (
+                <div ref={stripRef} className={`strip-shell relative overflow-hidden w-full xl:max-w-none p-3 sm:p-4 ${shellClass}`}>
+                  <div className={`absolute inset-0 z-0 ${activeFrame.className}`} />
 
-                <div className={`relative z-10 grid gap-2.5 sm:gap-3 mx-auto ${gridClass}`}>
-                  {shots.map((shot, i) => (
-                    <div key={i} className={`strip-photo ${matteClass}`}>
-                      <img src={shot} alt={`Shot ${i + 1}`} className={stripFilterClass} />
-                    </div>
-                  ))}
-                </div>
+                  <div className={`relative z-10 grid gap-2.5 sm:gap-3 mx-auto ${gridClass}`}>
+                    {shots.map((shot, i) => (
+                      <div key={i} className={`strip-photo ${matteClass}`}>
+                        <img src={shot} alt={`Shot ${i + 1}`} className={stripFilterClass} />
+                      </div>
+                    ))}
+                  </div>
 
-                <div className={`strip-footer relative z-10 pt-4 pb-2 text-center font-black ${inkClass}`}>
-                  <span className="block text-[15px] sm:text-[17px] leading-[0.95]">PINK</span>
-                  <span className="block text-[15px] sm:text-[17px] leading-[0.95] strip-brand-accent">SNAP</span>
-                  <span className="strip-caption block pt-1.5 text-[7.5px] sm:text-[8.5px] font-extrabold tracking-[0.24em] uppercase opacity-75">
-                    {formatStripDate(sessionDate)}
-                  </span>
+                  <div className={`strip-footer relative z-10 pt-4 pb-2 text-center font-black ${inkClass}`}>
+                    <span className="block text-[15px] sm:text-[17px] leading-[0.95]">PINK</span>
+                    <span className="block text-[15px] sm:text-[17px] leading-[0.95] strip-brand-accent">SNAP</span>
+                    <span className="strip-caption block pt-1.5 text-[7.5px] sm:text-[8.5px] font-extrabold tracking-[0.24em] uppercase opacity-75">
+                      {formatStripDate(sessionDate)}
+                    </span>
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
 
-          {/* ── RIGHT: Controls ─────────────────────────────────────────── */}
-          <div className="edit-card flex-1 w-full booth-plate p-4 sm:p-6">
+          {/* ── RIGHT: Physical Photobooth Console ── */}
+          <div className="flex-1 w-full bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl rounded-3xl border border-foreground/10 shadow-xl p-5 sm:p-7 flex flex-col">
 
-            <div className="flex items-center gap-2 mb-4">
-              <Sparkles className="w-4 h-4 text-primary flex-none" />
-              <h2 className="font-display text-lg text-foreground/80 tracking-[.08em]">Themes</h2>
+            {/* Console HUD bar */}
+            <div className="flex items-center justify-between pb-4 mb-5 border-b border-foreground/8">
+              <div className="flex items-center gap-2.5">
+                <span className="w-2.5 h-2.5 rounded-full bg-primary animate-pulse shadow-sm shadow-primary/50" />
+                <div>
+                  <h2 className="text-xs sm:text-sm font-black uppercase tracking-[.18em] text-foreground">
+                    FINISHING CONSOLE
+                  </h2>
+                  <p className="text-[10px] font-medium text-foreground/45 tracking-wider uppercase">
+                    Select theme & tone
+                  </p>
+                </div>
+              </div>
+              <span className="text-[10px] font-mono font-bold uppercase tracking-wider px-2.5 py-1 rounded-lg bg-foreground/[0.04] border border-foreground/10 text-foreground/70">
+                {shots.length} PHOTOS CAPTURED
+              </span>
             </div>
 
-            {/* Segment-style tabs */}
-            <div className="ctrl-seg mb-5">
-              <button
-                type="button"
-                onClick={() => setCategory('booth')}
-                aria-pressed={category === 'booth'}
-                data-testid="button-category-booth"
-                className={`ctrl-seg-btn ${category === 'booth' ? 'ctrl-seg-active' : ''}`}
-              >
-                PINKSNAP
-              </button>
-              <button
-                type="button"
-                onClick={() => setCategory('artisan')}
-                aria-pressed={category === 'artisan'}
-                data-testid="button-category-artisan"
-                className={`ctrl-seg-btn ${category === 'artisan' ? 'ctrl-seg-active' : ''}`}
-              >
-                ARTISAN
-              </button>
+            {/* Segmented Collection Switch */}
+            <div className="mb-5">
+              <div className="flex items-center justify-between mb-2 px-0.5">
+                <span className="text-[10.5px] font-black uppercase tracking-[.18em] text-foreground/60">COLLECTION</span>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-primary">
+                  {category === 'artisan' ? 'Original Artisan Frames' : 'Classic Booth Editions'}
+                </span>
+              </div>
+              <div className="grid grid-cols-2 p-1.5 rounded-2xl bg-foreground/[0.05] border border-foreground/8 gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => setCategory('booth')}
+                  aria-pressed={category === 'booth'}
+                  data-testid="button-category-booth"
+                  className={`py-2.5 px-4 rounded-xl text-xs font-black tracking-wider transition-all duration-150 flex items-center justify-center gap-2 cursor-pointer ${
+                    category === 'booth'
+                      ? 'bg-white text-primary shadow-sm border border-black/5'
+                      : 'text-foreground/60 hover:text-foreground hover:bg-foreground/[0.02]'
+                  }`}
+                >
+                  PINKSNAP
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCategory('artisan')}
+                  aria-pressed={category === 'artisan'}
+                  data-testid="button-category-artisan"
+                  className={`py-2.5 px-4 rounded-xl text-xs font-black tracking-wider transition-all duration-150 flex items-center justify-center gap-2 cursor-pointer ${
+                    category === 'artisan'
+                      ? 'bg-white text-primary shadow-sm border border-black/5'
+                      : 'text-foreground/60 hover:text-foreground hover:bg-foreground/[0.02]'
+                  }`}
+                >
+                  ARTISAN
+                </button>
+              </div>
             </div>
 
             {isArtisan ? (
               /* ── Artisan template picker ── */
               <div className="mb-6">
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-2.5 mb-5" onContextMenu={(e) => e.preventDefault()}>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3 mb-5" onContextMenu={(e) => e.preventDefault()}>
                   {ARTISAN_TEMPLATES.map((tpl) => (
                     <ArtisanThumbnailCard
                       key={tpl.id}
@@ -752,29 +786,33 @@ export default function Edit() {
                   ))}
                 </div>
 
-                {/* Film look */}
-                <div className="panel-block">
-                  <div className="flex items-center justify-between mb-2.5">
-                    <h3 className="ctrl-label">Film look</h3>
-                    <span className="text-[10px] font-black uppercase tracking-wider text-primary">
+                {/* Film look dial rack */}
+                <div className="p-3.5 sm:p-4 rounded-2xl bg-foreground/[0.03] border border-foreground/8">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-[10.5px] font-black uppercase tracking-[.18em] text-foreground/75">
+                      FILM LOOK & TONE
+                    </span>
+                    <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-primary px-2.5 py-0.5 rounded-md bg-primary/10 border border-primary/20">
                       {getFilterOption(filter).label}
                     </span>
                   </div>
-                  <div className="grid grid-cols-5 sm:grid-cols-9 gap-1.5">
+                  <div className="grid grid-cols-5 sm:grid-cols-9 gap-1.5 sm:gap-2">
                     {FILTER_OPTIONS.map((option) => (
                       <button
                         key={option.id}
                         onClick={() => setFilter(option.id as FilterType)}
                         data-testid={`button-filter-${option.id}`}
                         aria-pressed={filter === option.id}
-                        className={`group relative flex flex-col items-center gap-1 p-1 rounded-xl transition-all duration-150 focus:outline-none active:scale-95 ${
+                        className={`group relative flex flex-col items-center gap-1.5 p-1.5 rounded-xl transition-all duration-150 focus:outline-none active:scale-95 cursor-pointer ${
                           filter === option.id
-                            ? 'bg-primary/10 ring-2 ring-primary shadow-sm scale-[1.03]'
+                            ? 'bg-primary/10 ring-2 ring-primary shadow-sm'
                             : 'hover:bg-foreground/[0.04] opacity-75 hover:opacity-100'
                         }`}
                       >
                         <span
-                          className="w-7 h-7 sm:w-8 sm:h-8 rounded-full shadow-inner border border-black/10 flex items-center justify-center transition-transform group-hover:scale-105"
+                          className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full shadow-inner border flex items-center justify-center transition-transform group-hover:scale-105 ${
+                            filter === option.id ? 'border-primary ring-2 ring-primary/40' : 'border-black/15'
+                          }`}
                           style={{ background: option.shadeGradient }}
                         >
                           {filter === option.id && (
@@ -791,8 +829,8 @@ export default function Edit() {
               </div>
             ) : (
               /* ── Standard theme picker ── */
-              <>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-2.5 mb-5" onContextMenu={(e) => e.preventDefault()}>
+              <div className="mb-6">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3 mb-5" onContextMenu={(e) => e.preventDefault()}>
                   {visibleFrames.map((option) => (
                     <FrameThumbnailCard
                       key={option.id}
@@ -804,29 +842,33 @@ export default function Edit() {
                   ))}
                 </div>
 
-                {/* Film look */}
-                <div className="panel-block mb-4">
-                  <div className="flex items-center justify-between mb-2.5">
-                    <h3 className="ctrl-label">Film look</h3>
-                    <span className="text-[10px] font-black uppercase tracking-wider text-primary">
+                {/* Film look dial rack */}
+                <div className="p-3.5 sm:p-4 rounded-2xl bg-foreground/[0.03] border border-foreground/8">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-[10.5px] font-black uppercase tracking-[.18em] text-foreground/75">
+                      FILM LOOK & TONE
+                    </span>
+                    <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-primary px-2.5 py-0.5 rounded-md bg-primary/10 border border-primary/20">
                       {getFilterOption(filter).label}
                     </span>
                   </div>
-                  <div className="grid grid-cols-5 sm:grid-cols-9 gap-1.5">
+                  <div className="grid grid-cols-5 sm:grid-cols-9 gap-1.5 sm:gap-2">
                     {FILTER_OPTIONS.map((option) => (
                       <button
                         key={option.id}
                         onClick={() => setFilter(option.id as FilterType)}
                         data-testid={`button-filter-${option.id}`}
                         aria-pressed={filter === option.id}
-                        className={`group relative flex flex-col items-center gap-1 p-1 rounded-xl transition-all duration-150 focus:outline-none active:scale-95 ${
+                        className={`group relative flex flex-col items-center gap-1.5 p-1.5 rounded-xl transition-all duration-150 focus:outline-none active:scale-95 cursor-pointer ${
                           filter === option.id
-                            ? 'bg-primary/10 ring-2 ring-primary shadow-sm scale-[1.03]'
+                            ? 'bg-primary/10 ring-2 ring-primary shadow-sm'
                             : 'hover:bg-foreground/[0.04] opacity-75 hover:opacity-100'
                         }`}
                       >
                         <span
-                          className="w-7 h-7 sm:w-8 sm:h-8 rounded-full shadow-inner border border-black/10 flex items-center justify-center transition-transform group-hover:scale-105"
+                          className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full shadow-inner border flex items-center justify-center transition-transform group-hover:scale-105 ${
+                            filter === option.id ? 'border-primary ring-2 ring-primary/40' : 'border-black/15'
+                          }`}
                           style={{ background: option.shadeGradient }}
                         >
                           {filter === option.id && (
@@ -840,36 +882,35 @@ export default function Edit() {
                     ))}
                   </div>
                 </div>
-
-              </>
+              </div>
             )}
 
-            {/* Action buttons — same for both modes */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {/* Tactile console action buttons */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-auto pt-2">
               <button
                 onClick={handleOpenRetakeModal}
                 data-testid="button-retake"
-                className="col-span-1 sm:col-span-2 py-4 bg-foreground/5 hover:bg-foreground/10 text-foreground font-black rounded-2xl flex items-center justify-center gap-2 transition-all active:scale-[0.98] border border-foreground/10 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/40 cursor-pointer"
+                className="col-span-1 sm:col-span-2 py-3 px-4 bg-foreground/[0.04] hover:bg-foreground/[0.08] text-foreground/80 hover:text-foreground font-black text-xs sm:text-sm tracking-wider uppercase rounded-2xl flex items-center justify-center gap-2 transition-all active:scale-[0.99] border border-foreground/10 cursor-pointer"
               >
-                <RefreshCw className="w-5 h-5 text-primary" /> RETAKE SESSION
+                <RefreshCw className="w-4 h-4 text-primary" /> RETAKE A SHOT
               </button>
 
               <button
                 onClick={handleShare}
                 disabled={isSaving}
                 data-testid="button-share"
-                className="py-4 bg-white hover:bg-primary/5 text-primary border-2 border-primary/20 hover:border-primary font-black rounded-2xl flex items-center justify-center gap-2 transition-all active:scale-[0.98] disabled:opacity-50 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/40"
+                className="py-4 px-4 bg-white hover:bg-foreground/[0.02] text-foreground font-black text-xs sm:text-sm tracking-wider uppercase rounded-2xl flex items-center justify-center gap-2 border border-foreground/15 hover:border-foreground/30 shadow-sm transition-all active:scale-[0.98] disabled:opacity-50 cursor-pointer"
               >
-                <Share2 className="w-5 h-5" /> SHARE
+                <Share2 className="w-4 h-4 text-primary" /> SHARE
               </button>
 
               <button
                 onClick={() => handleSave(false)}
                 disabled={isSaving}
                 data-testid="button-save"
-                className="py-4 bg-primary text-white font-black rounded-2xl flex items-center justify-center gap-2 shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/50"
+                className="py-4 px-4 bg-primary hover:bg-[#e02d77] text-white font-black text-xs sm:text-sm tracking-wider uppercase rounded-2xl flex items-center justify-center gap-2 shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40 transition-all active:scale-[0.98] disabled:opacity-50 cursor-pointer"
               >
-                <Download className="w-5 h-5" /> {isSaving ? 'SAVING...' : 'SAVE & PRINT'}
+                <Download className="w-4 h-4" /> {isSaving ? 'PREPARING PRINT...' : 'SAVE & PRINT'}
               </button>
             </div>
 
@@ -880,52 +921,28 @@ export default function Edit() {
       <BottomNav />
       {showArtisanWarning && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <style>{`
-            @keyframes modalOverlayIn {
-              from { opacity: 0; }
-              to { opacity: 1; }
-            }
-            @keyframes modalCardIn {
-              from { opacity: 0; transform: translateY(40px) scale(0.92); }
-              to { opacity: 1; transform: translateY(0) scale(1); }
-            }
-            @keyframes modalShimmer {
-              0% { background-position: -200% center; }
-              100% { background-position: 200% center; }
-            }
-            .modal-overlay-enter { animation: modalOverlayIn 0.35s ease-out both; }
-            .modal-card-enter { animation: modalCardIn 0.45s cubic-bezier(.34,1.56,.64,1) both; }
-            .confirm-shimmer {
-              background: linear-gradient(110deg, #f53d89 0%, #f53d89 35%, #ff6faa 50%, #f53d89 65%, #f53d89 100%);
-              background-size: 200% 100%;
-              animation: modalShimmer 2.5s ease-in-out infinite;
-            }
-          `}</style>
-
           {/* Backdrop */}
           <div
-            className="modal-overlay-enter absolute inset-0 bg-black/50 backdrop-blur-xl"
+            className="absolute inset-0 bg-black/60 backdrop-blur-md transition-opacity"
             onClick={() => setShowArtisanWarning(false)}
           />
 
-          {/* Card */}
-          <div className="modal-card-enter relative bg-white/95 backdrop-blur-2xl rounded-3xl shadow-[0_32px_80px_rgba(0,0,0,0.25)] w-full max-w-md p-7 sm:p-9 text-center border border-white/60">
+          {/* Modal Card */}
+          <div className="relative bg-white dark:bg-zinc-900 rounded-3xl shadow-2xl w-full max-w-md p-6 sm:p-8 text-center border border-black/10 dark:border-white/10 z-10">
 
-            {/* Decorative top accent line */}
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-24 h-1 rounded-full bg-gradient-to-r from-primary/60 via-primary to-primary/60 -translate-y-0.5" />
+            {/* Top decorative pill */}
+            <div className="w-12 h-1 rounded-full bg-foreground/15 mx-auto mb-4" />
 
-            {/* PINKSNAP wordmark */}
-            <div className="mb-2 flex items-center justify-center bg-foreground/[0.02] rounded-2xl p-3 max-w-max mx-auto border border-foreground/5 shadow-inner">
-              <span className="font-black text-[22px] tracking-tight text-[#2a1520]">PINK</span>
-              <span className="font-black text-[22px] tracking-tight text-[#f53d89]">SNAP</span>
-            </div>
-
-            <p className="text-black font-medium text-[13px] sm:text-sm mb-6 leading-relaxed max-w-[280px] mx-auto">
-              This strip only fits 3 shots. Tap the one you'd like to <span className="font-black text-red-500">REMOVE</span>.
+            {/* Title */}
+            <h3 className="text-base sm:text-lg font-black uppercase tracking-wider text-foreground mb-1">
+              3-SHOT STRIP SELECTION
+            </h3>
+            <p className="text-xs text-foreground/60 mb-5 leading-relaxed max-w-[300px] mx-auto">
+              This layout displays 3 photos. Select the one you would like to <span className="font-bold text-red-500">skip</span>.
             </p>
 
             {/* Photo grid — 2×2 */}
-            <div className="grid grid-cols-2 gap-3 sm:gap-4 mb-7 px-1">
+            <div className="grid grid-cols-2 gap-3 mb-6">
               {shots.map((shot, i) => {
                 const isExcluded = excludedShotIndex === i;
                 return (
@@ -933,40 +950,37 @@ export default function Edit() {
                     key={i}
                     type="button"
                     onClick={() => setExcludedShotIndex(i)}
-                    className={`relative aspect-[4/3] rounded-2xl overflow-hidden focus:outline-none transition-all duration-300 ${
+                    className={`relative aspect-[4/3] rounded-2xl overflow-hidden focus:outline-none transition-all duration-150 cursor-pointer ${
                       isExcluded
-                        ? 'opacity-80 ring-2 ring-foreground/20 shadow-inner'
-                        : 'ring-3 ring-primary/40 shadow-xl shadow-primary/10 hover:shadow-2xl hover:ring-primary/60'
+                        ? 'opacity-60 ring-2 ring-red-400/50 shadow-inner'
+                        : 'ring-2 ring-primary shadow-md hover:ring-primary/80'
                     }`}
                   >
                     <img
                       src={shot}
                       alt={`Shot ${i + 1}`}
-                      className={`w-full h-full object-cover transition-all duration-300 ${isExcluded ? 'grayscale' : ''}`}
+                      className={`w-full h-full object-cover transition-all ${isExcluded ? 'grayscale' : ''}`}
                       draggable={false}
                       onContextMenu={(e) => e.preventDefault()}
                     />
 
-                    {/* Excluded overlay (Minimalist X) */}
+                    {/* Excluded overlay */}
                     {isExcluded && (
                       <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                        <div className="w-10 h-10 bg-black/70 backdrop-blur-md rounded-full flex items-center justify-center shadow-lg border border-white/20">
-                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round">
-                            <line x1="6" y1="6" x2="18" y2="18" />
-                            <line x1="18" y1="6" x2="6" y2="18" />
-                          </svg>
-                        </div>
+                        <span className="bg-red-500 text-white text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md shadow-md">
+                          SKIPPED
+                        </span>
                       </div>
                     )}
 
                     {/* Kept indicator */}
                     {!isExcluded && (
                       <>
-                        <div className="absolute top-2 right-2 w-6 h-6 bg-emerald-500 rounded-full flex items-center justify-center shadow-md border-2 border-white/70">
-                          <Check className="w-3.5 h-3.5 text-white stroke-[3]" />
+                        <div className="absolute top-2 right-2 w-5 h-5 bg-emerald-500 rounded-full flex items-center justify-center shadow-md border border-white">
+                          <Check className="w-3 h-3 text-white stroke-[3]" />
                         </div>
-                        <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/50 to-transparent pt-6 pb-2 px-2">
-                          <span className="text-white font-black text-[11px] tracking-wider drop-shadow-md">
+                        <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/60 to-transparent pt-4 pb-1.5 px-2">
+                          <span className="text-white font-black text-[10px] tracking-wider">
                             SHOT {i + 1}
                           </span>
                         </div>
@@ -983,50 +997,48 @@ export default function Edit() {
                 setHasPickedExclusion(true);
                 setShowArtisanWarning(false);
               }}
-              className="confirm-shimmer w-full py-4 text-white font-black text-base tracking-wider rounded-2xl shadow-xl shadow-primary/30 hover:shadow-2xl hover:shadow-primary/40 active:scale-[0.97] transition-all"
+              className="w-full py-3.5 px-5 text-white font-black text-xs sm:text-sm tracking-wider uppercase rounded-2xl bg-primary hover:bg-[#e02d77] shadow-lg shadow-primary/30 hover:shadow-xl active:scale-[0.98] transition-all cursor-pointer"
             >
               CONFIRM SELECTION
             </button>
 
-            {/* Footer note */}
-            <div className="mt-5 bg-foreground/[0.03] rounded-xl border border-foreground/8 px-4 py-3">
-              <p className="text-black text-[11px] leading-relaxed">
-                <span className="font-black">Heads up:</span> This is a <span className="font-black text-primary">one-time choice</span>. Once you confirm, the same skipped photo will apply to all 3-shots Artisan strips so you won't have to pick again.
-              </p>
-            </div>
+            {/* Note */}
+            <p className="mt-3.5 text-[10.5px] text-foreground/45 leading-relaxed">
+              You can change which photo to skip anytime by switching templates.
+            </p>
           </div>
         </div>
       )}
 
       {/* ── Retake Selection Modal ─────────────────────────────────────── */}
       {showRetakeModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div
-            className="absolute inset-0"
+            className="absolute inset-0 bg-black/60 backdrop-blur-md transition-opacity"
             onClick={() => setShowRetakeModal(false)}
           />
 
-          <div className="relative bg-white rounded-2xl w-full max-w-md p-5 border border-black/10 shadow-2xl z-10 flex flex-col">
-            <div className="flex items-start justify-between gap-3 mb-1">
+          <div className="relative bg-white dark:bg-zinc-900 rounded-3xl w-full max-w-md p-6 sm:p-7 border border-black/10 dark:border-white/10 shadow-2xl z-10 flex flex-col">
+            <div className="flex items-start justify-between gap-3 mb-2">
               <div>
-                <h2 className="text-lg font-bold text-black">
-                  Which shot do you want to replace?
-                </h2>
-                <p className="text-xs text-black/60 mt-0.5">
-                  Tap the photo(s) to remove and retake. The rest will be kept.
+                <h3 className="text-base sm:text-lg font-black uppercase tracking-wider text-foreground">
+                  RETAKE SELECTION
+                </h3>
+                <p className="text-xs text-foreground/60 mt-1 leading-relaxed">
+                  Tap the shot(s) you would like to retake. All other shots are kept.
                 </p>
               </div>
               <button
                 type="button"
                 onClick={() => setShowRetakeModal(false)}
-                className="p-1.5 -mr-1.5 -mt-1 text-black/40 hover:text-black rounded-lg transition-colors cursor-pointer"
+                className="p-1.5 -mr-1 text-foreground/40 hover:text-foreground rounded-lg transition-colors cursor-pointer"
                 aria-label="Close"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="grid grid-cols-2 gap-2.5 my-4">
+            <div className="grid grid-cols-2 gap-3 my-4">
               {shots.map((shot, i) => {
                 const isSelectedForRetake = selectedRetakeIndexes.includes(i);
                 return (
@@ -1034,29 +1046,29 @@ export default function Edit() {
                     key={i}
                     type="button"
                     onClick={() => toggleRetakeIndex(i)}
-                    className={`relative aspect-[4/3] rounded-xl overflow-hidden text-left cursor-pointer transition-colors ${
+                    className={`relative aspect-[4/3] rounded-2xl overflow-hidden text-left cursor-pointer transition-all duration-150 ${
                       isSelectedForRetake
-                        ? 'border-2 border-black ring-2 ring-black/20'
-                        : 'border border-black/15 hover:border-black/40'
+                        ? 'ring-2 ring-red-500 shadow-md'
+                        : 'border border-foreground/15 hover:border-foreground/30 shadow-sm'
                     }`}
                   >
                     <img
                       src={shot}
                       alt={`Shot ${i + 1}`}
-                      className={`w-full h-full object-cover ${
-                        isSelectedForRetake ? 'opacity-40 grayscale' : 'opacity-100'
+                      className={`w-full h-full object-cover transition-all ${
+                        isSelectedForRetake ? 'opacity-50 grayscale' : 'opacity-100'
                       }`}
                     />
 
                     {isSelectedForRetake ? (
-                      <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/10">
-                        <span className="bg-black text-white text-[11px] font-bold px-2.5 py-1 rounded-md shadow-sm">
-                          Remove
+                      <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/25">
+                        <span className="bg-red-500 text-white text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-md shadow-md">
+                          RETAKE
                         </span>
                       </div>
                     ) : (
-                      <div className="absolute bottom-2 left-2 bg-black/60 text-white text-[10px] font-semibold px-2 py-0.5 rounded">
-                        Shot {i + 1}
+                      <div className="absolute bottom-2 left-2 bg-black/60 text-white text-[9.5px] font-bold px-2 py-0.5 rounded-md backdrop-blur-sm">
+                        SHOT {i + 1}
                       </div>
                     )}
                   </button>
@@ -1064,19 +1076,19 @@ export default function Edit() {
               })}
             </div>
 
-            <div className="flex flex-col gap-2 mt-1">
+            <div className="flex flex-col gap-2.5 mt-1">
               <button
                 type="button"
                 onClick={handleConfirmRetakeSelected}
                 disabled={selectedRetakeIndexes.length === 0}
-                className={`w-full py-2.5 px-4 font-bold text-sm rounded-xl transition-colors ${
+                className={`w-full py-3.5 px-4 font-black text-xs sm:text-sm tracking-wider uppercase rounded-2xl transition-all ${
                   selectedRetakeIndexes.length > 0
-                    ? 'bg-black hover:bg-black/80 text-white cursor-pointer shadow-sm'
-                    : 'bg-black/5 text-black/40 border border-black/10 cursor-not-allowed'
+                    ? 'bg-primary hover:bg-[#e02d77] text-white cursor-pointer shadow-lg shadow-primary/30 active:scale-[0.98]'
+                    : 'bg-foreground/[0.05] text-foreground/35 border border-foreground/10 cursor-not-allowed'
                 }`}
               >
                 {selectedRetakeIndexes.length === 0
-                  ? 'Select a photo to retake'
+                  ? 'Select a shot to retake'
                   : `Retake ${selectedRetakeIndexes.length} selected ${selectedRetakeIndexes.length === 1 ? 'shot' : 'shots'}`}
               </button>
 
@@ -1084,14 +1096,14 @@ export default function Edit() {
                 <button
                   type="button"
                   onClick={handleRetakeAll}
-                  className="text-black/50 hover:text-black font-medium py-1 cursor-pointer transition-colors"
+                  className="text-foreground/50 hover:text-foreground font-semibold py-1 cursor-pointer transition-colors"
                 >
                   Retake all shots
                 </button>
                 <button
                   type="button"
                   onClick={() => setShowRetakeModal(false)}
-                  className="text-black/50 hover:text-black font-medium py-1 cursor-pointer transition-colors"
+                  className="text-foreground/50 hover:text-foreground font-semibold py-1 cursor-pointer transition-colors"
                 >
                   Cancel
                 </button>
