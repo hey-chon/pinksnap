@@ -111,27 +111,27 @@ function ArtisanThumbnailCard({
       onClick={onClick}
       data-testid={`button-artisan-${template.id}`}
       aria-pressed={isSelected}
-      className={`group relative flex flex-col items-center justify-between p-2 rounded-xl transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 ${
+      className={`group relative flex flex-col items-center justify-between p-2 rounded-2xl transition-all duration-150 focus:outline-none cursor-pointer ${
         isSelected
-          ? 'bg-primary/10 ring-2 ring-primary shadow-md shadow-primary/25'
-          : 'bg-foreground/[0.03] hover:bg-foreground/[0.06] ring-1 ring-foreground/10 hover:ring-primary/40'
+          ? 'bg-primary/[0.08] border-2 border-primary ring-2 ring-primary/20 shadow-md'
+          : 'bg-white hover:bg-foreground/[0.02] border border-foreground/10 hover:border-foreground/25 shadow-sm'
       }`}
     >
       <div className="w-full flex items-center justify-center py-1.5 min-h-[145px]">
-        <div className="rounded-[4px] overflow-hidden shadow-md bg-black/5 flex items-center justify-center border border-black/10">
+        <div className="rounded-[4px] overflow-hidden shadow-sm bg-black/5 flex items-center justify-center border border-black/10">
           <canvas ref={canvasRef} className="block pointer-events-none w-auto max-h-[145px] object-contain" />
         </div>
       </div>
-      <div className="mt-1.5 text-center w-full px-0.5">
-        <span className={`block text-[10.5px] font-black truncate leading-tight ${isSelected ? 'text-primary' : 'text-foreground/85'}`}>
+      <div className="mt-1.5 text-center w-full px-1 pb-0.5">
+        <span className={`block text-[11px] font-black truncate leading-tight ${isSelected ? 'text-primary' : 'text-foreground'}`}>
           {template.label}
         </span>
-        <span className="block text-[8.5px] text-foreground/45 truncate leading-tight mt-0.5">
-          {template.slots.length} photos
+        <span className="block text-[9px] font-bold text-foreground/45 uppercase tracking-wider truncate leading-tight mt-0.5">
+          {template.slots.length} shots
         </span>
       </div>
       {isSelected && (
-        <div className="absolute top-1.5 right-1.5 w-4 h-4 bg-primary rounded-full flex items-center justify-center shadow-md ring-2 ring-white z-20">
+        <div className="absolute top-2 right-2 w-4 h-4 bg-primary rounded-full flex items-center justify-center shadow-md ring-2 ring-white z-20">
           <Check className="w-2.5 h-2.5 text-white stroke-[3]" />
         </div>
       )}
@@ -175,10 +175,10 @@ function FrameThumbnailCard({
       onClick={onClick}
       data-testid={`button-frame-${option.id}`}
       aria-pressed={isSelected}
-      className={`group relative flex flex-col items-center justify-between p-2 rounded-xl transition-all duration-200 focus:outline-none ${
+      className={`group relative flex flex-col items-center justify-between p-2 rounded-2xl transition-all duration-150 focus:outline-none cursor-pointer ${
         isSelected
-          ? 'bg-primary/10 ring-2 ring-primary shadow-md shadow-primary/25'
-          : 'bg-foreground/[0.03] hover:bg-foreground/[0.06] ring-1 ring-foreground/10 hover:ring-primary/40'
+          ? 'bg-primary/[0.08] border-2 border-primary ring-2 ring-primary/20 shadow-md'
+          : 'bg-white hover:bg-foreground/[0.02] border border-foreground/10 hover:border-foreground/25 shadow-sm'
       }`}
     >
       <div className="w-full flex items-center justify-center py-1.5 min-h-[145px]">
@@ -186,7 +186,7 @@ function FrameThumbnailCard({
           {/* Theme Background */}
           <div className={`absolute inset-0 z-0 ${option.className}`} />
 
-          {/* Empty Photo Slots with subtle rounded corners and generous spacing */}
+          {/* Empty Photo Slots */}
           <div className={`relative z-10 grid gap-1.5 sm:gap-2 mx-auto ${miniGridClass}`}>
             {Array.from({ length: slotCount }).map((_, i) => (
               <div
@@ -204,17 +204,17 @@ function FrameThumbnailCard({
         </div>
       </div>
 
-      <div className="mt-1.5 text-center w-full px-0.5">
-        <span className={`block text-[10.5px] font-black truncate leading-tight ${isSelected ? 'text-primary' : 'text-foreground/85'}`}>
+      <div className="mt-1.5 text-center w-full px-1 pb-0.5">
+        <span className={`block text-[11px] font-black truncate leading-tight ${isSelected ? 'text-primary' : 'text-foreground'}`}>
           {option.label}
         </span>
-        <span className="block text-[8.5px] text-foreground/45 truncate leading-tight mt-0.5">
+        <span className="block text-[9px] font-bold text-foreground/45 uppercase tracking-wider truncate leading-tight mt-0.5">
           {option.note}
         </span>
       </div>
 
       {isSelected && (
-        <div className="absolute top-1.5 right-1.5 w-4 h-4 bg-primary rounded-full flex items-center justify-center shadow-md ring-2 ring-white z-20">
+        <div className="absolute top-2 right-2 w-4 h-4 bg-primary rounded-full flex items-center justify-center shadow-md ring-2 ring-white z-20">
           <Check className="w-2.5 h-2.5 text-white stroke-[3]" />
         </div>
       )}
