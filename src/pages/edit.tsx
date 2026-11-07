@@ -111,15 +111,15 @@ function ArtisanThumbnailCard({
       onClick={onClick}
       data-testid={`button-artisan-${template.id}`}
       aria-pressed={isSelected}
-      className={`group relative flex flex-col items-center justify-between p-2.5 rounded-2xl transition-all duration-200 focus:outline-none cursor-pointer ${
+      className={`group relative flex flex-col items-center justify-between p-2.5 rounded-2xl transition-colors duration-150 focus:outline-none cursor-pointer ${
         isSelected
-          ? 'bg-gradient-to-b from-primary/[0.08] to-primary/[0.02] border-2 border-primary ring-4 ring-primary/15 shadow-[0_8px_20px_rgba(245,61,137,0.22)] scale-[1.02]'
-          : 'bg-white dark:bg-zinc-850 hover:bg-foreground/[0.02] border border-black/10 dark:border-white/10 hover:border-foreground/30 shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:shadow-[0_6px_16px_rgba(0,0,0,0.08)]'
+          ? 'bg-primary/[0.08] border-2 border-primary ring-2 ring-primary/20 shadow-sm'
+          : 'bg-white dark:bg-zinc-800/90 hover:bg-foreground/[0.02] border-2 border-black/10 dark:border-white/10 hover:border-foreground/30 shadow-xs'
       }`}
     >
       <div className="w-full flex items-center justify-center py-2 min-h-[148px]">
-        <div className="rounded-[6px] overflow-hidden shadow-sm bg-black/[0.04] p-1 border border-black/10 flex items-center justify-center">
-          <canvas ref={canvasRef} className="block pointer-events-none w-auto max-h-[140px] object-contain rounded-[3px]" />
+        <div className="rounded-[4px] overflow-hidden shadow-sm bg-black/[0.04] p-1 border border-black/10 flex items-center justify-center">
+          <canvas ref={canvasRef} className="block pointer-events-none w-auto max-h-[140px] object-contain rounded-[2px]" />
         </div>
       </div>
       <div className="mt-1 text-center w-full px-1 pb-1">
@@ -175,10 +175,10 @@ function FrameThumbnailCard({
       onClick={onClick}
       data-testid={`button-frame-${option.id}`}
       aria-pressed={isSelected}
-      className={`group relative flex flex-col items-center justify-between p-2.5 rounded-2xl transition-all duration-200 focus:outline-none cursor-pointer ${
+      className={`group relative flex flex-col items-center justify-between p-2.5 rounded-2xl transition-colors duration-150 focus:outline-none cursor-pointer ${
         isSelected
-          ? 'bg-gradient-to-b from-primary/[0.08] to-primary/[0.02] border-2 border-primary ring-4 ring-primary/15 shadow-[0_8px_20px_rgba(245,61,137,0.22)] scale-[1.02]'
-          : 'bg-white dark:bg-zinc-850 hover:bg-foreground/[0.02] border border-black/10 dark:border-white/10 hover:border-foreground/30 shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:shadow-[0_6px_16px_rgba(0,0,0,0.08)]'
+          ? 'bg-primary/[0.08] border-2 border-primary ring-2 ring-primary/20 shadow-sm'
+          : 'bg-white dark:bg-zinc-800/90 hover:bg-foreground/[0.02] border-2 border-black/10 dark:border-white/10 hover:border-foreground/30 shadow-xs'
       }`}
     >
       <div className="w-full flex items-center justify-center py-2 min-h-[148px]">
@@ -677,10 +677,10 @@ export default function Edit() {
 
           {/* ── LEFT: Photobooth Viewing Stage (Strip preview is 100% untouched) ── */}
           <div 
-            className="w-full flex justify-center shrink-0 xl:w-auto xl:sticky xl:top-6"
+            className="w-full flex justify-center shrink-0 xl:w-[290px] xl:min-w-[290px] xl:sticky xl:top-6"
             onContextMenu={(e) => e.preventDefault()}
           >
-            <div className="relative p-5 sm:p-7 rounded-[32px] bg-white/80 dark:bg-zinc-900/80 backdrop-blur-2xl border border-black/10 dark:border-white/10 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.18)] flex flex-col items-center">
+            <div className="w-full max-w-[270px] sm:max-w-[290px] xl:w-[290px] relative p-5 sm:p-6 rounded-[32px] bg-white/80 dark:bg-zinc-900/80 backdrop-blur-2xl border border-black/10 dark:border-white/10 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.18)] flex flex-col items-center">
               
               {/* Studio Lightbox Hanging Clamp */}
               <div className="w-full max-w-[190px] mb-4 flex items-center justify-between px-3 py-1.5 rounded-xl bg-gradient-to-r from-zinc-200 via-zinc-100 to-zinc-200 dark:from-zinc-800 dark:via-zinc-700 dark:to-zinc-800 border border-black/15 dark:border-white/10 shadow-sm">
@@ -691,12 +691,10 @@ export default function Edit() {
                 <span className="w-1.5 h-1.5 rounded-full bg-zinc-400 dark:bg-zinc-500 shadow-inner" />
               </div>
 
-              {/* Exact Strip Container — completely preserved */}
+              {/* Exact Strip Container — sized to match screenshot */}
               {isArtisan ? (
-                <div className={`strip-shell relative overflow-hidden w-full p-3 sm:p-4 flex flex-col items-center justify-center shadow-[0_18px_45px_-10px_rgba(0,0,0,0.35)] ${shellClass}`}>
-                  <div className="rounded-sm overflow-hidden shadow-2xl border border-white/60 bg-black/5 w-full">
-                    <canvas ref={artisanCanvasRef} className="block pointer-events-none w-full h-auto" />
-                  </div>
+                <div className={`strip-shell relative overflow-hidden w-full shadow-[0_18px_45px_-10px_rgba(0,0,0,0.35)] rounded-[4px] mx-auto ${shellClass}`}>
+                  <canvas ref={artisanCanvasRef} className="block pointer-events-none w-full h-auto" />
                 </div>
               ) : (
                 <div ref={stripRef} className={`strip-shell relative overflow-hidden w-full xl:max-w-none p-3 sm:p-4 shadow-[0_18px_45px_-10px_rgba(0,0,0,0.35)] ${shellClass}`}>
@@ -834,14 +832,14 @@ export default function Edit() {
                         onClick={() => setFilter(option.id as FilterType)}
                         data-testid={`button-filter-${option.id}`}
                         aria-pressed={filter === option.id}
-                        className={`group relative flex flex-col items-center gap-1.5 p-1.5 rounded-xl transition-all duration-150 focus:outline-none active:scale-95 cursor-pointer ${
+                        className={`group relative flex flex-col items-center gap-1.5 p-1.5 rounded-xl transition-colors duration-150 focus:outline-none cursor-pointer ${
                           filter === option.id
-                            ? 'bg-primary/10 ring-2 ring-primary shadow-sm'
+                            ? 'bg-primary/10 ring-2 ring-primary shadow-xs'
                             : 'hover:bg-foreground/[0.04] opacity-75 hover:opacity-100'
                         }`}
                       >
                         <span
-                          className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full shadow-inner border flex items-center justify-center transition-transform group-hover:scale-110 ${
+                          className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full shadow-inner border flex items-center justify-center ${
                             filter === option.id ? 'border-primary ring-2 ring-primary/40' : 'border-black/15'
                           }`}
                           style={{ background: option.shadeGradient }}
@@ -892,14 +890,14 @@ export default function Edit() {
                         onClick={() => setFilter(option.id as FilterType)}
                         data-testid={`button-filter-${option.id}`}
                         aria-pressed={filter === option.id}
-                        className={`group relative flex flex-col items-center gap-1.5 p-1.5 rounded-xl transition-all duration-150 focus:outline-none active:scale-95 cursor-pointer ${
+                        className={`group relative flex flex-col items-center gap-1.5 p-1.5 rounded-xl transition-colors duration-150 focus:outline-none cursor-pointer ${
                           filter === option.id
-                            ? 'bg-primary/10 ring-2 ring-primary shadow-sm'
+                            ? 'bg-primary/10 ring-2 ring-primary shadow-xs'
                             : 'hover:bg-foreground/[0.04] opacity-75 hover:opacity-100'
                         }`}
                       >
                         <span
-                          className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full shadow-inner border flex items-center justify-center transition-transform group-hover:scale-110 ${
+                          className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full shadow-inner border flex items-center justify-center ${
                             filter === option.id ? 'border-primary ring-2 ring-primary/40' : 'border-black/15'
                           }`}
                           style={{ background: option.shadeGradient }}
