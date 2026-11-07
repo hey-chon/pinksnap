@@ -22,7 +22,7 @@ import {
   getArtisanTemplate,
   renderArtisanStrip,
 } from '@/lib/customization';
-import { RefreshCw, Download, Share2, Check, X } from 'lucide-react';
+import { RefreshCw, Download, Share2, Check, X, Film, Sparkles } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast.tsx';
 import { createGalleryPreview, createMemoryId, dataUrlToBlob, downloadImage } from '@/lib/image-utils';
 
@@ -111,28 +111,28 @@ function ArtisanThumbnailCard({
       onClick={onClick}
       data-testid={`button-artisan-${template.id}`}
       aria-pressed={isSelected}
-      className={`group relative flex flex-col items-center justify-between p-2 rounded-2xl transition-all duration-150 focus:outline-none cursor-pointer ${
+      className={`group relative flex flex-col items-center justify-between p-2.5 rounded-2xl transition-all duration-200 focus:outline-none cursor-pointer ${
         isSelected
-          ? 'bg-primary/[0.08] border-2 border-primary ring-2 ring-primary/20 shadow-md'
-          : 'bg-white hover:bg-foreground/[0.02] border border-foreground/10 hover:border-foreground/25 shadow-sm'
+          ? 'bg-gradient-to-b from-primary/[0.08] to-primary/[0.02] border-2 border-primary ring-4 ring-primary/15 shadow-[0_8px_20px_rgba(245,61,137,0.22)] scale-[1.02]'
+          : 'bg-white dark:bg-zinc-850 hover:bg-foreground/[0.02] border border-black/10 dark:border-white/10 hover:border-foreground/30 shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:shadow-[0_6px_16px_rgba(0,0,0,0.08)]'
       }`}
     >
-      <div className="w-full flex items-center justify-center py-1.5 min-h-[145px]">
-        <div className="rounded-[4px] overflow-hidden shadow-sm bg-black/5 flex items-center justify-center border border-black/10">
-          <canvas ref={canvasRef} className="block pointer-events-none w-auto max-h-[145px] object-contain" />
+      <div className="w-full flex items-center justify-center py-2 min-h-[148px]">
+        <div className="rounded-[6px] overflow-hidden shadow-sm bg-black/[0.04] p-1 border border-black/10 flex items-center justify-center">
+          <canvas ref={canvasRef} className="block pointer-events-none w-auto max-h-[140px] object-contain rounded-[3px]" />
         </div>
       </div>
-      <div className="mt-1.5 text-center w-full px-1 pb-0.5">
-        <span className={`block text-[11px] font-black truncate leading-tight ${isSelected ? 'text-primary' : 'text-foreground'}`}>
+      <div className="mt-1 text-center w-full px-1 pb-1">
+        <span className={`block text-[11.5px] font-black tracking-tight truncate leading-tight ${isSelected ? 'text-primary' : 'text-foreground'}`}>
           {template.label}
         </span>
-        <span className="block text-[9px] font-bold text-foreground/45 uppercase tracking-wider truncate leading-tight mt-0.5">
-          {template.slots.length} shots
+        <span className="inline-block text-[9px] font-bold text-foreground/50 tracking-wider uppercase leading-tight mt-1 px-1.5 py-0.5 rounded-md bg-foreground/[0.04]">
+          {template.slots.length} Photos
         </span>
       </div>
       {isSelected && (
-        <div className="absolute top-2 right-2 w-4 h-4 bg-primary rounded-full flex items-center justify-center shadow-md ring-2 ring-white z-20">
-          <Check className="w-2.5 h-2.5 text-white stroke-[3]" />
+        <div className="absolute top-2.5 right-2.5 w-5 h-5 bg-primary rounded-full flex items-center justify-center shadow-md ring-2 ring-white dark:ring-zinc-900 z-20">
+          <Check className="w-3 h-3 text-white stroke-[3]" />
         </div>
       )}
     </button>
@@ -151,37 +151,37 @@ function FrameThumbnailCard({
   onClick: () => void;
 }) {
   const matteBorder = option.dark
-    ? 'border border-white/35 bg-white/10 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.15)]'
-    : 'border border-black/20 bg-black/8 shadow-[inset_0_0_0_1px_rgba(0,0,0,0.08)]';
+    ? 'border border-white/35 bg-white/15 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.15)]'
+    : 'border border-black/20 bg-black/10 shadow-[inset_0_0_0_1px_rgba(0,0,0,0.08)]';
 
   const inkClass = option.dark ? 'strip-ink-light' : 'strip-ink-dark';
 
   const slotCount = layout === 'horizontal-3' ? 3 : 4;
 
   const miniGridClass = layout === 'vertical-4'
-    ? 'grid-cols-1 w-full max-w-[62px]'
+    ? 'grid-cols-1 w-full max-w-[58px]'
     : layout === 'quad-4'
-      ? 'grid-cols-2 w-full max-w-[84px]'
-      : 'grid-cols-3 w-full max-w-[102px]';
+      ? 'grid-cols-2 w-full max-w-[80px]'
+      : 'grid-cols-3 w-full max-w-[98px]';
 
   const miniShellClass = layout === 'vertical-4'
-    ? 'max-w-[80px]'
+    ? 'max-w-[76px]'
     : layout === 'quad-4'
-      ? 'max-w-[102px]'
-      : 'max-w-[120px]';
+      ? 'max-w-[98px]'
+      : 'max-w-[116px]';
 
   return (
     <button
       onClick={onClick}
       data-testid={`button-frame-${option.id}`}
       aria-pressed={isSelected}
-      className={`group relative flex flex-col items-center justify-between p-2 rounded-2xl transition-all duration-150 focus:outline-none cursor-pointer ${
+      className={`group relative flex flex-col items-center justify-between p-2.5 rounded-2xl transition-all duration-200 focus:outline-none cursor-pointer ${
         isSelected
-          ? 'bg-primary/[0.08] border-2 border-primary ring-2 ring-primary/20 shadow-md'
-          : 'bg-white hover:bg-foreground/[0.02] border border-foreground/10 hover:border-foreground/25 shadow-sm'
+          ? 'bg-gradient-to-b from-primary/[0.08] to-primary/[0.02] border-2 border-primary ring-4 ring-primary/15 shadow-[0_8px_20px_rgba(245,61,137,0.22)] scale-[1.02]'
+          : 'bg-white dark:bg-zinc-850 hover:bg-foreground/[0.02] border border-black/10 dark:border-white/10 hover:border-foreground/30 shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:shadow-[0_6px_16px_rgba(0,0,0,0.08)]'
       }`}
     >
-      <div className="w-full flex items-center justify-center py-1.5 min-h-[145px]">
+      <div className="w-full flex items-center justify-center py-2 min-h-[148px]">
         <div className={`relative overflow-hidden w-full p-2 rounded-[6px] ${miniShellClass} shadow-md border border-black/10`}>
           {/* Theme Background */}
           <div className={`absolute inset-0 z-0 ${option.className}`} />
@@ -204,18 +204,18 @@ function FrameThumbnailCard({
         </div>
       </div>
 
-      <div className="mt-1.5 text-center w-full px-1 pb-0.5">
-        <span className={`block text-[11px] font-black truncate leading-tight ${isSelected ? 'text-primary' : 'text-foreground'}`}>
+      <div className="mt-1 text-center w-full px-1 pb-1">
+        <span className={`block text-[11.5px] font-black tracking-tight truncate leading-tight ${isSelected ? 'text-primary' : 'text-foreground'}`}>
           {option.label}
         </span>
-        <span className="block text-[9px] font-bold text-foreground/45 uppercase tracking-wider truncate leading-tight mt-0.5">
+        <span className="inline-block text-[9px] font-bold text-foreground/50 tracking-wider uppercase leading-tight mt-1 px-1.5 py-0.5 rounded-md bg-foreground/[0.04]">
           {option.note}
         </span>
       </div>
 
       {isSelected && (
-        <div className="absolute top-2 right-2 w-4 h-4 bg-primary rounded-full flex items-center justify-center shadow-md ring-2 ring-white z-20">
-          <Check className="w-2.5 h-2.5 text-white stroke-[3]" />
+        <div className="absolute top-2.5 right-2.5 w-5 h-5 bg-primary rounded-full flex items-center justify-center shadow-md ring-2 ring-white dark:ring-zinc-900 z-20">
+          <Check className="w-3 h-3 text-white stroke-[3]" />
         </div>
       )}
     </button>
@@ -652,18 +652,24 @@ export default function Edit() {
   const inkClass = activeFrame.dark ? 'strip-ink-light' : 'strip-ink-dark';
 
   return (
-    <div className="flex flex-col h-dvh">
+    <div className="relative flex flex-col h-dvh overflow-hidden bg-[#faf7f9] dark:bg-[#121013]">
+      {/* Ambient photobooth studio overhead spotlight glow */}
+      <div className="pointer-events-none absolute -top-40 left-1/2 -translate-x-1/2 w-[720px] h-[520px] bg-gradient-to-b from-primary/15 via-primary/5 to-transparent rounded-full blur-[140px] -z-0" />
+
       <TopNav onBack={() => window.location.reload()} />
 
-      <main className="flex-1 overflow-y-auto flex flex-col items-center px-4 py-6 sm:px-6 sm:py-8">
+      <main className="relative z-10 flex-1 overflow-y-auto flex flex-col items-center px-4 py-6 sm:px-6 sm:py-8">
         {/* Booth Header */}
         <div className="text-center mb-6 sm:mb-8 w-full max-w-4xl">
-          <span className="booth-heading-kicker mb-3">Step 3 of 3 · Finishing Lab</span>
-          <h1 className="font-hero text-[2rem] leading-[1] sm:text-4xl md:text-5xl mt-3 mb-2.5">
-            <span className="text-foreground">FINISH YOUR </span><span className="text-primary">PRINT.</span>
+          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary font-black text-[10px] tracking-[0.2em] uppercase mb-3 shadow-xs">
+            <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+            <span>Step 3 of 3 · Finishing Atelier</span>
+          </div>
+          <h1 className="font-hero text-[2.2rem] leading-[0.96] sm:text-4xl md:text-5xl mt-2 mb-2 text-foreground">
+            CURATE YOUR <span className="text-primary">KEEPSAKE.</span>
           </h1>
-          <p className="text-[11px] sm:text-xs font-bold text-foreground/55 uppercase tracking-[.18em] sm:tracking-[.22em] leading-relaxed">
-            Select your favorite keepsake theme & analog filter
+          <p className="text-[11.5px] sm:text-xs font-semibold text-foreground/50 uppercase tracking-[0.2em] leading-relaxed">
+            Inspect your strip, calibrate analog film tone & select custom frame
           </p>
         </div>
 
@@ -674,18 +680,26 @@ export default function Edit() {
             className="w-full flex justify-center shrink-0 xl:w-auto xl:sticky xl:top-6"
             onContextMenu={(e) => e.preventDefault()}
           >
-            <div className="relative p-3.5 sm:p-5 rounded-3xl bg-foreground/[0.02] border border-foreground/10 shadow-sm flex flex-col items-center">
-              {/* Subtle top light slot / booth glass indicator */}
-              <div className="w-14 h-1 rounded-full bg-foreground/15 mb-3" />
+            <div className="relative p-5 sm:p-7 rounded-[32px] bg-white/80 dark:bg-zinc-900/80 backdrop-blur-2xl border border-black/10 dark:border-white/10 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.18)] flex flex-col items-center">
+              
+              {/* Studio Lightbox Hanging Clamp */}
+              <div className="w-full max-w-[190px] mb-4 flex items-center justify-between px-3 py-1.5 rounded-xl bg-gradient-to-r from-zinc-200 via-zinc-100 to-zinc-200 dark:from-zinc-800 dark:via-zinc-700 dark:to-zinc-800 border border-black/15 dark:border-white/10 shadow-sm">
+                <span className="w-1.5 h-1.5 rounded-full bg-zinc-400 dark:bg-zinc-500 shadow-inner" />
+                <span className="text-[8.5px] font-mono font-black uppercase tracking-[0.2em] text-foreground/70">
+                  PINKSNAP ARCHIVE
+                </span>
+                <span className="w-1.5 h-1.5 rounded-full bg-zinc-400 dark:bg-zinc-500 shadow-inner" />
+              </div>
 
+              {/* Exact Strip Container — completely preserved */}
               {isArtisan ? (
-                <div className={`strip-shell relative overflow-hidden w-full p-3 sm:p-4 flex flex-col items-center justify-center ${shellClass}`}>
+                <div className={`strip-shell relative overflow-hidden w-full p-3 sm:p-4 flex flex-col items-center justify-center shadow-[0_18px_45px_-10px_rgba(0,0,0,0.35)] ${shellClass}`}>
                   <div className="rounded-sm overflow-hidden shadow-2xl border border-white/60 bg-black/5 w-full">
                     <canvas ref={artisanCanvasRef} className="block pointer-events-none w-full h-auto" />
                   </div>
                 </div>
               ) : (
-                <div ref={stripRef} className={`strip-shell relative overflow-hidden w-full xl:max-w-none p-3 sm:p-4 ${shellClass}`}>
+                <div ref={stripRef} className={`strip-shell relative overflow-hidden w-full xl:max-w-none p-3 sm:p-4 shadow-[0_18px_45px_-10px_rgba(0,0,0,0.35)] ${shellClass}`}>
                   <div className={`absolute inset-0 z-0 ${activeFrame.className}`} />
 
                   <div className={`relative z-10 grid gap-2.5 sm:gap-3 mx-auto ${gridClass}`}>
@@ -705,36 +719,50 @@ export default function Edit() {
                   </div>
                 </div>
               )}
+
+              {/* Lightbox inspection status badge */}
+              <div className="mt-4 flex items-center gap-1.5 px-3 py-1 rounded-full bg-foreground/[0.04] border border-foreground/8">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="text-[9px] font-mono font-bold uppercase tracking-wider text-foreground/60">
+                  PRINT READY · 300 DPI
+                </span>
+              </div>
             </div>
           </div>
 
           {/* ── RIGHT: Physical Photobooth Console ── */}
-          <div className="flex-1 w-full bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl rounded-3xl border border-foreground/10 shadow-xl p-5 sm:p-7 flex flex-col">
+          <div className="flex-1 w-full bg-white/85 dark:bg-zinc-900/85 backdrop-blur-2xl rounded-[32px] border border-black/10 dark:border-white/10 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.12)] p-6 sm:p-8 flex flex-col">
 
-            {/* Console HUD bar */}
-            <div className="flex items-center justify-between pb-4 mb-5 border-b border-foreground/8">
-              <div className="flex items-center gap-2.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-primary animate-pulse shadow-sm shadow-primary/50" />
+            {/* Atelier Studio HUD Bar */}
+            <div className="flex flex-wrap items-center justify-between gap-3 pb-5 mb-6 border-b border-foreground/10">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-primary to-[#d81b60] flex items-center justify-center text-white shadow-md shadow-primary/25">
+                  <Sparkles className="w-4 h-4" />
+                </div>
                 <div>
-                  <h2 className="text-xs sm:text-sm font-black uppercase tracking-[.18em] text-foreground">
-                    FINISHING CONSOLE
+                  <h2 className="text-sm font-black uppercase tracking-[0.16em] text-foreground">
+                    FINISHING ATELIER
                   </h2>
-                  <p className="text-[10px] font-medium text-foreground/45 tracking-wider uppercase">
-                    Select theme & tone
+                  <p className="text-[10.5px] font-medium text-foreground/50 tracking-wider uppercase">
+                    Curate your custom keepsake
                   </p>
                 </div>
               </div>
-              <span className="text-[10px] font-mono font-bold uppercase tracking-wider px-2.5 py-1 rounded-lg bg-foreground/[0.04] border border-foreground/10 text-foreground/70">
-                {shots.length} PHOTOS CAPTURED
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-mono font-bold uppercase tracking-wider px-3 py-1.5 rounded-xl bg-foreground/[0.04] border border-foreground/10 text-foreground/75">
+                  {shots.length} SHOTS CAPTURED
+                </span>
+              </div>
             </div>
 
-            {/* Segmented Collection Switch */}
-            <div className="mb-5">
-              <div className="flex items-center justify-between mb-2 px-0.5">
-                <span className="text-[10.5px] font-black uppercase tracking-[.18em] text-foreground/60">COLLECTION</span>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-primary">
-                  {category === 'artisan' ? 'Original Artisan Frames' : 'Classic Booth Editions'}
+            {/* Collection Tabs: Classic vs Artisan */}
+            <div className="mb-6">
+              <div className="flex items-center justify-between mb-2.5 px-1">
+                <span className="text-[10.5px] font-black uppercase tracking-[0.2em] text-foreground/60">
+                  FRAME COLLECTION
+                </span>
+                <span className="text-[10.5px] font-bold uppercase tracking-wider text-primary">
+                  {category === 'artisan' ? 'Artisan Originals (4)' : 'Classic Booth Editions (8)'}
                 </span>
               </div>
               <div className="grid grid-cols-2 p-1.5 rounded-2xl bg-foreground/[0.05] border border-foreground/8 gap-1.5">
@@ -743,34 +771,34 @@ export default function Edit() {
                   onClick={() => setCategory('booth')}
                   aria-pressed={category === 'booth'}
                   data-testid="button-category-booth"
-                  className={`py-2.5 px-4 rounded-xl text-xs font-black tracking-wider transition-all duration-150 flex items-center justify-center gap-2 cursor-pointer ${
+                  className={`py-3 px-4 rounded-xl text-xs font-black tracking-wider transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer ${
                     category === 'booth'
-                      ? 'bg-white text-primary shadow-sm border border-black/5'
-                      : 'text-foreground/60 hover:text-foreground hover:bg-foreground/[0.02]'
+                      ? 'bg-white dark:bg-zinc-800 text-primary shadow-[0_4px_12px_rgba(0,0,0,0.06)] border border-black/5 dark:border-white/10'
+                      : 'text-foreground/60 hover:text-foreground hover:bg-foreground/[0.03]'
                   }`}
                 >
-                  PINKSNAP
+                  PINKSNAP CLASSIC
                 </button>
                 <button
                   type="button"
                   onClick={() => setCategory('artisan')}
                   aria-pressed={category === 'artisan'}
                   data-testid="button-category-artisan"
-                  className={`py-2.5 px-4 rounded-xl text-xs font-black tracking-wider transition-all duration-150 flex items-center justify-center gap-2 cursor-pointer ${
+                  className={`py-3 px-4 rounded-xl text-xs font-black tracking-wider transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer ${
                     category === 'artisan'
-                      ? 'bg-white text-primary shadow-sm border border-black/5'
-                      : 'text-foreground/60 hover:text-foreground hover:bg-foreground/[0.02]'
+                      ? 'bg-white dark:bg-zinc-800 text-primary shadow-[0_4px_12px_rgba(0,0,0,0.06)] border border-black/5 dark:border-white/10'
+                      : 'text-foreground/60 hover:text-foreground hover:bg-foreground/[0.03]'
                   }`}
                 >
-                  ARTISAN
+                  ARTISAN ARCHIVE
                 </button>
               </div>
             </div>
 
+            {/* Theme Swatch Deck */}
             {isArtisan ? (
-              /* ── Artisan template picker ── */
-              <div className="mb-6">
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3 mb-5" onContextMenu={(e) => e.preventDefault()}>
+              <div className="mb-7">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-3.5 mb-6" onContextMenu={(e) => e.preventDefault()}>
                   {ARTISAN_TEMPLATES.map((tpl) => (
                     <ArtisanThumbnailCard
                       key={tpl.id}
@@ -786,17 +814,20 @@ export default function Edit() {
                   ))}
                 </div>
 
-                {/* Film look dial rack */}
-                <div className="p-3.5 sm:p-4 rounded-2xl bg-foreground/[0.03] border border-foreground/8">
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-[10.5px] font-black uppercase tracking-[.18em] text-foreground/75">
-                      FILM LOOK & TONE
-                    </span>
-                    <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-primary px-2.5 py-0.5 rounded-md bg-primary/10 border border-primary/20">
+                {/* Analog Film Look Palette */}
+                <div className="p-4 sm:p-5 rounded-2xl bg-foreground/[0.03] border border-foreground/8 shadow-inner">
+                  <div className="flex items-center justify-between mb-3.5">
+                    <div className="flex items-center gap-2">
+                      <Film className="w-3.5 h-3.5 text-primary" />
+                      <span className="text-[11px] font-black uppercase tracking-[0.18em] text-foreground/80">
+                        ANALOG FILM EMULSION
+                      </span>
+                    </div>
+                    <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-primary px-2.5 py-0.5 rounded-lg bg-primary/10 border border-primary/20">
                       {getFilterOption(filter).label}
                     </span>
                   </div>
-                  <div className="grid grid-cols-5 sm:grid-cols-9 gap-1.5 sm:gap-2">
+                  <div className="grid grid-cols-5 sm:grid-cols-9 gap-2">
                     {FILTER_OPTIONS.map((option) => (
                       <button
                         key={option.id}
@@ -810,7 +841,7 @@ export default function Edit() {
                         }`}
                       >
                         <span
-                          className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full shadow-inner border flex items-center justify-center transition-transform group-hover:scale-105 ${
+                          className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full shadow-inner border flex items-center justify-center transition-transform group-hover:scale-110 ${
                             filter === option.id ? 'border-primary ring-2 ring-primary/40' : 'border-black/15'
                           }`}
                           style={{ background: option.shadeGradient }}
@@ -828,9 +859,8 @@ export default function Edit() {
                 </div>
               </div>
             ) : (
-              /* ── Standard theme picker ── */
-              <div className="mb-6">
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3 mb-5" onContextMenu={(e) => e.preventDefault()}>
+              <div className="mb-7">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-3.5 mb-6" onContextMenu={(e) => e.preventDefault()}>
                   {visibleFrames.map((option) => (
                     <FrameThumbnailCard
                       key={option.id}
@@ -842,17 +872,20 @@ export default function Edit() {
                   ))}
                 </div>
 
-                {/* Film look dial rack */}
-                <div className="p-3.5 sm:p-4 rounded-2xl bg-foreground/[0.03] border border-foreground/8">
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-[10.5px] font-black uppercase tracking-[.18em] text-foreground/75">
-                      FILM LOOK & TONE
-                    </span>
-                    <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-primary px-2.5 py-0.5 rounded-md bg-primary/10 border border-primary/20">
+                {/* Analog Film Look Palette */}
+                <div className="p-4 sm:p-5 rounded-2xl bg-foreground/[0.03] border border-foreground/8 shadow-inner">
+                  <div className="flex items-center justify-between mb-3.5">
+                    <div className="flex items-center gap-2">
+                      <Film className="w-3.5 h-3.5 text-primary" />
+                      <span className="text-[11px] font-black uppercase tracking-[0.18em] text-foreground/80">
+                        ANALOG FILM EMULSION
+                      </span>
+                    </div>
+                    <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-primary px-2.5 py-0.5 rounded-lg bg-primary/10 border border-primary/20">
                       {getFilterOption(filter).label}
                     </span>
                   </div>
-                  <div className="grid grid-cols-5 sm:grid-cols-9 gap-1.5 sm:gap-2">
+                  <div className="grid grid-cols-5 sm:grid-cols-9 gap-2">
                     {FILTER_OPTIONS.map((option) => (
                       <button
                         key={option.id}
@@ -866,7 +899,7 @@ export default function Edit() {
                         }`}
                       >
                         <span
-                          className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full shadow-inner border flex items-center justify-center transition-transform group-hover:scale-105 ${
+                          className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full shadow-inner border flex items-center justify-center transition-transform group-hover:scale-110 ${
                             filter === option.id ? 'border-primary ring-2 ring-primary/40' : 'border-black/15'
                           }`}
                           style={{ background: option.shadeGradient }}
@@ -885,12 +918,12 @@ export default function Edit() {
               </div>
             )}
 
-            {/* Tactile console action buttons */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-auto pt-2">
+            {/* Atelier Action Suite */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 mt-auto pt-2">
               <button
                 onClick={handleOpenRetakeModal}
                 data-testid="button-retake"
-                className="col-span-1 sm:col-span-2 py-3 px-4 bg-foreground/[0.04] hover:bg-foreground/[0.08] text-foreground/80 hover:text-foreground font-black text-xs sm:text-sm tracking-wider uppercase rounded-2xl flex items-center justify-center gap-2 transition-all active:scale-[0.99] border border-foreground/10 cursor-pointer"
+                className="col-span-1 sm:col-span-2 py-3.5 px-4 bg-foreground/[0.03] hover:bg-foreground/[0.07] text-foreground/80 hover:text-foreground font-black text-xs sm:text-sm tracking-wider uppercase rounded-2xl flex items-center justify-center gap-2.5 transition-all active:scale-[0.99] border border-foreground/10 cursor-pointer"
               >
                 <RefreshCw className="w-4 h-4 text-primary" /> RETAKE A SHOT
               </button>
@@ -899,18 +932,18 @@ export default function Edit() {
                 onClick={handleShare}
                 disabled={isSaving}
                 data-testid="button-share"
-                className="py-4 px-4 bg-white hover:bg-foreground/[0.02] text-foreground font-black text-xs sm:text-sm tracking-wider uppercase rounded-2xl flex items-center justify-center gap-2 border border-foreground/15 hover:border-foreground/30 shadow-sm transition-all active:scale-[0.98] disabled:opacity-50 cursor-pointer"
+                className="py-4 px-5 bg-white dark:bg-zinc-800 hover:bg-foreground/[0.03] text-foreground font-black text-xs sm:text-sm tracking-wider uppercase rounded-2xl flex items-center justify-center gap-2 border border-foreground/15 hover:border-foreground/30 shadow-sm transition-all active:scale-[0.98] disabled:opacity-50 cursor-pointer"
               >
-                <Share2 className="w-4 h-4 text-primary" /> SHARE
+                <Share2 className="w-4 h-4 text-primary" /> SHARE STRIP
               </button>
 
               <button
                 onClick={() => handleSave(false)}
                 disabled={isSaving}
                 data-testid="button-save"
-                className="py-4 px-4 bg-primary hover:bg-[#e02d77] text-white font-black text-xs sm:text-sm tracking-wider uppercase rounded-2xl flex items-center justify-center gap-2 shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40 transition-all active:scale-[0.98] disabled:opacity-50 cursor-pointer"
+                className="py-4 px-5 bg-gradient-to-r from-[#f53d89] via-[#ff4d94] to-[#f53d89] text-white font-black text-xs sm:text-sm tracking-wider uppercase rounded-2xl flex items-center justify-center gap-2.5 shadow-[0_14px_30px_-8px_rgba(245,61,137,0.5)] hover:shadow-[0_18px_36px_-8px_rgba(245,61,137,0.65)] hover:scale-[1.01] active:scale-[0.98] transition-all disabled:opacity-50 cursor-pointer border border-white/20"
               >
-                <Download className="w-4 h-4" /> {isSaving ? 'PREPARING PRINT...' : 'SAVE & PRINT'}
+                <Download className="w-4 h-4" /> {isSaving ? 'PREPARING PRINT...' : 'PRINT & SAVE STRIP'}
               </button>
             </div>
 
