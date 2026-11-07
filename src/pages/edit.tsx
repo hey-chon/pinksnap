@@ -640,7 +640,7 @@ export default function Edit() {
   if (isArtisan && activeArtisan) {
     const aspect = activeArtisan.nw / activeArtisan.nh;
     if (aspect < 0.6) {
-      shellClass = 'max-w-[125px] sm:max-w-[158px] xl:max-w-[175px]';
+      shellClass = 'max-w-[124px] sm:max-w-[162px] xl:max-w-[180px]';
     } else if (aspect < 1.0) {
       shellClass = 'max-w-[170px] sm:max-w-[218px] xl:max-w-[248px]';
     } else {
@@ -675,57 +675,36 @@ export default function Edit() {
 
         <div className="flex flex-col xl:flex-row gap-6 sm:gap-8 xl:gap-10 w-full max-w-7xl items-center xl:items-start justify-center pb-14">
 
-          {/* ── LEFT: Photobooth Viewing Stage (Strip preview is 100% untouched) ── */}
+          {/* ── LEFT: Preview (Clean photobooth strip display) ── */}
           <div 
-            className="w-full flex justify-center shrink-0 xl:w-[290px] xl:min-w-[290px] xl:sticky xl:top-6"
+            className="edit-card w-full flex justify-center shrink-0 xl:w-auto xl:sticky xl:top-6"
             onContextMenu={(e) => e.preventDefault()}
           >
-            <div className="w-full max-w-[270px] sm:max-w-[290px] xl:w-[290px] relative p-5 sm:p-6 rounded-[32px] bg-white/80 dark:bg-zinc-900/80 backdrop-blur-2xl border border-black/10 dark:border-white/10 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.18)] flex flex-col items-center">
-              
-              {/* Studio Lightbox Hanging Clamp */}
-              <div className="w-full max-w-[190px] mb-4 flex items-center justify-between px-3 py-1.5 rounded-xl bg-gradient-to-r from-zinc-200 via-zinc-100 to-zinc-200 dark:from-zinc-800 dark:via-zinc-700 dark:to-zinc-800 border border-black/15 dark:border-white/10 shadow-sm">
-                <span className="w-1.5 h-1.5 rounded-full bg-zinc-400 dark:bg-zinc-500 shadow-inner" />
-                <span className="text-[8.5px] font-mono font-black uppercase tracking-[0.2em] text-foreground/70">
-                  PINKSNAP ARCHIVE
-                </span>
-                <span className="w-1.5 h-1.5 rounded-full bg-zinc-400 dark:bg-zinc-500 shadow-inner" />
+            {isArtisan ? (
+              <div className={`strip-shell relative overflow-hidden w-full ${shellClass}`}>
+                <canvas ref={artisanCanvasRef} className="block pointer-events-none w-full h-auto" />
               </div>
+            ) : (
+              <div ref={stripRef} className={`strip-shell relative overflow-hidden w-full xl:max-w-none p-3 sm:p-4 ${shellClass}`}>
+                <div className={`absolute inset-0 z-0 ${activeFrame.className}`} />
 
-              {/* Exact Strip Container — sized to match screenshot */}
-              {isArtisan ? (
-                <div className={`strip-shell relative overflow-hidden w-full shadow-[0_18px_45px_-10px_rgba(0,0,0,0.35)] rounded-[4px] mx-auto ${shellClass}`}>
-                  <canvas ref={artisanCanvasRef} className="block pointer-events-none w-full h-auto" />
+                <div className={`relative z-10 grid gap-2.5 sm:gap-3 mx-auto ${gridClass}`}>
+                  {shots.map((shot, i) => (
+                    <div key={i} className={`strip-photo ${matteClass}`}>
+                      <img src={shot} alt={`Shot ${i + 1}`} className={stripFilterClass} />
+                    </div>
+                  ))}
                 </div>
-              ) : (
-                <div ref={stripRef} className={`strip-shell relative overflow-hidden w-full xl:max-w-none p-3 sm:p-4 shadow-[0_18px_45px_-10px_rgba(0,0,0,0.35)] ${shellClass}`}>
-                  <div className={`absolute inset-0 z-0 ${activeFrame.className}`} />
 
-                  <div className={`relative z-10 grid gap-2.5 sm:gap-3 mx-auto ${gridClass}`}>
-                    {shots.map((shot, i) => (
-                      <div key={i} className={`strip-photo ${matteClass}`}>
-                        <img src={shot} alt={`Shot ${i + 1}`} className={stripFilterClass} />
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className={`strip-footer relative z-10 pt-4 pb-2 text-center font-black ${inkClass}`}>
-                    <span className="block text-[15px] sm:text-[17px] leading-[0.95]">PINK</span>
-                    <span className="block text-[15px] sm:text-[17px] leading-[0.95] strip-brand-accent">SNAP</span>
-                    <span className="strip-caption block pt-1.5 text-[7.5px] sm:text-[8.5px] font-extrabold tracking-[0.24em] uppercase opacity-75">
-                      {formatStripDate(sessionDate)}
-                    </span>
-                  </div>
+                <div className={`strip-footer relative z-10 pt-4 pb-2 text-center font-black ${inkClass}`}>
+                  <span className="block text-[15px] sm:text-[17px] leading-[0.95]">PINK</span>
+                  <span className="block text-[15px] sm:text-[17px] leading-[0.95] strip-brand-accent">SNAP</span>
+                  <span className="strip-caption block pt-1.5 text-[7.5px] sm:text-[8.5px] font-extrabold tracking-[0.24em] uppercase opacity-75">
+                    {formatStripDate(sessionDate)}
+                  </span>
                 </div>
-              )}
-
-              {/* Lightbox inspection status badge */}
-              <div className="mt-4 flex items-center gap-1.5 px-3 py-1 rounded-full bg-foreground/[0.04] border border-foreground/8">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-[9px] font-mono font-bold uppercase tracking-wider text-foreground/60">
-                  PRINT READY · 300 DPI
-                </span>
               </div>
-            </div>
+            )}
           </div>
 
           {/* ── RIGHT: Physical Photobooth Console ── */}
