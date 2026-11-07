@@ -22,7 +22,7 @@ import {
   getArtisanTemplate,
   renderArtisanStrip,
 } from '@/lib/customization';
-import { RefreshCw, Download, Share2, Check, X, Film, Sparkles } from 'lucide-react';
+import { RefreshCw, Download, Share2, Check, X, Film } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast.tsx';
 import { createGalleryPreview, createMemoryId, dataUrlToBlob, downloadImage } from '@/lib/image-utils';
 
@@ -658,14 +658,10 @@ export default function Edit() {
 
       <TopNav onBack={() => window.location.reload()} />
 
-      <main className="relative z-10 flex-1 overflow-y-auto flex flex-col items-center px-4 py-6 sm:px-6 sm:py-8">
+      <main className="relative z-10 flex-1 overflow-y-auto flex flex-col items-center px-4 pt-3 pb-6 sm:px-6 sm:pt-4 sm:pb-8">
         {/* Booth Header */}
-        <div className="text-center mb-6 sm:mb-8 w-full max-w-4xl">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary font-black text-[10px] tracking-[0.2em] uppercase mb-3 shadow-xs">
-            <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-            <span>Step 3 of 3 · Finishing Atelier</span>
-          </div>
-          <h1 className="font-hero text-[2.2rem] leading-[0.96] sm:text-4xl md:text-5xl mt-2 mb-2 text-foreground">
+        <div className="text-center mb-4 sm:mb-6 w-full max-w-4xl">
+          <h1 className="font-hero text-[2.2rem] leading-[0.96] sm:text-4xl md:text-5xl mb-2 text-foreground">
             CURATE YOUR <span className="text-primary">KEEPSAKE.</span>
           </h1>
           <p className="text-[11.5px] sm:text-xs font-semibold text-foreground/50 uppercase tracking-[0.2em] leading-relaxed">
@@ -675,64 +671,63 @@ export default function Edit() {
 
         <div className="flex flex-col xl:flex-row gap-6 sm:gap-8 xl:gap-10 w-full max-w-7xl items-center xl:items-start justify-center pb-14">
 
-          {/* ── LEFT: Preview (Clean photobooth strip display) ── */}
+          {/* ── LEFT: Preview Container (Lightbox easel housing) ── */}
           <div 
-            className="edit-card w-full flex justify-center shrink-0 xl:w-auto xl:sticky xl:top-6"
+            className="w-full flex justify-center shrink-0 xl:w-auto xl:sticky xl:top-6"
             onContextMenu={(e) => e.preventDefault()}
           >
-            {isArtisan ? (
-              <div className={`strip-shell relative overflow-hidden w-full ${shellClass}`}>
-                <canvas ref={artisanCanvasRef} className="block pointer-events-none w-full h-auto" />
+            <div className="relative p-5 sm:p-6 rounded-[32px] bg-white/80 dark:bg-zinc-900/80 backdrop-blur-2xl border border-black/10 dark:border-white/10 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.18)] flex flex-col items-center">
+              
+              {/* Studio Lightbox Hanging Clamp */}
+              <div className="w-full max-w-[190px] mb-4 flex items-center justify-between px-3 py-1.5 rounded-xl bg-gradient-to-r from-zinc-200 via-zinc-100 to-zinc-200 dark:from-zinc-800 dark:via-zinc-700 dark:to-zinc-800 border border-black/15 dark:border-white/10 shadow-sm">
+                <span className="w-1.5 h-1.5 rounded-full bg-zinc-400 dark:bg-zinc-500 shadow-inner" />
+                <span className="text-[8.5px] font-mono font-black uppercase tracking-[0.2em] text-foreground/70">
+                  PINKSNAP ARCHIVE
+                </span>
+                <span className="w-1.5 h-1.5 rounded-full bg-zinc-400 dark:bg-zinc-500 shadow-inner" />
               </div>
-            ) : (
-              <div ref={stripRef} className={`strip-shell relative overflow-hidden w-full xl:max-w-none p-3 sm:p-4 ${shellClass}`}>
-                <div className={`absolute inset-0 z-0 ${activeFrame.className}`} />
 
-                <div className={`relative z-10 grid gap-2.5 sm:gap-3 mx-auto ${gridClass}`}>
-                  {shots.map((shot, i) => (
-                    <div key={i} className={`strip-photo ${matteClass}`}>
-                      <img src={shot} alt={`Shot ${i + 1}`} className={stripFilterClass} />
-                    </div>
-                  ))}
+              {/* Exact Strip Container — naturally sized without stretching */}
+              {isArtisan ? (
+                <div className={`strip-shell relative overflow-hidden shadow-[0_18px_45px_-10px_rgba(0,0,0,0.35)] rounded-[4px] mx-auto ${shellClass}`}>
+                  <canvas ref={artisanCanvasRef} className="block pointer-events-none w-full h-auto" />
                 </div>
+              ) : (
+                <div ref={stripRef} className={`strip-shell relative overflow-hidden p-3 sm:p-4 shadow-[0_18px_45px_-10px_rgba(0,0,0,0.35)] ${shellClass}`}>
+                  <div className={`absolute inset-0 z-0 ${activeFrame.className}`} />
 
-                <div className={`strip-footer relative z-10 pt-4 pb-2 text-center font-black ${inkClass}`}>
-                  <span className="block text-[15px] sm:text-[17px] leading-[0.95]">PINK</span>
-                  <span className="block text-[15px] sm:text-[17px] leading-[0.95] strip-brand-accent">SNAP</span>
-                  <span className="strip-caption block pt-1.5 text-[7.5px] sm:text-[8.5px] font-extrabold tracking-[0.24em] uppercase opacity-75">
-                    {formatStripDate(sessionDate)}
-                  </span>
-                </div>
-              </div>
-            )}
-          </div>
+                  <div className={`relative z-10 grid gap-2.5 sm:gap-3 mx-auto ${gridClass}`}>
+                    {shots.map((shot, i) => (
+                      <div key={i} className={`strip-photo ${matteClass}`}>
+                        <img src={shot} alt={`Shot ${i + 1}`} className={stripFilterClass} />
+                      </div>
+                    ))}
+                  </div>
 
-          {/* ── RIGHT: Physical Photobooth Console ── */}
-          <div className="flex-1 w-full bg-white/85 dark:bg-zinc-900/85 backdrop-blur-2xl rounded-[32px] border border-black/10 dark:border-white/10 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.12)] p-6 sm:p-8 flex flex-col">
+                  <div className={`strip-footer relative z-10 pt-4 pb-2 text-center font-black ${inkClass}`}>
+                    <span className="block text-[15px] sm:text-[17px] leading-[0.95]">PINK</span>
+                    <span className="block text-[15px] sm:text-[17px] leading-[0.95] strip-brand-accent">SNAP</span>
+                    <span className="strip-caption block pt-1.5 text-[7.5px] sm:text-[8.5px] font-extrabold tracking-[0.24em] uppercase opacity-75">
+                      {formatStripDate(sessionDate)}
+                    </span>
+                  </div>
+                </div>
+              )}
 
-            {/* Atelier Studio HUD Bar */}
-            <div className="flex flex-wrap items-center justify-between gap-3 pb-5 mb-6 border-b border-foreground/10">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-primary to-[#d81b60] flex items-center justify-center text-white shadow-md shadow-primary/25">
-                  <Sparkles className="w-4 h-4" />
-                </div>
-                <div>
-                  <h2 className="text-sm font-black uppercase tracking-[0.16em] text-foreground">
-                    FINISHING ATELIER
-                  </h2>
-                  <p className="text-[10.5px] font-medium text-foreground/50 tracking-wider uppercase">
-                    Curate your custom keepsake
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] font-mono font-bold uppercase tracking-wider px-3 py-1.5 rounded-xl bg-foreground/[0.04] border border-foreground/10 text-foreground/75">
-                  {shots.length} SHOTS CAPTURED
+              {/* Lightbox inspection status badge */}
+              <div className="mt-4 flex items-center gap-1.5 px-3 py-1 rounded-full bg-foreground/[0.04] border border-foreground/8">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="text-[9px] font-mono font-bold uppercase tracking-wider text-foreground/60">
+                  PRINT READY · 300 DPI
                 </span>
               </div>
             </div>
+          </div>
 
-            {/* Collection Tabs: Classic vs Artisan */}
+          {/* ── RIGHT: Physical Photobooth Console ── */}
+          <div className="flex-1 w-full bg-white/85 dark:bg-zinc-900/85 backdrop-blur-2xl rounded-[32px] border border-black/10 dark:border-white/10 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.12)] p-5 sm:p-7 flex flex-col">
+
+            {/* Collection Tabs: Classic vs Artisan — moved right to top */}
             <div className="mb-6">
               <div className="flex items-center justify-between mb-2.5 px-1">
                 <span className="text-[10.5px] font-black uppercase tracking-[0.2em] text-foreground/60">
