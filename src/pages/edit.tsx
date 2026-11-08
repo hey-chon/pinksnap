@@ -658,9 +658,9 @@ export default function Edit() {
 
       <TopNav onBack={() => window.location.reload()} />
 
-      <main className="relative z-10 flex-1 overflow-y-auto flex flex-col items-center px-4 pt-3 pb-6 sm:px-6 sm:pt-4 sm:pb-8">
+      <main className="relative z-10 flex-1 overflow-y-auto xl:overflow-hidden flex flex-col items-center px-4 pt-3 pb-6 sm:px-6 sm:pt-4 sm:pb-6">
         {/* Booth Header */}
-        <div className="text-center mb-4 sm:mb-6 w-full max-w-4xl">
+        <div className="text-center mb-4 sm:mb-5 w-full max-w-4xl">
           <h1 className="font-hero text-[2.2rem] leading-[0.96] sm:text-4xl md:text-5xl mb-2 text-foreground">
             CURATE YOUR <span className="text-primary">KEEPSAKE.</span>
           </h1>
@@ -669,11 +669,11 @@ export default function Edit() {
           </p>
         </div>
 
-        <div className="flex flex-col xl:flex-row gap-6 sm:gap-8 xl:gap-10 w-full max-w-7xl items-center xl:items-start justify-center pb-14">
+        <div className="flex flex-col xl:flex-row gap-6 sm:gap-8 xl:gap-10 w-full max-w-[1540px] items-center xl:items-start justify-center pb-6">
 
           {/* ── LEFT: Preview Container (Lightbox easel housing) ── */}
           <div 
-            className="w-full flex justify-center shrink-0 xl:w-auto xl:sticky xl:top-6"
+            className="w-full flex justify-center shrink-0 xl:w-auto xl:sticky xl:top-2"
             onContextMenu={(e) => e.preventDefault()}
           >
             <div className="relative p-5 sm:p-6 rounded-[32px] bg-white/80 dark:bg-zinc-900/80 backdrop-blur-2xl border border-black/10 dark:border-white/10 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.18)] flex flex-col items-center">
@@ -725,7 +725,7 @@ export default function Edit() {
           </div>
 
           {/* ── RIGHT: Physical Photobooth Console ── */}
-          <div className="flex-1 w-full bg-white/85 dark:bg-zinc-900/85 backdrop-blur-2xl rounded-[32px] border border-black/10 dark:border-white/10 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.12)] p-5 sm:p-7 flex flex-col">
+          <div className="flex-1 w-full bg-white/85 dark:bg-zinc-900/85 backdrop-blur-2xl rounded-[32px] border border-black/10 dark:border-white/10 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.12)] p-5 sm:p-7 flex flex-col overflow-y-auto max-h-[calc(100dvh-155px)] custom-scrollbar">
 
             {/* Collection Tabs: Classic vs Artisan — moved right to top */}
             <div className="mb-6">
@@ -767,10 +767,10 @@ export default function Edit() {
               </div>
             </div>
 
-            {/* Theme Swatch Deck */}
+            {/* Theme Swatch Deck — 5 per row */}
             {isArtisan ? (
               <div className="mb-7">
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-3.5 mb-6" onContextMenu={(e) => e.preventDefault()}>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-5 gap-3 mb-6" onContextMenu={(e) => e.preventDefault()}>
                   {ARTISAN_TEMPLATES.map((tpl) => (
                     <ArtisanThumbnailCard
                       key={tpl.id}
@@ -832,7 +832,7 @@ export default function Edit() {
               </div>
             ) : (
               <div className="mb-7">
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-3.5 mb-6" onContextMenu={(e) => e.preventDefault()}>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-5 gap-3 mb-6" onContextMenu={(e) => e.preventDefault()}>
                   {visibleFrames.map((option) => (
                     <FrameThumbnailCard
                       key={option.id}
