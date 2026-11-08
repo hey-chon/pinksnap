@@ -256,6 +256,7 @@ export default function ProfilePage() {
 
         // Check if user has a wall.json in the avatars storage bucket.
         // Use the public URL directly so unauthenticated visitors can also fetch it.
+        // wall.json is the most up-to-date source, so it takes priority over DB data.
         try {
           const { data: pubUrlData } = supabase.storage
             .from(AVATAR_BUCKET)
@@ -269,12 +270,16 @@ export default function ProfilePage() {
               if (parsed && typeof parsed.bio === 'string' && !resolvedBio) {
                 resolvedBio = parsed.bio;
               }
-              if (parsed && Array.isArray(parsed.wallStrips) && resolvedWallStrips.length === 0) {
+              if (parsed && Array.isArray(parsed.wallStrips) && parsed.wallStrips.length > 0) {
                 resolvedWallStrips = parsed.wallStrips;
               }
+            } else {
+              console.warn('[Public Profile] wall.json fetch failed:', wallRes.status);
             }
           }
-        } catch {}
+        } catch (wallErr) {
+          console.warn('[Public Profile] wall.json error:', wallErr);
+        }
 
         // Local cache fallback (e.g. if viewing on same browser or localStorage has cached data)
         if (typeof window !== 'undefined') {
