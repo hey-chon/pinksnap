@@ -215,10 +215,10 @@ export default function ProfilePage() {
           wall_strip_ids?: string[] | null;
         } | null = null;
 
-        // Tier 1: Query profiles table directly to retrieve id, display_name, avatar_url, role, and real created_at
+        // Tier 1: Query profiles table directly to retrieve id, display_name, avatar_url, role, created_at, and wall_strip_ids
         const tryProfiles = await supabase
           .from('profiles')
-          .select('id, display_name, avatar_url, role, created_at')
+          .select('id, display_name, avatar_url, role, created_at, wall_strip_ids')
           .eq('id', targetUserId)
           .maybeSingle();
 
@@ -246,20 +246,24 @@ export default function ProfilePage() {
         let resolvedBio = baseData.bio || '';
         let resolvedWallStrips: string[] = Array.isArray(baseData.wall_strip_ids) ? baseData.wall_strip_ids : [];
 
-        // Check if user has a wall.json in the avatars storage bucket
+        // Check if user has a wall.json in the avatars storage bucket.
+        // Use the public URL directly so unauthenticated visitors can also fetch it.
         try {
-          const { data: wallBlob, error: wallErr } = await supabase.storage
+          const { data: pubUrlData } = supabase.storage
             .from(AVATAR_BUCKET)
-            .download(`${targetUserId}/wall.json`);
+            .getPublicUrl(`${targetUserId}/wall.json`);
 
-          if (!wallErr && wallBlob) {
-            const jsonText = await wallBlob.text();
-            const parsed = JSON.parse(jsonText);
-            if (parsed && typeof parsed.bio === 'string' && !resolvedBio) {
-              resolvedBio = parsed.bio;
-            }
-            if (parsed && Array.isArray(parsed.wallStrips) && resolvedWallStrips.length === 0) {
-              resolvedWallStrips = parsed.wallStrips;
+          if (pubUrlData?.publicUrl) {
+            // Bust cache to get fresh wall data
+            const wallRes = await fetch(`${pubUrlData.publicUrl}?t=${Date.now()}`);
+            if (wallRes.ok) {
+              const parsed = await wallRes.json();
+              if (parsed && typeof parsed.bio === 'string' && !resolvedBio) {
+                resolvedBio = parsed.bio;
+              }
+              if (parsed && Array.isArray(parsed.wallStrips) && resolvedWallStrips.length === 0) {
+                resolvedWallStrips = parsed.wallStrips;
+              }
             }
           }
         } catch {}
@@ -1206,19 +1210,21 @@ export default function ProfilePage() {
                 </button> 
               </div>
 
-              {/* Action Buttons: Positioned cleanly opposite the avatar */}
-              <div className="flex flex-wrap items-center justify-end gap-1.5 sm:gap-2.5 pb-1 sm:pb-2">
-                <button
-                  type="button"
-                  onClick={handleShareProfile}
-                  data-testid="button-share-profile"
-                  className="px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-full bg-white hover:bg-neutral-50 text-neutral-900 border border-neutral-300 shadow-sm text-xs font-bold transition-all flex items-center gap-1.5 active:scale-95 cursor-pointer"
-                  title="Share profile"
-                >
-                  <Share2 className="w-3.5 h-3.5 text-neutral-700" />
-                  <span className="hidden sm:inline">Share</span>
-                </button>
-              </div>
+              {/* Action Buttons: Positioned cleanly opposite the avatar — Share only visible to profile owner */}
+              {isOwner && (
+                <div className="flex flex-wrap items-center justify-end gap-1.5 sm:gap-2.5 pb-1 sm:pb-2">
+                  <button
+                    type="button"
+                    onClick={handleShareProfile}
+                    data-testid="button-share-profile"
+                    className="px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-full bg-white hover:bg-neutral-50 text-neutral-900 border border-neutral-300 shadow-sm text-xs font-bold transition-all flex items-center gap-1.5 active:scale-95 cursor-pointer"
+                    title="Share profile"
+                  >
+                    <Share2 className="w-3.5 h-3.5 text-neutral-700" />
+                    <span className="hidden sm:inline">Share</span>
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* ROW 2: Name & Identity (Dedicated Block — GUARANTEED NEVER OVERLAPPED BY AVATAR) */}
