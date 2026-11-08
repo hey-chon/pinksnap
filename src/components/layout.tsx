@@ -77,11 +77,6 @@ export function TopNav({
     window.setTimeout(scrollToCreator, 120);
   };
 
-  const navTabs = [
-    { href: '/gallery', label: 'GALLERY', icon: Images, testId: 'nav-gallery' },
-    { href: '/how-it-works', label: 'DIAGRAM', icon: HelpCircle, testId: 'nav-how-it-works' },
-  ];
-
   return (
     <header className="booth-marquee w-full flex min-h-[64px] sm:min-h-[72px] items-center justify-between gap-3 px-3 py-2 sm:px-5 sm:py-2.5 md:px-7 shrink-0 relative z-50 pt-[calc(.6rem+env(safe-area-inset-top))]">
       <div className="flex items-center gap-2 sm:gap-4 min-w-0">
@@ -112,9 +107,10 @@ export function TopNav({
             className="flex items-center gap-2 sm:gap-2.5 group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-xl cursor-pointer select-none text-left"
           >
             <PremiumCameraBadge />
-            <div className="flex flex-col leading-[.78]">
-              <span className="font-display text-[22px] sm:text-[26px] text-white">PINK</span>
-              <span className="font-display text-[22px] sm:text-[26px] text-primary">SNAP</span>
+            <div className="flex items-center leading-none">
+              <span className="font-display text-[24px] sm:text-[28px] tracking-wide text-white">
+                PINK<span className="text-primary ml-0.5">SNAP</span>
+              </span>
             </div>
           </button>
         ) : (
@@ -129,59 +125,59 @@ export function TopNav({
             className="flex items-center gap-2 sm:gap-2.5 group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-xl cursor-pointer select-none text-left"
           >
             <PremiumHomeBadge />
-            <div className="flex flex-col leading-[.78]">
-              <span className="font-display text-[22px] sm:text-[26px] text-white">PINK</span>
-              <span className="font-display text-[22px] sm:text-[26px] text-primary">SNAP</span>
+            <div className="flex items-center leading-none">
+              <span className="font-display text-[24px] sm:text-[28px] tracking-wide text-white">
+                PINK<span className="text-primary ml-0.5">SNAP</span>
+              </span>
             </div>
           </Link>
         )}
         <span className="hidden sm:block"><Bulbs count={5} /></span>
       </div>
 
-      {/* ── Central Premium Desktop / Laptop Navigation Dock ── */}
-      <div className="hidden lg:flex items-center gap-2">
-        <nav
-          aria-label="Main Navigation"
-          className="flex items-center p-1 rounded-full bg-[#180f1c]/90 border border-white/15 shadow-[inset_0_2px_4px_rgba(0,0,0,0.5)] backdrop-blur-md"
+      {/* ── Central Premium Desktop / Laptop Navigation (Clean Minimalist Editorial) ── */}
+      <div className="hidden lg:flex items-center gap-7 xl:gap-9">
+        <Link
+          href="/gallery"
+          data-testid="nav-gallery"
+          className={`relative text-xs font-black uppercase tracking-[0.16em] transition-all py-1 select-none ${
+            location === '/gallery'
+              ? 'text-primary'
+              : 'text-white/60 hover:text-white'
+          }`}
         >
-          {navTabs.map((tab) => {
-            const Icon = tab.icon;
-            const isActive = location === tab.href;
-            return (
-              <Link
-                key={tab.href}
-                href={tab.href}
-                data-testid={tab.testId}
-                className={`relative flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-black uppercase tracking-wider transition-all duration-200 active:scale-95 select-none ${
-                  isActive
-                    ? 'bg-gradient-to-b from-white/22 to-white/[0.08] border border-white/30 text-white shadow-[0_2px_10px_rgba(0,0,0,0.4),inset_0_1px_1px_rgba(255,255,255,0.4)]'
-                    : 'text-white/60 hover:text-white hover:bg-white/[0.04] border border-transparent'
-                }`}
-              >
-                <Icon
-                  className={`w-3.5 h-3.5 shrink-0 transition-transform duration-200 ${
-                    isActive ? 'text-primary stroke-[2.5] scale-105' : 'text-white/60'
-                  }`}
-                />
-                <span>{tab.label}</span>
-              </Link>
-            );
-          })}
+          <span>GALLERY</span>
+          {location === '/gallery' && (
+            <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_8px_rgba(245,61,137,0.8)]" />
+          )}
+        </Link>
 
-          {/* Developer Section Link */}
-          <button
-            type="button"
-            onClick={openCreator}
-            data-testid="button-creator-top"
-            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-black uppercase tracking-wider text-white/60 hover:text-white hover:bg-white/[0.04] border border-transparent transition-all duration-200 active:scale-95 cursor-pointer select-none"
-          >
-            <UserRound className="w-3.5 h-3.5 text-primary shrink-0" />
-            <span>DEVELOPER</span>
-          </button>
-        </nav>
+        <Link
+          href="/how-it-works"
+          data-testid="nav-how-it-works"
+          className={`relative text-xs font-black uppercase tracking-[0.16em] transition-all py-1 select-none ${
+            location === '/how-it-works'
+              ? 'text-primary'
+              : 'text-white/60 hover:text-white'
+          }`}
+        >
+          <span>DIAGRAM</span>
+          {location === '/how-it-works' && (
+            <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_8px_rgba(245,61,137,0.8)]" />
+          )}
+        </Link>
+
+        <button
+          type="button"
+          onClick={openCreator}
+          data-testid="button-creator-top"
+          className="relative text-xs font-black uppercase tracking-[0.16em] text-white/60 hover:text-white transition-all py-1 cursor-pointer select-none"
+        >
+          <span>DEVELOPER</span>
+        </button>
 
         {title && (
-          <span className="hidden xl:inline text-xs font-black tracking-widest text-white/40 uppercase ml-2 select-none">
+          <span className="hidden xl:inline text-xs font-black tracking-widest text-white/35 uppercase select-none">
             / {title}
           </span>
         )}
