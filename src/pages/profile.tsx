@@ -500,6 +500,12 @@ export default function ProfilePage() {
     };
   }, [isOwner, user?.id, savedMemories, postedRawEntries]);
 
+  // Auto-sync wall.json when owner visits their profile, ensuring visitors always see fresh data
+  useEffect(() => {
+    if (!isOwner || !user?.id || postedRawEntries.length === 0) return;
+    syncPublicWallJson(user.id, bio, postedRawEntries);
+  }, [isOwner, user?.id]); // Only on mount / user change — not on every entry change
+
   useEffect(() => {
     if (!showVaultModal) return;
     const handleKeyDown = (e: KeyboardEvent) => {
