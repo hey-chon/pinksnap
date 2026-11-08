@@ -66,9 +66,12 @@ export function parseWallStripEntry(entry: string, ownerUserId?: string): Public
     try {
       const parsed = JSON.parse(entry);
       if (parsed && typeof parsed.id === 'string') {
+        const finalUrl = (parsed.url && !parsed.url.startsWith('blob:'))
+          ? parsed.url
+          : (ownerUserId ? supabase.storage.from(AVATAR_BUCKET).getPublicUrl(`${ownerUserId}/wall-${parsed.id}.webp`).data?.publicUrl || '' : '');
         return {
           id: parsed.id,
-          url: parsed.url || '',
+          url: finalUrl,
           date: typeof parsed.date === 'number' ? parsed.date : Date.now(),
           frame: parsed.frame || 'classic',
           layout: parsed.layout || 'vertical-4',
@@ -238,10 +241,10 @@ export default function ProfilePage() {
         if (tryProfiles.data && !tryProfiles.error) {
           baseData = tryProfiles.data;
         } else {
-          // Tier 2: Try profiles_public view with core columns (id, display_name, avatar_url, role)
+          // Tier 2: Try profiles_public view with core columns + wall_strip_ids
           const tryCore = await supabase
             .from('profiles_public')
-            .select('id, display_name, avatar_url, role')
+            .select('id, display_name, avatar_url, role, bio, wall_strip_ids')
             .eq('id', targetUserId)
             .maybeSingle();
 
@@ -284,6 +287,47 @@ export default function ProfilePage() {
           }
         } catch (wallErr) {
           console.warn('[Public Profile] wall.json error:', wallErr);
+        }
+
+        // Direct storage bucket scan for public wall keepsakes:
+        // Any strip uploaded as wall-{id}.webp in targetUserId's folder is a published public keepsake
+        if (resolvedWallStrips.length === 0) {
+          try {
+            const { data: storageFiles, error: storageErr } = await supabase.storage
+              .from(AVATAR_BUCKET)
+              .list(targetUserId, {
+                search: 'wall-',
+                limit: 100,
+                sortBy: { column: 'created_at', order: 'desc' }
+              });
+
+            if (!storageErr && Array.isArray(storageFiles) && storageFiles.length > 0) {
+              const wallStripsFromStorage: string[] = storageFiles
+                .filter((f) => f.name && f.name.startsWith('wall-') && f.name.endsWith('.webp'))
+                .map((f) => {
+                  const stripId = f.name.replace(/^wall-/, '').replace(/\.webp$/, '');
+                  const { data: pubData } = supabase.storage
+                    .from(AVATAR_BUCKET)
+                    .getPublicUrl(`${targetUserId}/${f.name}`);
+                  const date = f.created_at
+                    ? new Date(f.created_at).getTime()
+                    : (f.updated_at ? new Date(f.updated_at).getTime() : Date.now());
+                  return JSON.stringify({
+                    id: stripId,
+                    url: pubData?.publicUrl || '',
+                    date,
+                    frame: 'classic',
+                    layout: 'vertical-4'
+                  });
+                });
+
+              if (wallStripsFromStorage.length > 0) {
+                resolvedWallStrips = wallStripsFromStorage;
+              }
+            }
+          } catch (storageErr) {
+            console.warn('[Public Profile] Error scanning storage for wall strips:', storageErr);
+          }
         }
 
         // Local cache fallback (e.g. if viewing on same browser or localStorage has cached data)
