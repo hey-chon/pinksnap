@@ -226,7 +226,7 @@ export default function Home() {
   };
 
   return (
-    <div className="flex flex-col h-[100dvh]">
+    <div className="flex flex-col h-[100dvh] overflow-hidden desktop-zoom-95">
       <TopNav />
 
       <main

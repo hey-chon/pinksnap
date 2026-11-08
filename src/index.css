@@ -644,6 +644,13 @@ img { max-width: 100%; }
   background: rgba(245, 61, 137, .5);
 }
 
+/* 95% zoom for laptop and desktop displays */
+@media (min-width: 1024px) {
+  .desktop-zoom-95 {
+    zoom: 0.95;
+  }
+}
+
 .scrollbar-hide {
   -ms-overflow-style: none;
   scrollbar-width: none;
