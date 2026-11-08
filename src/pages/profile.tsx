@@ -153,11 +153,16 @@ async function syncPublicWallJson(userId: string, currentBio: string, wallEntrie
       updatedAt: Date.now(),
     });
     const blob = new Blob([payload], { type: 'application/json' });
-    await supabase.storage.from(AVATAR_BUCKET).upload(`${userId}/wall.json`, blob, {
+    const { error } = await supabase.storage.from(AVATAR_BUCKET).upload(`${userId}/wall.json`, blob, {
       upsert: true,
       cacheControl: '60',
       contentType: 'application/json',
     });
+    if (error) {
+      console.warn('[Wall Sync] Upload error:', error.message);
+    } else {
+      console.log('[Wall Sync] wall.json synced successfully with', wallEntries.length, 'entries');
+    }
   } catch (err) {
     console.warn('[Wall] Sync public wall.json notice:', err);
   }
@@ -501,10 +506,12 @@ export default function ProfilePage() {
   }, [isOwner, user?.id, savedMemories, postedRawEntries]);
 
   // Auto-sync wall.json when owner visits their profile, ensuring visitors always see fresh data
+  const wallEntryCount = postedRawEntries.length;
   useEffect(() => {
     if (!isOwner || !user?.id || postedRawEntries.length === 0) return;
+    console.log('[Wall Sync] Auto-syncing wall.json with', postedRawEntries.length, 'entries');
     syncPublicWallJson(user.id, bio, postedRawEntries);
-  }, [isOwner, user?.id]); // Only on mount / user change — not on every entry change
+  }, [isOwner, user?.id, wallEntryCount]);
 
   useEffect(() => {
     if (!showVaultModal) return;
