@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'wouter';
-import { Camera, ChevronLeft, HelpCircle, Images, MessageCircle, UserRound, Home } from 'lucide-react';
+import { Camera, ChevronLeft, HelpCircle, Images, MessageCircle, UserRound, Home, Menu, X } from 'lucide-react';
 import { UserMenu } from '@/components/auth/user-menu';
 import { resetAppFlow } from '@/App';
 
@@ -55,7 +55,23 @@ export function TopNav({
   title?: string;
 }) {
   const [location, setLocation] = useLocation();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const isHome = location === '/';
+
+  // Close sidebar on ESC key
+  useEffect(() => {
+    if (!sidebarOpen) return;
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setSidebarOpen(false);
+    };
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, [sidebarOpen]);
+
+  // Close sidebar on location change
+  useEffect(() => {
+    setSidebarOpen(false);
+  }, [location]);
 
   const scrollToTop = () => {
     const mainEl = document.querySelector('main');
@@ -78,145 +94,275 @@ export function TopNav({
   };
 
   return (
-    <header className="booth-marquee w-full flex min-h-[64px] sm:min-h-[72px] items-center justify-between gap-3 px-3 py-2 sm:px-5 sm:py-2.5 md:px-7 shrink-0 relative z-50 pt-[calc(.6rem+env(safe-area-inset-top))]">
-      <div className="flex items-center gap-2 sm:gap-4 min-w-0">
-        {(backTo || onBack) && (
-          <button
-            type="button"
-            onClick={() => {
-              if (onBack) {
-                onBack();
-              } else {
-                window.history.back();
-              }
-            }}
-            data-testid="button-back"
-            className="p-2 sm:p-2.5 bg-[#251828] hover:bg-[#342038] rounded-full transition-all border border-[#3d2542] hover:border-white/25 active:scale-95 cursor-pointer shadow-sm"
-            aria-label="Go back"
-          >
-            <ChevronLeft className="w-5 h-5 text-white" />
-          </button>
-        )}
-        
-        {isHome ? (
-          <button
-            type="button"
-            onClick={scrollToTop}
-            data-testid="link-brand"
-            aria-label="Back to top"
-            className="flex items-center gap-2 sm:gap-2.5 group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-xl cursor-pointer select-none text-left"
-          >
-            <PremiumCameraBadge />
-            <div className="flex items-center leading-none">
-              <span className="font-display text-[24px] sm:text-[28px] tracking-wide text-white">
-                PINK<span className="text-primary ml-0.5">SNAP</span>
-              </span>
-            </div>
-          </button>
-        ) : (
-          <Link
-            href="/"
-            onClick={() => {
-              resetAppFlow();
-              scrollToTop();
-            }}
-            data-testid="link-brand"
-            aria-label="PinkSnap home"
-            className="flex items-center gap-2 sm:gap-2.5 group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-xl cursor-pointer select-none text-left"
-          >
-            <PremiumHomeBadge />
-            <div className="flex items-center leading-none">
-              <span className="font-display text-[24px] sm:text-[28px] tracking-wide text-white">
-                PINK<span className="text-primary ml-0.5">SNAP</span>
-              </span>
-            </div>
-          </Link>
-        )}
-        <span className="hidden sm:block"><Bulbs count={5} /></span>
-      </div>
-
-      {/* ── Central Premium Desktop / Laptop Navigation (Clean Minimalist Editorial) ── */}
-      <div className="hidden lg:flex items-center gap-7 xl:gap-9">
-        <Link
-          href="/gallery"
-          data-testid="nav-gallery"
-          className={`relative text-xs font-black uppercase tracking-[0.16em] transition-all py-1 select-none ${
-            location === '/gallery'
-              ? 'text-primary'
-              : 'text-white/60 hover:text-white'
-          }`}
-        >
-          <span>GALLERY</span>
-          {location === '/gallery' && (
-            <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_8px_rgba(245,61,137,0.8)]" />
+    <>
+      <header className="booth-marquee w-full flex min-h-[64px] sm:min-h-[72px] items-center justify-between gap-3 px-3 py-2 sm:px-5 sm:py-2.5 md:px-7 shrink-0 relative z-50 pt-[calc(.6rem+env(safe-area-inset-top))]">
+        <div className="flex items-center gap-2 sm:gap-4 min-w-0">
+          {(backTo || onBack) && (
+            <button
+              type="button"
+              onClick={() => {
+                if (onBack) {
+                  onBack();
+                } else {
+                  window.history.back();
+                }
+              }}
+              data-testid="button-back"
+              className="p-2 sm:p-2.5 bg-[#251828] hover:bg-[#342038] rounded-full transition-all border border-[#3d2542] hover:border-white/25 active:scale-95 cursor-pointer shadow-sm"
+              aria-label="Go back"
+            >
+              <ChevronLeft className="w-5 h-5 text-white" />
+            </button>
           )}
-        </Link>
-
-        <Link
-          href="/how-it-works"
-          data-testid="nav-how-it-works"
-          className={`relative text-xs font-black uppercase tracking-[0.16em] transition-all py-1 select-none ${
-            location === '/how-it-works'
-              ? 'text-primary'
-              : 'text-white/60 hover:text-white'
-          }`}
-        >
-          <span>DIAGRAM</span>
-          {location === '/how-it-works' && (
-            <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_8px_rgba(245,61,137,0.8)]" />
+          
+          {isHome ? (
+            <button
+              type="button"
+              onClick={scrollToTop}
+              data-testid="link-brand"
+              aria-label="Back to top"
+              className="flex items-center gap-2 sm:gap-2.5 group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-xl cursor-pointer select-none text-left"
+            >
+              <PremiumCameraBadge />
+              <div className="flex items-center leading-none">
+                <span className="font-hero text-[18px] sm:text-[22px] tracking-[0.24em] uppercase text-white font-black drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)]">
+                  PINK<span className="text-primary cinematic-glow-pink">SNAP</span>
+                </span>
+              </div>
+            </button>
+          ) : (
+            <Link
+              href="/"
+              onClick={() => {
+                resetAppFlow();
+                scrollToTop();
+              }}
+              data-testid="link-brand"
+              aria-label="PinkSnap home"
+              className="flex items-center gap-2 sm:gap-2.5 group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-xl cursor-pointer select-none text-left"
+            >
+              <PremiumHomeBadge />
+              <div className="flex items-center leading-none">
+                <span className="font-hero text-[18px] sm:text-[22px] tracking-[0.24em] uppercase text-white font-black drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)]">
+                  PINK<span className="text-primary cinematic-glow-pink">SNAP</span>
+                </span>
+              </div>
+            </Link>
           )}
-        </Link>
-
-        <button
-          type="button"
-          onClick={openCreator}
-          data-testid="button-creator-top"
-          className="relative text-xs font-black uppercase tracking-[0.16em] text-white/60 hover:text-white transition-all py-1 cursor-pointer select-none"
-        >
-          <span>DEVELOPER</span>
-        </button>
-
-        {title && (
-          <span className="hidden xl:inline text-xs font-black tracking-widest text-white/35 uppercase select-none">
-            / {title}
-          </span>
-        )}
-      </div>
-
-      {/* ── Right Action Controls ── */}
-      <div className="flex items-center gap-2.5 sm:gap-3.5">
-        {/* Subtle Privacy & Terms on wide screens */}
-        <div className="hidden xl:flex items-center gap-2 text-[10px] font-bold text-white/40 tracking-wider uppercase mr-1">
-          <Link
-            href="/privacy"
-            className={`hover:text-primary transition-colors ${location === '/privacy' ? 'text-primary font-black' : ''}`}
-          >
-            Privacy
-          </Link>
-          <span className="text-white/20">·</span>
-          <Link
-            href="/terms"
-            className={`hover:text-primary transition-colors ${location === '/terms' ? 'text-primary font-black' : ''}`}
-          >
-            Terms
-          </Link>
+          <span className="hidden sm:block"><Bulbs count={5} /></span>
         </div>
 
-        <Link
-          href="/chat"
-          data-testid="link-chat-header"
-          className={`inline-flex items-center gap-1.5 text-xs sm:text-sm font-black uppercase tracking-wider px-3.5 py-1.5 rounded-full transition-all active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary shadow-sm ${
-            location === '/chat'
-              ? 'bg-primary text-white border border-primary/50 shadow-md shadow-primary/25'
-              : 'text-white/90 hover:text-white bg-[#251828] hover:bg-[#342038] border border-[#3d2542] hover:border-white/25'
-          }`}
-        >
-          <MessageCircle className="w-4 h-4" />
-          <span className="hidden sm:inline">Chat</span>
-        </Link>
-        <UserMenu />
-      </div>
-    </header>
+        {/* ── Central Premium Desktop / Laptop Navigation (Clean Minimalist Editorial) ── */}
+        <div className="hidden lg:flex items-center gap-7 xl:gap-9">
+          <Link
+            href="/gallery"
+            data-testid="nav-gallery"
+            className={`relative text-xs font-black uppercase tracking-[0.16em] transition-all py-1 select-none ${
+              location === '/gallery'
+                ? 'text-primary'
+                : 'text-white/60 hover:text-white'
+            }`}
+          >
+            <span>GALLERY</span>
+            {location === '/gallery' && (
+              <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_8px_rgba(245,61,137,0.8)]" />
+            )}
+          </Link>
+
+          <Link
+            href="/how-it-works"
+            data-testid="nav-how-it-works"
+            className={`relative text-xs font-black uppercase tracking-[0.16em] transition-all py-1 select-none ${
+              location === '/how-it-works'
+                ? 'text-primary'
+                : 'text-white/60 hover:text-white'
+            }`}
+          >
+            <span>DIAGRAM</span>
+            {location === '/how-it-works' && (
+              <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_8px_rgba(245,61,137,0.8)]" />
+            )}
+          </Link>
+
+          <button
+            type="button"
+            onClick={openCreator}
+            data-testid="button-creator-top"
+            className="relative text-xs font-black uppercase tracking-[0.16em] text-white/60 hover:text-white transition-all py-1 cursor-pointer select-none"
+          >
+            <span>DEVELOPER</span>
+          </button>
+
+          {title && (
+            <span className="hidden xl:inline text-xs font-black tracking-widest text-white/35 uppercase select-none">
+              / {title}
+            </span>
+          )}
+        </div>
+
+        {/* ── Right Action Controls ── */}
+        <div className="flex items-center gap-2 sm:gap-3">
+          {/* Subtle Privacy & Terms on wide screens */}
+          <div className="hidden xl:flex items-center gap-2 text-[10px] font-bold text-white/40 tracking-wider uppercase mr-1">
+            <Link
+              href="/privacy"
+              className={`hover:text-primary transition-colors ${location === '/privacy' ? 'text-primary font-black' : ''}`}
+            >
+              Privacy
+            </Link>
+            <span className="text-white/20">·</span>
+            <Link
+              href="/terms"
+              className={`hover:text-primary transition-colors ${location === '/terms' ? 'text-primary font-black' : ''}`}
+            >
+              Terms
+            </Link>
+          </div>
+
+          <Link
+            href="/chat"
+            data-testid="link-chat-header"
+            className={`inline-flex items-center gap-1.5 text-xs sm:text-sm font-black uppercase tracking-wider px-3.5 py-1.5 rounded-full transition-all active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary shadow-sm ${
+              location === '/chat'
+                ? 'bg-primary text-white border border-primary/50 shadow-md shadow-primary/25'
+                : 'text-white/90 hover:text-white bg-[#251828] hover:bg-[#342038] border border-[#3d2542] hover:border-white/25'
+            }`}
+          >
+            <MessageCircle className="w-4 h-4" />
+            <span className="hidden sm:inline">Chat</span>
+          </Link>
+
+          <UserMenu />
+
+          {/* Hamburger Menu Toggle Button */}
+          <button
+            type="button"
+            onClick={() => setSidebarOpen(true)}
+            data-testid="button-hamburger-menu"
+            className="p-2 sm:p-2.5 bg-[#251828] hover:bg-[#342038] text-white/90 hover:text-white rounded-full transition-all border border-[#3d2542] hover:border-white/25 active:scale-95 cursor-pointer shadow-sm"
+            aria-label="Open Navigation Menu"
+            title="Menu"
+          >
+            <Menu className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
+          </button>
+        </div>
+      </header>
+
+      {/* ── Slide-Out Sidebar Drawer ── */}
+      {sidebarOpen && (
+        <div className="fixed inset-0 z-[100] animate-in fade-in duration-200">
+          {/* Backdrop Dimmer */}
+          <div
+            className="fixed inset-0 bg-black/75 backdrop-blur-xs transition-opacity"
+            onClick={() => setSidebarOpen(false)}
+          />
+
+          {/* Drawer Panel */}
+          <aside
+            aria-label="Sidebar Navigation"
+            className="fixed inset-y-0 right-0 z-10 w-72 sm:w-80 bg-[#140e19] border-l border-white/10 shadow-2xl flex flex-col justify-between p-6 sm:p-8 animate-in slide-in-from-right duration-300"
+          >
+            {/* Sidebar Header */}
+            <div className="flex items-center justify-between pb-6 border-b border-white/10">
+              <div className="flex items-center gap-2">
+                <span className="font-hero text-base tracking-[0.22em] uppercase text-white font-black">
+                  PINK<span className="text-primary cinematic-glow-pink">SNAP</span>
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSidebarOpen(false)}
+                data-testid="button-sidebar-close"
+                className="p-2 rounded-full bg-white/5 hover:bg-white/10 text-white/70 hover:text-white transition-colors cursor-pointer"
+                aria-label="Close sidebar"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Navigation Links — Pure, Clean, No AI Fluff */}
+            <nav className="flex-1 py-8 flex flex-col gap-5">
+              <Link
+                href="/"
+                onClick={() => setSidebarOpen(false)}
+                className={`text-sm font-black uppercase tracking-[0.16em] transition-colors py-1 ${
+                  location === '/' ? 'text-primary' : 'text-white/70 hover:text-white'
+                }`}
+              >
+                Home
+              </Link>
+              <Link
+                href="/gallery"
+                onClick={() => setSidebarOpen(false)}
+                className={`text-sm font-black uppercase tracking-[0.16em] transition-colors py-1 ${
+                  location === '/gallery' ? 'text-primary' : 'text-white/70 hover:text-white'
+                }`}
+              >
+                Gallery
+              </Link>
+              <Link
+                href="/how-it-works"
+                onClick={() => setSidebarOpen(false)}
+                className={`text-sm font-black uppercase tracking-[0.16em] transition-colors py-1 ${
+                  location === '/how-it-works' ? 'text-primary' : 'text-white/70 hover:text-white'
+                }`}
+              >
+                Diagram
+              </Link>
+              <Link
+                href="/chat"
+                onClick={() => setSidebarOpen(false)}
+                className={`text-sm font-black uppercase tracking-[0.16em] transition-colors py-1 ${
+                  location === '/chat' ? 'text-primary' : 'text-white/70 hover:text-white'
+                }`}
+              >
+                Community Chat
+              </Link>
+              <button
+                type="button"
+                onClick={() => {
+                  setSidebarOpen(false);
+                  openCreator();
+                }}
+                className="text-left text-sm font-black uppercase tracking-[0.16em] text-white/70 hover:text-white transition-colors py-1 cursor-pointer"
+              >
+                Developer
+              </button>
+              <Link
+                href="/profile"
+                onClick={() => setSidebarOpen(false)}
+                className={`text-sm font-black uppercase tracking-[0.16em] transition-colors py-1 ${
+                  location === '/profile' ? 'text-primary' : 'text-white/70 hover:text-white'
+                }`}
+              >
+                My Profile
+              </Link>
+            </nav>
+
+            {/* Sidebar Footer — Minimal Legal Links */}
+            <div className="pt-6 border-t border-white/10 flex items-center justify-between text-[11px] font-bold text-white/40 tracking-wider uppercase">
+              <Link
+                href="/privacy"
+                onClick={() => setSidebarOpen(false)}
+                className="hover:text-white transition-colors"
+              >
+                Privacy
+              </Link>
+              <span className="text-white/20">·</span>
+              <Link
+                href="/terms"
+                onClick={() => setSidebarOpen(false)}
+                className="hover:text-white transition-colors"
+              >
+                Terms
+              </Link>
+              <span className="text-white/20">·</span>
+              <span className="font-mono text-[9px] text-white/30">v2.0</span>
+            </div>
+          </aside>
+        </div>
+      )}
+    </>
   );
 }
 
