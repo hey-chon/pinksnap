@@ -291,7 +291,7 @@ export default function ProfilePage() {
 
         // Direct storage bucket scan for public wall keepsakes:
         // Any strip uploaded as wall-{id}.webp in targetUserId's folder is a published public keepsake
-        if (resolvedWallStrips.length === 0) {
+        if (resolvedWallStrips.length === 0 && targetUserId) {
           try {
             const { data: storageFiles, error: storageErr } = await supabase.storage
               .from(AVATAR_BUCKET)
