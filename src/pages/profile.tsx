@@ -60,7 +60,7 @@ export interface PublicWallStrip {
   layout?: string;
 }
 
-export function parseWallStripEntry(entry: string): PublicWallStrip | null {
+export function parseWallStripEntry(entry: string, ownerUserId?: string): PublicWallStrip | null {
   if (!entry) return null;
   if (typeof entry === 'string' && entry.trim().startsWith('{')) {
     try {
@@ -76,7 +76,15 @@ export function parseWallStripEntry(entry: string): PublicWallStrip | null {
       }
     } catch {}
   }
-  return { id: entry, url: '', date: Date.now(), frame: 'classic', layout: 'vertical-4' };
+  // Plain string ID — reconstruct public preview URL from avatars bucket if owner ID is known
+  let reconstructedUrl = '';
+  if (ownerUserId && entry) {
+    const { data } = supabase.storage
+      .from(AVATAR_BUCKET)
+      .getPublicUrl(`${ownerUserId}/wall-${entry}.webp`);
+    if (data?.publicUrl) reconstructedUrl = data.publicUrl;
+  }
+  return { id: entry, url: reconstructedUrl, date: Date.now(), frame: 'classic', layout: 'vertical-4' };
 }
 
 export function getWallStripId(entry: string): string {
@@ -310,6 +318,7 @@ export default function ProfilePage() {
           : normalizeAvatarUrl(baseData.avatar_url) || null;
 
         if (!isCancelled) {
+          console.log('[Public Profile] Resolved wall strips:', resolvedWallStrips.length, resolvedWallStrips.slice(0, 2));
           setPublicProfile({
             id: baseData.id,
             displayName: baseData.display_name || 'PinkSnap Member',
@@ -517,7 +526,7 @@ export default function ProfilePage() {
   const postedStrips: { id: string; url: string; date: number; frame: string; layout?: string }[] = isOwner
     ? savedMemories.filter((m) => postedStripIds.includes(m.id))
     : (publicProfile?.wallStripIds || [])
-        .map(parseWallStripEntry)
+        .map((entry) => parseWallStripEntry(entry, publicProfile?.id))
         .filter((s): s is PublicWallStrip => Boolean(s && s.url && s.url.length > 0));
 
   if (isLoadingPublicProfile) {

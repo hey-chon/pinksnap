@@ -104,9 +104,7 @@ export default function Credits() {
                 <Crown className="w-3.5 h-3.5 text-amber-400 fill-amber-400 stroke-none" aria-hidden="true" />
                 <span>Lead Creator &amp; Developer</span>
               </span>
-              <span className="font-mono text-[10px] text-white/35 font-bold tracking-widest uppercase">
-                01 / DEV
-              </span>
+            
             </div>
 
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-5">
@@ -166,9 +164,7 @@ export default function Credits() {
                 <Zap className="w-3.5 h-3.5 text-amber-400 fill-amber-400 stroke-none" aria-hidden="true" />
                 <span>Contributor</span>
               </span>
-              <span className="font-mono text-[10px] text-white/35 font-bold tracking-widest uppercase">
-                02 / DEV
-              </span>
+            
             </div>
 
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-5">
