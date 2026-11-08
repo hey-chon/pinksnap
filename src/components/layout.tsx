@@ -54,7 +54,7 @@ export function TopNav({
   onBack?: () => void;
   title?: string;
 }) {
-  const [location] = useLocation();
+  const [location, setLocation] = useLocation();
   const isHome = location === '/';
 
   const scrollToTop = () => {
@@ -65,8 +65,25 @@ export function TopNav({
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const openCreator = () => {
+    const scrollToCreator = () =>
+      document.getElementById('creator-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (location === '/') {
+      scrollToCreator();
+      return;
+    }
+    resetAppFlow();
+    setLocation('/');
+    window.setTimeout(scrollToCreator, 120);
+  };
+
+  const navTabs = [
+    { href: '/gallery', label: 'GALLERY', icon: Images, testId: 'nav-gallery' },
+    { href: '/how-it-works', label: 'DIAGRAM', icon: HelpCircle, testId: 'nav-how-it-works' },
+  ];
+
   return (
-    <header className="booth-marquee w-full flex min-h-[68px] sm:min-h-[76px] items-center justify-between gap-2 px-3 py-2.5 sm:px-4 sm:py-3 md:px-6 shrink-0 relative z-50 pt-[calc(.75rem+env(safe-area-inset-top))]">
+    <header className="booth-marquee w-full flex min-h-[64px] sm:min-h-[72px] items-center justify-between gap-3 px-3 py-2 sm:px-5 sm:py-2.5 md:px-7 shrink-0 relative z-50 pt-[calc(.6rem+env(safe-area-inset-top))]">
       <div className="flex items-center gap-2 sm:gap-4 min-w-0">
         {(backTo || onBack) && (
           <button
@@ -121,17 +138,82 @@ export function TopNav({
         <span className="hidden sm:block"><Bulbs count={5} /></span>
       </div>
 
-      {title && (
-        <div className="hidden md:block absolute left-1/2 -translate-x-1/2 pointer-events-none">
-          <h2 className="font-display text-2xl text-white/80 tracking-[.14em] uppercase">{title}</h2>
-        </div>
-      )}
+      {/* ── Central Premium Desktop / Laptop Navigation Dock ── */}
+      <div className="hidden lg:flex items-center gap-2">
+        <nav
+          aria-label="Main Navigation"
+          className="flex items-center p-1 rounded-full bg-[#180f1c]/90 border border-white/15 shadow-[inset_0_2px_4px_rgba(0,0,0,0.5)] backdrop-blur-md"
+        >
+          {navTabs.map((tab) => {
+            const Icon = tab.icon;
+            const isActive = location === tab.href;
+            return (
+              <Link
+                key={tab.href}
+                href={tab.href}
+                data-testid={tab.testId}
+                className={`relative flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-black uppercase tracking-wider transition-all duration-200 active:scale-95 select-none ${
+                  isActive
+                    ? 'bg-gradient-to-b from-white/22 to-white/[0.08] border border-white/30 text-white shadow-[0_2px_10px_rgba(0,0,0,0.4),inset_0_1px_1px_rgba(255,255,255,0.4)]'
+                    : 'text-white/60 hover:text-white hover:bg-white/[0.04] border border-transparent'
+                }`}
+              >
+                <Icon
+                  className={`w-3.5 h-3.5 shrink-0 transition-transform duration-200 ${
+                    isActive ? 'text-primary stroke-[2.5] scale-105' : 'text-white/60'
+                  }`}
+                />
+                <span>{tab.label}</span>
+              </Link>
+            );
+          })}
 
-      <div className="flex items-center gap-2 sm:gap-3">
+          {/* Developer Section Link */}
+          <button
+            type="button"
+            onClick={openCreator}
+            data-testid="button-creator-top"
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-black uppercase tracking-wider text-white/60 hover:text-white hover:bg-white/[0.04] border border-transparent transition-all duration-200 active:scale-95 cursor-pointer select-none"
+          >
+            <UserRound className="w-3.5 h-3.5 text-primary shrink-0" />
+            <span>DEVELOPER</span>
+          </button>
+        </nav>
+
+        {title && (
+          <span className="hidden xl:inline text-xs font-black tracking-widest text-white/40 uppercase ml-2 select-none">
+            / {title}
+          </span>
+        )}
+      </div>
+
+      {/* ── Right Action Controls ── */}
+      <div className="flex items-center gap-2.5 sm:gap-3.5">
+        {/* Subtle Privacy & Terms on wide screens */}
+        <div className="hidden xl:flex items-center gap-2 text-[10px] font-bold text-white/40 tracking-wider uppercase mr-1">
+          <Link
+            href="/privacy"
+            className={`hover:text-primary transition-colors ${location === '/privacy' ? 'text-primary font-black' : ''}`}
+          >
+            Privacy
+          </Link>
+          <span className="text-white/20">·</span>
+          <Link
+            href="/terms"
+            className={`hover:text-primary transition-colors ${location === '/terms' ? 'text-primary font-black' : ''}`}
+          >
+            Terms
+          </Link>
+        </div>
+
         <Link
           href="/chat"
           data-testid="link-chat-header"
-          className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-black uppercase tracking-wider text-white/90 hover:text-white px-3.5 py-1.5 rounded-full bg-[#251828] hover:bg-[#342038] border border-[#3d2542] hover:border-white/25 transition-all active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary shadow-sm"
+          className={`inline-flex items-center gap-1.5 text-xs sm:text-sm font-black uppercase tracking-wider px-3.5 py-1.5 rounded-full transition-all active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary shadow-sm ${
+            location === '/chat'
+              ? 'bg-primary text-white border border-primary/50 shadow-md shadow-primary/25'
+              : 'text-white/90 hover:text-white bg-[#251828] hover:bg-[#342038] border border-[#3d2542] hover:border-white/25'
+          }`}
         >
           <MessageCircle className="w-4 h-4" />
           <span className="hidden sm:inline">Chat</span>
@@ -142,168 +224,7 @@ export function TopNav({
   );
 }
 
-// Persistent module-level state across route navigations
-let lastKnownTabIdx: number | null = null;
-
+// BottomNav is permanently retired to maximize screen real estate and eliminate cramped layouts
 export function BottomNav() {
-  const [location, setLocation] = useLocation();
-
-  const openCreator = () => {
-    const scrollToCreator = () => document.getElementById('creator-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    if (location === '/') {
-      scrollToCreator();
-      return;
-    }
-    resetAppFlow();
-    setLocation('/');
-    window.setTimeout(scrollToCreator, 120);
-  };
-
-  const navTabs = [
-    { href: '/how-it-works', label: 'DIAGRAM', icon: HelpCircle, testId: 'nav-how-it-works' },
-    { href: '/gallery', label: 'GALLERY', icon: Images, testId: 'nav-gallery' },
-    { href: '/profile', label: 'ACCOUNT', icon: UserRound, testId: 'nav-profile' },
-  ];
-
-  const getIdxFromPath = (path: string) => {
-    if (path === '/how-it-works') return 0;
-    if (path === '/gallery') return 1;
-    if (path === '/profile' || path === '/auth' || path.startsWith('/u/') || path.startsWith('/profile/')) return 2;
-    return -1;
-  };
-
-  const activeIdx = getIdxFromPath(location);
-
-  // Initialize at the previous page's position if coming from another tab so transition actually occurs!
-  const [targetIdx, setTargetIdx] = useState<number | null>(() => {
-    if (lastKnownTabIdx !== null && activeIdx !== -1 && lastKnownTabIdx !== activeIdx) {
-      return lastKnownTabIdx;
-    }
-    return activeIdx >= 0 ? activeIdx : null;
-  });
-
-  // Animate from previous position to the new position on page mount
-  useEffect(() => {
-    let raf: number | null = null;
-    if (activeIdx >= 0) {
-      raf = requestAnimationFrame(() => {
-        setTargetIdx(activeIdx);
-        lastKnownTabIdx = activeIdx;
-      });
-    } else {
-      setTargetIdx(null);
-      lastKnownTabIdx = null;
-    }
-    return () => {
-      if (raf !== null) cancelAnimationFrame(raf);
-    };
-  }, [activeIdx]);
-
-  return (
-    <footer className="w-full shrink-0 z-50 booth-marquee booth-footer">
-      <div className="flex items-center justify-between gap-2 py-2.5 px-3 sm:py-3 sm:px-6">
-        <div className="flex items-center gap-1.5 sm:gap-2.5">
-          <button
-            type="button"
-            onClick={openCreator}
-            data-testid="button-creator"
-            className="creator-nav-button inline-flex items-center gap-1.5 sm:gap-2 rounded-full px-2.5 sm:px-3 py-1.5 text-xs font-black tracking-[.12em] text-white/90 bg-[#251828] hover:bg-[#342038] border border-[#3d2542] hover:border-white/25 hover:text-white transition-all active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary cursor-pointer shadow-sm"
-          >
-            <UserRound className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />
-            <span>DEVELOPER</span>
-          </button>
-          <span className="w-px h-3 bg-white/15 mx-0.5" aria-hidden="true" />
-          <div className="flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-[11px] font-bold text-white/50 tracking-wider uppercase">
-            <Link
-              href="/privacy"
-              data-testid="footer-privacy-link"
-              className={`hover:text-primary transition-colors ${location === '/privacy' ? 'text-primary font-black' : ''}`}
-            >
-              Privacy
-            </Link>
-            <span className="text-white/25">&</span>
-            <Link
-              href="/terms"
-              data-testid="footer-terms-link"
-              className={`hover:text-primary transition-colors ${location === '/terms' ? 'text-primary' : ''}`}
-            >
-              Terms
-            </Link>
-          </div>
-        </div>
-
-        {/* iOS Fluid Spring Segmented Dock */}
-        <div className="relative flex items-center p-1 rounded-full bg-[#170e1a]/95 border border-white/15 shadow-[inset_0_2px_5px_rgba(0,0,0,0.6)] backdrop-blur-md min-w-[145px] sm:min-w-[290px]">
-          {/* Liquid Crystal Frosted Spring Slider Pill */}
-          <div
-            className="absolute top-1 bottom-1 rounded-full bg-gradient-to-b from-white/22 to-white/[0.09] border border-white/30 shadow-[0_4px_16px_rgba(0,0,0,0.5),inset_0_1.5px_1px_rgba(255,255,255,0.5),inset_0_-1px_1px_rgba(0,0,0,0.3)] pointer-events-none"
-            style={{
-              left: '4px',
-              width: 'calc((100% - 8px) / 3)',
-              transform:
-                targetIdx !== null
-                  ? `translate3d(${targetIdx * 100}%, 0, 0)`
-                  : 'translate3d(0, 0, 0) scale(0.85)',
-              opacity: targetIdx !== null ? 1 : 0,
-              transition:
-                'transform 380ms cubic-bezier(0.34, 1.35, 0.64, 1), opacity 200ms ease',
-              willChange: 'transform, opacity',
-            }}
-          >
-            {/* Specular Glint Line */}
-            <span className="absolute inset-x-2 top-0.5 h-[1px] bg-gradient-to-r from-transparent via-white/50 to-transparent pointer-events-none" />
-          </div>
-
-          {navTabs.map((tab, idx) => {
-            const Icon = tab.icon;
-            const isActive = targetIdx === idx;
-            return (
-              <Link
-                key={tab.href}
-                href={tab.href}
-                onClick={(e) => {
-                  if (tab.href === '/profile') {
-                    const search = typeof window !== 'undefined' ? window.location.search : '';
-                    const isVisitingOtherWall =
-                      search.includes('user=') ||
-                      location.startsWith('/u/') ||
-                      (location.startsWith('/profile/') && location !== '/profile');
-
-                    if (isVisitingOtherWall) {
-                      e.preventDefault();
-                      if (typeof window !== 'undefined') {
-                        window.history.pushState({}, '', '/profile');
-                        window.dispatchEvent(new PopStateEvent('popstate'));
-                        window.dispatchEvent(new Event('pinksnap:nav-profile'));
-                      }
-                      setLocation('/profile');
-                    }
-                  }
-                  if (activeIdx !== -1) {
-                    lastKnownTabIdx = activeIdx;
-                  }
-                  setTargetIdx(idx);
-                }}
-                data-testid={tab.testId}
-                className={`relative z-10 flex-1 flex items-center justify-center gap-1.5 px-2.5 sm:px-3.5 py-1.5 rounded-full text-xs sm:text-sm transition-all duration-200 active:scale-95 cursor-pointer select-none ${
-                  isActive
-                    ? 'text-white font-black drop-shadow-[0_1px_3px_rgba(0,0,0,0.85)]'
-                    : 'text-white/55 hover:text-white/85 font-bold'
-                }`}
-              >
-                <Icon
-                  className={`w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0 transition-transform duration-300 ease-[cubic-bezier(0.34,1.4,0.64,1)] ${
-                    isActive
-                      ? 'text-white stroke-[2.5] scale-110 drop-shadow-[0_0_8px_rgba(255,255,255,0.4)]'
-                      : 'text-white/55'
-                  }`}
-                />
-                <span className="hidden sm:inline tracking-wider uppercase">{tab.label}</span>
-              </Link>
-            );
-          })}
-        </div>
-      </div>
-    </footer>
-  );
+  return null;
 }

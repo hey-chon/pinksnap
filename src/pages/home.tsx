@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { Link, useLocation } from 'wouter';
-import { TopNav, BottomNav } from '@/components/layout';
+import { TopNav } from '@/components/layout';
 import { ArrowRight, Camera, Download, LayoutGrid, MessageCircle, Sparkles, Wand2 } from 'lucide-react';
 import Credits from '@/components/credits';
 import { useAuth } from '@/hooks/use-auth';
@@ -560,8 +560,6 @@ export default function Home() {
 
         <Credits />
       </main>
-
-      <BottomNav />
     </div>
   );
 }
