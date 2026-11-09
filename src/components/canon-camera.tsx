@@ -163,7 +163,7 @@ export function CanonCamera({
           draggable={false}
         />
 
-        {/* ── Shutter Button matching Grok reference (No animations, No sounds) ── */}
+        {/* ── Shutter Button matching Grok reference adjusted to top-left ── */}
         <button
           type="button"
           onClick={handleShutterPress}
@@ -172,9 +172,9 @@ export function CanonCamera({
           aria-label="Take Photo Shutter"
           title={isComplete ? "Session Complete" : isCapturing ? "Capturing..." : "Press Shutter"}
           style={{
-            left: '78.3%',
-            top: '60.0%',
-            width: '18.5%',
+            left: '76.4%',
+            top: '57.5%',
+            width: '21.0%',
             aspectRatio: '1 / 1',
           }}
           className={`absolute z-20 -translate-x-1/2 -translate-y-1/2 rounded-full flex items-center justify-center pointer-events-auto cursor-pointer focus:outline-none ${
