@@ -733,9 +733,6 @@ export default function Edit() {
                 <span className="text-[10.5px] font-black uppercase tracking-[0.2em] text-foreground/60">
                   FRAME COLLECTION
                 </span>
-                <span className="text-[10.5px] font-bold uppercase tracking-wider text-primary">
-                  {category === 'artisan' ? 'Artisan Originals (4)' : 'Classic Booth Editions (8)'}
-                </span>
               </div>
               <div className="grid grid-cols-2 p-1.5 rounded-2xl bg-foreground/[0.05] border border-foreground/8 gap-1.5">
                 <button
