@@ -55,22 +55,41 @@ export function TopNav({
   title?: string;
 }) {
   const [location, setLocation] = useLocation();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarMounted, setSidebarMounted] = useState(false);
+  const [sidebarVisible, setSidebarVisible] = useState(false);
   const isHome = location === '/';
+
+  const openSidebar = () => {
+    setSidebarMounted(true);
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        setSidebarVisible(true);
+      });
+    });
+  };
+
+  const closeSidebar = () => {
+    setSidebarVisible(false);
+    setTimeout(() => {
+      setSidebarMounted(false);
+    }, 300);
+  };
 
   // Close sidebar on ESC key
   useEffect(() => {
-    if (!sidebarOpen) return;
+    if (!sidebarMounted) return;
     const handleKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setSidebarOpen(false);
+      if (e.key === 'Escape') closeSidebar();
     };
     window.addEventListener('keydown', handleKey);
     return () => window.removeEventListener('keydown', handleKey);
-  }, [sidebarOpen]);
+  }, [sidebarMounted]);
 
   // Close sidebar on location change
   useEffect(() => {
-    setSidebarOpen(false);
+    if (sidebarMounted) {
+      closeSidebar();
+    }
   }, [location]);
 
   const scrollToTop = () => {
@@ -121,11 +140,10 @@ export function TopNav({
               onClick={scrollToTop}
               data-testid="link-brand"
               aria-label="Back to top"
-              className="flex items-center gap-2 sm:gap-2.5 group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-xl cursor-pointer select-none text-left"
+              className="group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-xl cursor-pointer select-none text-left py-1"
             >
-              <PremiumCameraBadge />
               <div className="flex items-center leading-none">
-                <span className="font-hero text-[18px] sm:text-[22px] tracking-[0.24em] uppercase text-white font-black drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)]">
+                <span className="font-hero text-[19px] sm:text-[23px] tracking-[0.24em] uppercase text-white font-black drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)] group-hover:opacity-90 transition-opacity">
                   PINK<span className="text-primary cinematic-glow-pink">SNAP</span>
                 </span>
               </div>
@@ -139,64 +157,14 @@ export function TopNav({
               }}
               data-testid="link-brand"
               aria-label="PinkSnap home"
-              className="flex items-center gap-2 sm:gap-2.5 group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-xl cursor-pointer select-none text-left"
+              className="group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-xl cursor-pointer select-none text-left py-1"
             >
-              <PremiumHomeBadge />
               <div className="flex items-center leading-none">
-                <span className="font-hero text-[18px] sm:text-[22px] tracking-[0.24em] uppercase text-white font-black drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)]">
+                <span className="font-hero text-[19px] sm:text-[23px] tracking-[0.24em] uppercase text-white font-black drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)] group-hover:opacity-90 transition-opacity">
                   PINK<span className="text-primary cinematic-glow-pink">SNAP</span>
                 </span>
               </div>
             </Link>
-          )}
-          <span className="hidden sm:block"><Bulbs count={5} /></span>
-        </div>
-
-        {/* ── Central Premium Desktop / Laptop Navigation (Clean Minimalist Editorial) ── */}
-        <div className="hidden lg:flex items-center gap-7 xl:gap-9">
-          <Link
-            href="/gallery"
-            data-testid="nav-gallery"
-            className={`relative text-xs font-black uppercase tracking-[0.16em] transition-all py-1 select-none ${
-              location === '/gallery'
-                ? 'text-primary'
-                : 'text-white/60 hover:text-white'
-            }`}
-          >
-            <span>GALLERY</span>
-            {location === '/gallery' && (
-              <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_8px_rgba(245,61,137,0.8)]" />
-            )}
-          </Link>
-
-          <Link
-            href="/how-it-works"
-            data-testid="nav-how-it-works"
-            className={`relative text-xs font-black uppercase tracking-[0.16em] transition-all py-1 select-none ${
-              location === '/how-it-works'
-                ? 'text-primary'
-                : 'text-white/60 hover:text-white'
-            }`}
-          >
-            <span>DIAGRAM</span>
-            {location === '/how-it-works' && (
-              <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_8px_rgba(245,61,137,0.8)]" />
-            )}
-          </Link>
-
-          <button
-            type="button"
-            onClick={openCreator}
-            data-testid="button-creator-top"
-            className="relative text-xs font-black uppercase tracking-[0.16em] text-white/60 hover:text-white transition-all py-1 cursor-pointer select-none"
-          >
-            <span>DEVELOPER</span>
-          </button>
-
-          {title && (
-            <span className="hidden xl:inline text-xs font-black tracking-widest text-white/35 uppercase select-none">
-              / {title}
-            </span>
           )}
         </div>
 
@@ -237,7 +205,7 @@ export function TopNav({
           {/* Hamburger Menu Toggle Button */}
           <button
             type="button"
-            onClick={() => setSidebarOpen(true)}
+            onClick={openSidebar}
             data-testid="button-hamburger-menu"
             className="p-2 sm:p-2.5 bg-[#251828] hover:bg-[#342038] text-white/90 hover:text-white rounded-full transition-all border border-[#3d2542] hover:border-white/25 active:scale-95 cursor-pointer shadow-sm"
             aria-label="Open Navigation Menu"
@@ -248,19 +216,23 @@ export function TopNav({
         </div>
       </header>
 
-      {/* ── Slide-Out Sidebar Drawer ── */}
-      {sidebarOpen && (
-        <div className="fixed inset-0 z-[100] animate-in fade-in duration-200">
+      {/* ── Slide-Out Sidebar Drawer with Smooth Open & Close Transitions ── */}
+      {sidebarMounted && (
+        <div className="fixed inset-0 z-[100]">
           {/* Backdrop Dimmer */}
           <div
-            className="fixed inset-0 bg-black/75 backdrop-blur-xs transition-opacity"
-            onClick={() => setSidebarOpen(false)}
+            className={`fixed inset-0 bg-black/75 backdrop-blur-xs transition-opacity duration-300 ease-in-out ${
+              sidebarVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'
+            }`}
+            onClick={closeSidebar}
           />
 
           {/* Drawer Panel */}
           <aside
             aria-label="Sidebar Navigation"
-            className="fixed inset-y-0 right-0 z-10 w-72 sm:w-80 bg-[#140e19] border-l border-white/10 shadow-2xl flex flex-col justify-between p-6 sm:p-8 animate-in slide-in-from-right duration-300"
+            className={`fixed inset-y-0 right-0 z-10 w-72 sm:w-80 bg-[#140e19] border-l border-white/10 shadow-2xl flex flex-col justify-between p-6 sm:p-8 transform transition-transform duration-300 ease-in-out ${
+              sidebarVisible ? 'translate-x-0' : 'translate-x-full'
+            }`}
           >
             {/* Sidebar Header */}
             <div className="flex items-center justify-between pb-6 border-b border-white/10">
@@ -271,7 +243,7 @@ export function TopNav({
               </div>
               <button
                 type="button"
-                onClick={() => setSidebarOpen(false)}
+                onClick={closeSidebar}
                 data-testid="button-sidebar-close"
                 className="p-2 rounded-full bg-white/5 hover:bg-white/10 text-white/70 hover:text-white transition-colors cursor-pointer"
                 aria-label="Close sidebar"
@@ -284,7 +256,7 @@ export function TopNav({
             <nav className="flex-1 py-8 flex flex-col gap-5">
               <Link
                 href="/"
-                onClick={() => setSidebarOpen(false)}
+                onClick={closeSidebar}
                 className={`text-sm font-black uppercase tracking-[0.16em] transition-colors py-1 ${
                   location === '/' ? 'text-primary' : 'text-white/70 hover:text-white'
                 }`}
@@ -293,7 +265,7 @@ export function TopNav({
               </Link>
               <Link
                 href="/gallery"
-                onClick={() => setSidebarOpen(false)}
+                onClick={closeSidebar}
                 className={`text-sm font-black uppercase tracking-[0.16em] transition-colors py-1 ${
                   location === '/gallery' ? 'text-primary' : 'text-white/70 hover:text-white'
                 }`}
@@ -302,7 +274,7 @@ export function TopNav({
               </Link>
               <Link
                 href="/how-it-works"
-                onClick={() => setSidebarOpen(false)}
+                onClick={closeSidebar}
                 className={`text-sm font-black uppercase tracking-[0.16em] transition-colors py-1 ${
                   location === '/how-it-works' ? 'text-primary' : 'text-white/70 hover:text-white'
                 }`}
@@ -311,7 +283,7 @@ export function TopNav({
               </Link>
               <Link
                 href="/chat"
-                onClick={() => setSidebarOpen(false)}
+                onClick={closeSidebar}
                 className={`text-sm font-black uppercase tracking-[0.16em] transition-colors py-1 ${
                   location === '/chat' ? 'text-primary' : 'text-white/70 hover:text-white'
                 }`}
@@ -321,7 +293,7 @@ export function TopNav({
               <button
                 type="button"
                 onClick={() => {
-                  setSidebarOpen(false);
+                  closeSidebar();
                   openCreator();
                 }}
                 className="text-left text-sm font-black uppercase tracking-[0.16em] text-white/70 hover:text-white transition-colors py-1 cursor-pointer"
@@ -330,7 +302,7 @@ export function TopNav({
               </button>
               <Link
                 href="/profile"
-                onClick={() => setSidebarOpen(false)}
+                onClick={closeSidebar}
                 className={`text-sm font-black uppercase tracking-[0.16em] transition-colors py-1 ${
                   location === '/profile' ? 'text-primary' : 'text-white/70 hover:text-white'
                 }`}
@@ -343,7 +315,7 @@ export function TopNav({
             <div className="pt-6 border-t border-white/10 flex items-center justify-between text-[11px] font-bold text-white/40 tracking-wider uppercase">
               <Link
                 href="/privacy"
-                onClick={() => setSidebarOpen(false)}
+                onClick={closeSidebar}
                 className="hover:text-white transition-colors"
               >
                 Privacy
@@ -351,7 +323,7 @@ export function TopNav({
               <span className="text-white/20">·</span>
               <Link
                 href="/terms"
-                onClick={() => setSidebarOpen(false)}
+                onClick={closeSidebar}
                 className="hover:text-white transition-colors"
               >
                 Terms
