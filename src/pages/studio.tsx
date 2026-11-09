@@ -5,7 +5,7 @@ import { Camera, X } from 'lucide-react';
 import { useAppContext } from '@/lib/store';
 import { useCamera } from '@/hooks/use-camera';
 import { getFrameOption } from '@/lib/customization';
-import { CanonCamera, playMechanicalShutterSound } from '@/components/canon-camera';
+import { CanonCamera } from '@/components/canon-camera';
 
 function createDemoShot(index: number) {
   const colors = [
@@ -123,7 +123,6 @@ export default function Studio() {
               }, 150);
             }
           }
-          playMechanicalShutterSound();
           
           // Keep the sequence moving if a camera frame is not ready at the
           // exact countdown moment, especially on iPhone Safari.
@@ -159,28 +158,28 @@ export default function Studio() {
   const stripBgClass = getFrameOption(frame).className;
 
   return (
-    <div ref={studioRef} className="flex flex-col h-[100dvh] overflow-hidden bg-background">
+    <div ref={studioRef} className="flex flex-col min-h-[100dvh] lg:h-[100dvh] overflow-y-auto lg:overflow-hidden bg-background">
       <div id="camera-flash" className="fixed inset-0 bg-white z-[100] opacity-0 pointer-events-none transition-opacity duration-150 ease-out" />
       
       <TopNav backTo={isRetaking ? undefined : '/setup'} onBack={isRetaking ? () => window.location.reload() : undefined} />
       
-      <main className="flex-1 overflow-hidden flex flex-col items-center justify-between px-3 py-1 sm:px-6 sm:py-2 studio-content-zoom">
+      <main className="flex-1 overflow-y-auto lg:overflow-hidden flex flex-col items-center justify-start lg:justify-between px-2 py-1 sm:px-6 sm:py-2 studio-content-zoom">
         {/* Studio Heading */}
-        <div className="studio-heading text-center mb-1 w-full max-w-3xl shrink-0">
-          <span className="booth-heading-kicker mb-0.5 sm:mb-1">Step 2 of 3 · STUDIO</span>
-          <h1 className="font-hero text-2xl sm:text-3xl md:text-4xl text-foreground mt-0.5 mb-0.5">
+        <div className="studio-heading text-center mb-1 sm:mb-2 w-full max-w-3xl shrink-0">
+          <span className="booth-heading-kicker mb-0.5 sm:mb-1 hidden sm:inline-block">Step 2 of 3 · STUDIO</span>
+          <h1 className="font-hero text-lg sm:text-3xl md:text-4xl text-foreground mt-0.5 mb-0.5">
             PINKSNAP <span className="text-primary">STUDIO</span>
           </h1>
-          <p className="text-[11px] sm:text-xs font-bold text-primary uppercase tracking-[.18em] h-4">
+          <p className="text-[10px] sm:text-xs font-bold text-primary uppercase tracking-[.18em] h-4">
             {countdown === null ? 'READY WHEN YOU ARE' : countdown === 0 ? 'SMILE!' : 'GET READY...'}
           </p>
         </div>
 
-        {/* Central Stage: Perfectly Sized Canon Y2K Camera + Strip Preview */}
-        <div className="flex flex-col lg:flex-row gap-4 lg:gap-8 xl:gap-10 w-full max-w-5xl xl:max-w-6xl items-center justify-center flex-1 min-h-0 my-auto pb-2">
+        {/* Central Stage: Canon Y2K Camera + Strip Preview */}
+        <div className="flex flex-col lg:flex-row gap-3 lg:gap-8 xl:gap-10 w-full max-w-5xl xl:max-w-6xl items-center justify-center flex-1 min-h-0 my-auto pb-4 lg:pb-2">
 
-          {/* Authentic Y2K Canon Digital Camera View */}
-          <div className="studio-panel flex-1 w-full max-w-xl lg:max-w-2xl xl:max-w-[750px] flex flex-col items-center justify-center">
+          {/* Authentic Y2K Canon Digital Camera View (Full size on mobile) */}
+          <div className="studio-panel flex-1 w-full max-w-full sm:max-w-xl lg:max-w-2xl xl:max-w-[750px] flex flex-col items-center justify-center shrink-0">
             <CanonCamera
               videoRef={videoRef}
               isCapturing={isCapturing}
@@ -201,7 +200,7 @@ export default function Studio() {
           </div>
 
           {/* Strip Preview Sidebar */}
-          <div className="studio-panel strip-sidebar w-full lg:w-44 xl:w-48 shrink-0 flex flex-col gap-1.5 sm:gap-2 p-2 sm:p-3 bg-white shadow-xl border border-white/60 rounded-xl sm:rounded-2xl rotate-0 lg:rotate-2 h-auto min-h-[96px] sm:min-h-[120px] lg:h-auto lg:min-h-0 lg:flex-none">
+          <div className="studio-panel strip-sidebar w-full max-w-sm sm:max-w-md lg:w-44 xl:w-48 shrink-0 flex flex-col gap-1.5 sm:gap-2 p-2 sm:p-3 bg-white shadow-xl border border-white/60 rounded-xl sm:rounded-2xl rotate-0 lg:rotate-2 h-auto min-h-[80px] sm:min-h-[120px] lg:h-auto lg:min-h-0 lg:flex-none mt-2 lg:mt-0">
             <div className="flex justify-between items-center mb-1 shrink-0 px-0.5">
               <span className="font-display text-sm sm:text-lg text-foreground/75 tracking-[.12em]">YOUR STRIP</span>
               <div className="booth-led scale-75 origin-right shrink-0">
