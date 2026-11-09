@@ -202,48 +202,40 @@ export function CanonCamera({
           draggable={false}
         />
 
-        {/* ── Interactive Physical Shutter Button Centered on Canon's FUNC SET Round Dial ── */}
+        {/* ── Camera Shutter Button Centered on Canon's Round Dial / FUNC SET ── */}
         <button
           type="button"
           onClick={handleShutterPress}
           disabled={isCapturing || isComplete}
           data-testid="button-capture"
           aria-label="Take Photo Shutter"
-          title={isComplete ? "Session Complete" : isCapturing ? "Capturing..." : "Press Shutter to Shoot"}
+          title={isComplete ? "Session Complete" : isCapturing ? "Capturing..." : "Press Shutter"}
           style={{
-            left: '78.13%',
-            top: '40.67%',
-            width: '8.8%',
+            left: '78.27%',
+            top: '61.90%',
+            width: '10.5%',
             aspectRatio: '1 / 1',
           }}
-          className={`group absolute z-20 -translate-x-1/2 -translate-y-1/2 rounded-full flex items-center justify-center pointer-events-auto transition-transform duration-100 focus:outline-none cursor-pointer ${
+          className={`absolute z-20 -translate-x-1/2 -translate-y-1/2 rounded-full flex items-center justify-center pointer-events-auto cursor-pointer focus:outline-none ${
             isCapturing || isComplete
-              ? 'opacity-70 cursor-not-allowed scale-95'
-              : 'hover:brightness-105 active:scale-[0.92] active:translate-y-[1px]'
+              ? 'opacity-65 cursor-not-allowed'
+              : 'hover:brightness-105 active:brightness-95'
           }`}
         >
-          {/* Authentic Machined Aluminum Physical Hardware Button Face */}
+          {/* Authentic Clean Shutter Face (No animations) */}
           <div
-            className={`w-full h-full rounded-full flex items-center justify-center transition-all ${
+            className={`w-full h-full rounded-full flex items-center justify-center ${
               isComplete
-                ? 'bg-[#1e7e48] border border-white/70 shadow-[0_2px_4px_rgba(0,0,0,0.5),inset_0_1px_1px_rgba(255,255,255,0.7)]'
-                : 'bg-[radial-gradient(circle_at_35%_30%,#ffffff_0%,#e4e4ea_38%,#c4c4cc_72%,#9b9ba6_100%)] border border-white/90 shadow-[0_2px_5px_rgba(0,0,0,0.45),inset_0_1px_1.5px_rgba(255,255,255,0.95),inset_0_-2px_3px_rgba(0,0,0,0.35)] group-hover:shadow-[0_2px_8px_rgba(0,0,0,0.55),inset_0_1px_2px_rgba(255,255,255,1)]'
+                ? 'bg-emerald-600 text-white'
+                : 'bg-[radial-gradient(circle_at_35%_30%,#ffffff_0%,#f0f0f4_45%,#d0d0d8_80%,#aaaaaa_100%)] text-[#2d2d35] border border-white/90 shadow-[0_2px_6px_rgba(0,0,0,0.45),inset_0_1px_2px_rgba(255,255,255,0.9),inset_0_-2px_3px_rgba(0,0,0,0.3)]'
             }`}
           >
             {isComplete ? (
-              <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white stroke-[3]" />
+              <Check className="w-4 h-4 stroke-[3]" />
             ) : (
-              <div className="flex flex-col items-center justify-center">
-                {/* Physical Camera Shutter Core Icon in Dark Precision Metal */}
-                <Camera className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#2a2a34] drop-shadow-[0_1px_0_rgba(255,255,255,0.8)] transition-transform group-active:scale-90" />
-              </div>
+              <Camera className="w-4 h-4 sm:w-5 sm:h-5 text-[#2d2d35] drop-shadow-[0_1px_0_rgba(255,255,255,0.8)]" />
             )}
           </div>
-
-          {/* Clean Hardware Indicator Dot */}
-          {!isCapturing && !isComplete && (
-            <span className="absolute -top-1 right-0 w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_4px_rgba(245,61,137,0.8)] pointer-events-none" />
-          )}
         </button>
 
       </div>

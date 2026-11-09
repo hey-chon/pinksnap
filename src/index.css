@@ -649,6 +649,9 @@ img { max-width: 100%; }
   .desktop-zoom-95 {
     zoom: 0.95;
   }
+  .studio-content-zoom {
+    zoom: 1.10;
+  }
 }
 
 .cinematic-glow-pink {

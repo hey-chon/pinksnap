@@ -159,12 +159,12 @@ export default function Studio() {
   const stripBgClass = getFrameOption(frame).className;
 
   return (
-    <div ref={studioRef} className="flex flex-col h-[100dvh] overflow-hidden bg-background desktop-zoom-95">
+    <div ref={studioRef} className="flex flex-col h-[100dvh] overflow-hidden bg-background">
       <div id="camera-flash" className="fixed inset-0 bg-white z-[100] opacity-0 pointer-events-none transition-opacity duration-150 ease-out" />
       
       <TopNav backTo={isRetaking ? undefined : '/setup'} onBack={isRetaking ? () => window.location.reload() : undefined} />
       
-      <main className="flex-1 overflow-hidden flex flex-col items-center justify-between px-3 py-1 sm:px-6 sm:py-2">
+      <main className="flex-1 overflow-hidden flex flex-col items-center justify-between px-3 py-1 sm:px-6 sm:py-2 studio-content-zoom">
         {/* Studio Heading */}
         <div className="studio-heading text-center mb-1 w-full max-w-3xl shrink-0">
           <span className="booth-heading-kicker mb-0.5 sm:mb-1">Step 2 of 3 · STUDIO</span>
