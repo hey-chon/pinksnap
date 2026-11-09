@@ -176,11 +176,11 @@ export default function Studio() {
           </p>
         </div>
 
-        {/* Central Stage: Large Canon Y2K Camera + Strip Preview */}
-        <div className="flex flex-col lg:flex-row gap-4 lg:gap-8 xl:gap-10 w-full max-w-6xl xl:max-w-7xl items-center justify-center flex-1 min-h-0 my-auto pb-2">
+        {/* Central Stage: Perfectly Sized Canon Y2K Camera + Strip Preview */}
+        <div className="flex flex-col lg:flex-row gap-4 lg:gap-8 xl:gap-10 w-full max-w-5xl xl:max-w-6xl items-center justify-center flex-1 min-h-0 my-auto pb-2">
 
-          {/* Authentic Y2K Canon Digital Camera View (Large & Immersive) */}
-          <div className="studio-panel flex-1 w-full max-w-2xl lg:max-w-4xl xl:max-w-[960px] flex flex-col items-center justify-center">
+          {/* Authentic Y2K Canon Digital Camera View */}
+          <div className="studio-panel flex-1 w-full max-w-xl lg:max-w-2xl xl:max-w-[750px] flex flex-col items-center justify-center">
             <CanonCamera
               videoRef={videoRef}
               isCapturing={isCapturing}

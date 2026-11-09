@@ -83,9 +83,9 @@ export function CanonCamera({
   };
 
   return (
-    <div className="relative w-full max-w-[760px] lg:max-w-[880px] xl:max-w-[960px] mx-auto select-none flex items-center justify-center">
+    <div className="relative w-full max-w-[580px] lg:max-w-[680px] xl:max-w-[740px] mx-auto select-none flex items-center justify-center">
       {/* ── Main Aspect Ratio Frame (Canon 704 x 504 = 1.3968:1) ── */}
-      <div className="relative w-full aspect-[704/504] max-h-[calc(100dvh-170px)] flex items-center justify-center">
+      <div className="relative w-full aspect-[704/504] max-h-[calc(100dvh-175px)] flex items-center justify-center">
         
         {/* ── Live Webcam Screen (positioned precisely behind the LCD cutout) ── */}
         <div
@@ -100,7 +100,7 @@ export function CanonCamera({
           {/* Fallback / Camera unavailable prompt */}
           {showDemoPrompt && (
             <div className="absolute inset-0 flex flex-col items-center justify-center bg-zinc-950/92 text-white p-4 text-center z-30 backdrop-blur-xs">
-              <AlertCircle className="w-8 h-8 sm:w-10 sm:h-10 text-primary mb-2" />
+              <AlertCircle className="w-8 h-8 text-primary mb-2" />
               <p className="font-black text-xs sm:text-sm tracking-wider mb-1">CAMERA UNAVAILABLE</p>
               <p className="text-[10px] sm:text-xs text-white/70 font-medium mb-3 max-w-[240px] line-clamp-2">
                 {error || "Could not access camera. Continue in demo mode."}
@@ -144,7 +144,7 @@ export function CanonCamera({
                 data-testid="button-toggle-flash"
                 aria-label={flashEnabled ? "Disable Flash" : "Enable Flash"}
                 title={flashEnabled ? "Flash ON" : "Flash OFF"}
-                className={`p-1.5 sm:p-2 rounded-full backdrop-blur-md transition-all cursor-pointer focus:outline-none ${
+                className={`p-1.5 rounded-full backdrop-blur-md transition-all cursor-pointer focus:outline-none ${
                   flashEnabled
                     ? 'bg-primary/80 hover:bg-primary text-white shadow-md'
                     : 'bg-black/50 hover:bg-black/70 text-white/70 hover:text-white'
@@ -160,7 +160,7 @@ export function CanonCamera({
                 data-testid="button-restart-camera"
                 aria-label="Restart Camera"
                 title="Restart Camera"
-                className="p-1.5 sm:p-2 rounded-full bg-black/50 hover:bg-black/70 backdrop-blur-md text-white/70 hover:text-white transition-all cursor-pointer focus:outline-none"
+                className="p-1.5 rounded-full bg-black/50 hover:bg-black/70 backdrop-blur-md text-white/70 hover:text-white transition-all cursor-pointer focus:outline-none"
               >
                 <RefreshCw className="w-3.5 h-3.5" />
               </button>
@@ -198,63 +198,53 @@ export function CanonCamera({
         <img
           src="/canon_camera_frame.png"
           alt="Canon Digital Camera"
-          className="relative z-10 w-full h-full object-contain pointer-events-none drop-shadow-[0_20px_45px_rgba(0,0,0,0.4)]"
+          className="relative z-10 w-full h-full object-contain pointer-events-none drop-shadow-[0_16px_36px_rgba(0,0,0,0.38)]"
           draggable={false}
         />
 
-        {/* ── Interactive Physical Shutter on Circular Dial / FUNC SET ── */}
-        <div
-          className="absolute z-20 flex items-center justify-center -translate-x-1/2 -translate-y-1/2 pointer-events-auto"
-          style={{ left: '78.41%', top: '40.28%' }}
+        {/* ── Interactive Physical Shutter Button Centered on Canon's FUNC SET Round Dial ── */}
+        <button
+          type="button"
+          onClick={handleShutterPress}
+          disabled={isCapturing || isComplete}
+          data-testid="button-capture"
+          aria-label="Take Photo Shutter"
+          title={isComplete ? "Session Complete" : isCapturing ? "Capturing..." : "Press Shutter to Shoot"}
+          style={{
+            left: '78.13%',
+            top: '40.67%',
+            width: '8.8%',
+            aspectRatio: '1 / 1',
+          }}
+          className={`group absolute z-20 -translate-x-1/2 -translate-y-1/2 rounded-full flex items-center justify-center pointer-events-auto transition-transform duration-100 focus:outline-none cursor-pointer ${
+            isCapturing || isComplete
+              ? 'opacity-70 cursor-not-allowed scale-95'
+              : 'hover:brightness-105 active:scale-[0.92] active:translate-y-[1px]'
+          }`}
         >
-          <button
-            type="button"
-            onClick={handleShutterPress}
-            disabled={isCapturing || isComplete}
-            data-testid="button-capture"
-            aria-label="Take Photo Shutter"
-            title={isComplete ? "Session Complete" : isCapturing ? "Capturing..." : "Press Shutter to Shoot"}
-            className={`group relative w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 lg:w-28 lg:h-28 rounded-full flex flex-col items-center justify-center transition-all duration-150 focus:outline-none cursor-pointer ${
-              isCapturing || isComplete
-                ? 'opacity-60 cursor-not-allowed scale-95'
-                : 'hover:scale-105 active:scale-95'
+          {/* Authentic Machined Aluminum Physical Hardware Button Face */}
+          <div
+            className={`w-full h-full rounded-full flex items-center justify-center transition-all ${
+              isComplete
+                ? 'bg-[#1e7e48] border border-white/70 shadow-[0_2px_4px_rgba(0,0,0,0.5),inset_0_1px_1px_rgba(255,255,255,0.7)]'
+                : 'bg-[radial-gradient(circle_at_35%_30%,#ffffff_0%,#e4e4ea_38%,#c4c4cc_72%,#9b9ba6_100%)] border border-white/90 shadow-[0_2px_5px_rgba(0,0,0,0.45),inset_0_1px_1.5px_rgba(255,255,255,0.95),inset_0_-2px_3px_rgba(0,0,0,0.35)] group-hover:shadow-[0_2px_8px_rgba(0,0,0,0.55),inset_0_1px_2px_rgba(255,255,255,1)]'
             }`}
           >
-            {/* Ambient Shutter Pulse Ring */}
-            {!isCapturing && !isComplete && (
-              <span className="absolute inset-0 rounded-full border-2 border-primary/50 animate-ping opacity-40 pointer-events-none" />
+            {isComplete ? (
+              <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white stroke-[3]" />
+            ) : (
+              <div className="flex flex-col items-center justify-center">
+                {/* Physical Camera Shutter Core Icon in Dark Precision Metal */}
+                <Camera className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#2a2a34] drop-shadow-[0_1px_0_rgba(255,255,255,0.8)] transition-transform group-active:scale-90" />
+              </div>
             )}
+          </div>
 
-            {/* Tactile Shutter Button Button Face */}
-            <div
-              className={`w-12 h-12 sm:w-15 sm:h-15 md:w-18 md:h-18 lg:w-20 lg:h-20 rounded-full flex flex-col items-center justify-center border-2 border-white/90 shadow-[0_4px_20px_rgba(245,61,137,0.6)] transition-all ${
-                isCapturing
-                  ? 'bg-zinc-700 text-white/50 border-white/30'
-                  : isComplete
-                  ? 'bg-emerald-600 text-white border-white/80'
-                  : 'bg-gradient-to-tr from-[#e03178] via-[#f53d89] to-[#ff78b0] text-white hover:brightness-110 shadow-[0_4px_24px_rgba(245,61,137,0.75)] group-active:translate-y-0.5'
-              }`}
-            >
-              {isComplete ? (
-                <Check className="w-5 h-5 sm:w-6 sm:h-6 stroke-[3]" />
-              ) : (
-                <>
-                  <Camera className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]" />
-                  <span className="text-[8px] sm:text-[9px] md:text-[10px] font-black uppercase tracking-widest leading-none mt-0.5 drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]">
-                    SNAP
-                  </span>
-                </>
-              )}
-            </div>
-
-            {/* Clean Shutter Pill Label */}
-            {!isCapturing && !isComplete && (
-              <span className="absolute -bottom-6 left-1/2 -translate-x-1/2 whitespace-nowrap bg-black/90 text-pink-300 border border-pink-500/40 text-[9px] sm:text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                PRESS TO SHOOT
-              </span>
-            )}
-          </button>
-        </div>
+          {/* Clean Hardware Indicator Dot */}
+          {!isCapturing && !isComplete && (
+            <span className="absolute -top-1 right-0 w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_4px_rgba(245,61,137,0.8)] pointer-events-none" />
+          )}
+        </button>
 
       </div>
     </div>
