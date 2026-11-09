@@ -23,9 +23,10 @@ export default function TermsOfService() {
 
   const handleStartSnapping = () => {
     sessionStorage.setItem('ps_has_entered_app', 'true');
+    sessionStorage.setItem('ps_has_loaded', 'true');
     sessionStorage.setItem('ps_intent_start', 'true');
     if (isAuthenticated) {
-      navigate('/loading');
+      navigate('/setup');
     } else {
       setShowAuthGate(true);
     }
@@ -38,9 +39,10 @@ export default function TermsOfService() {
           onClose={() => setShowAuthGate(false)}
           onSuccess={() => {
             sessionStorage.setItem('ps_has_entered_app', 'true');
+            sessionStorage.setItem('ps_has_loaded', 'true');
             sessionStorage.setItem('ps_intent_start', 'true');
             setShowAuthGate(false);
-            navigate('/loading');
+            navigate('/setup');
           }}
         />
       )}
