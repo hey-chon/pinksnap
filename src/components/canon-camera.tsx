@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React from 'react';
 import { RefreshCw, Zap, ZapOff, AlertCircle, Camera, Check } from 'lucide-react';
 
 interface CanonCameraProps {
@@ -31,29 +31,29 @@ export function playMechanicalShutterSound() {
     const osc1 = ctx.createOscillator();
     const gain1 = ctx.createGain();
     osc1.type = 'triangle';
-    osc1.frequency.setValueAtTime(140, now);
-    osc1.frequency.exponentialRampToValueAtTime(35, now + 0.06);
-    gain1.gain.setValueAtTime(0.28, now);
-    gain1.gain.exponentialRampToValueAtTime(0.005, now + 0.06);
+    osc1.frequency.setValueAtTime(150, now);
+    osc1.frequency.exponentialRampToValueAtTime(35, now + 0.05);
+    gain1.gain.setValueAtTime(0.3, now);
+    gain1.gain.exponentialRampToValueAtTime(0.005, now + 0.05);
     osc1.connect(gain1);
     gain1.connect(ctx.destination);
     osc1.start(now);
-    osc1.stop(now + 0.06);
+    osc1.stop(now + 0.05);
 
-    // Second click (shutter closing / spring)
+    // Second click (shutter closing)
     const osc2 = ctx.createOscillator();
     const gain2 = ctx.createGain();
     osc2.type = 'triangle';
-    osc2.frequency.setValueAtTime(190, now + 0.07);
-    osc2.frequency.exponentialRampToValueAtTime(45, now + 0.14);
-    gain2.gain.setValueAtTime(0.24, now + 0.07);
-    gain2.gain.exponentialRampToValueAtTime(0.005, now + 0.14);
+    osc2.frequency.setValueAtTime(200, now + 0.06);
+    osc2.frequency.exponentialRampToValueAtTime(45, now + 0.12);
+    gain2.gain.setValueAtTime(0.25, now + 0.06);
+    gain2.gain.exponentialRampToValueAtTime(0.005, now + 0.12);
     osc2.connect(gain2);
     gain2.connect(ctx.destination);
-    osc2.start(now + 0.07);
-    osc2.stop(now + 0.14);
+    osc2.start(now + 0.06);
+    osc2.stop(now + 0.12);
   } catch {
-    // Audio context not allowed or failed silently
+    // Audio context failed or not allowed
   }
 }
 
@@ -83,11 +83,11 @@ export function CanonCamera({
   };
 
   return (
-    <div className="relative w-full max-w-[560px] sm:max-w-[620px] md:max-w-[680px] select-none mx-auto">
-      {/* ── Aspect container matching the Canon camera dimensions (704x504 = 1.3968) ── */}
-      <div className="relative w-full aspect-[704/504]">
+    <div className="relative w-full max-w-[760px] lg:max-w-[880px] xl:max-w-[960px] mx-auto select-none flex items-center justify-center">
+      {/* ── Main Aspect Ratio Frame (Canon 704 x 504 = 1.3968:1) ── */}
+      <div className="relative w-full aspect-[704/504] max-h-[calc(100dvh-170px)] flex items-center justify-center">
         
-        {/* ── Screen layer: Live Webcam / OSD (positioned behind the camera frame) ── */}
+        {/* ── Live Webcam Screen (positioned precisely behind the LCD cutout) ── */}
         <div
           className="absolute z-0 overflow-hidden bg-black rounded-[4px] shadow-inner"
           style={{
@@ -99,24 +99,24 @@ export function CanonCamera({
         >
           {/* Fallback / Camera unavailable prompt */}
           {showDemoPrompt && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center bg-zinc-950/92 text-white p-3 sm:p-4 text-center z-30 backdrop-blur-xs">
-              <AlertCircle className="w-7 h-7 sm:w-9 sm:h-9 text-primary mb-2" />
+            <div className="absolute inset-0 flex flex-col items-center justify-center bg-zinc-950/92 text-white p-4 text-center z-30 backdrop-blur-xs">
+              <AlertCircle className="w-8 h-8 sm:w-10 sm:h-10 text-primary mb-2" />
               <p className="font-black text-xs sm:text-sm tracking-wider mb-1">CAMERA UNAVAILABLE</p>
-              <p className="text-[10px] sm:text-xs text-white/70 font-medium mb-3 max-w-[220px] line-clamp-2">
+              <p className="text-[10px] sm:text-xs text-white/70 font-medium mb-3 max-w-[240px] line-clamp-2">
                 {error || "Could not access camera. Continue in demo mode."}
               </p>
               <button
                 type="button"
                 onClick={() => setDemoMode(true)}
                 data-testid="button-demo-mode"
-                className="bg-primary hover:bg-primary/90 text-white text-[11px] font-black px-4 py-2 rounded-full shadow-md transition-transform active:scale-95 cursor-pointer"
+                className="bg-primary hover:bg-primary/90 text-white text-xs font-black px-4 py-2 rounded-full shadow-md transition-transform active:scale-95 cursor-pointer"
               >
                 USE DEMO MODE
               </button>
             </div>
           )}
 
-          {/* Live Video Feed */}
+          {/* Mirrored Live Video Stream */}
           <video
             ref={videoRef}
             data-testid="camera-preview"
@@ -126,49 +126,50 @@ export function CanonCamera({
             className="w-full h-full object-cover scale-x-[-1]"
           />
 
-          {/* Vintage Digital Camera Viewfinder OSD Elements */}
-          <div className="absolute inset-0 pointer-events-none flex flex-col justify-between p-2 sm:p-2.5 z-10 font-mono text-[9px] sm:text-[10px] text-white/90">
-            {/* Top Bar OSD */}
-            <div className="flex items-center justify-between drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
-              <div className="flex items-center gap-1.5">
-                <span className={`inline-flex items-center gap-0.5 px-1 rounded text-[8px] sm:text-[9px] font-bold ${
-                  flashEnabled ? 'bg-primary/80 text-white' : 'bg-black/50 text-white/60'
-                }`}>
-                  {flashEnabled ? '⚡ ON' : '⚡ OFF'}
-                </span>
-                <span className="font-bold text-white/70">ISO 100</span>
-              </div>
-              <div className="flex items-center gap-1 font-bold">
-                <span className="text-pink-300">REC</span>
-                <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
-              </div>
-            </div>
-
-            {/* Center Focus Reticle [ + ] */}
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <div className="relative w-14 h-14 sm:w-16 sm:h-16 border border-white/30 rounded-lg">
-                <div className="absolute -top-1 -left-1 w-2.5 h-2.5 border-t-2 border-l-2 border-primary" />
-                <div className="absolute -top-1 -right-1 w-2.5 h-2.5 border-t-2 border-r-2 border-primary" />
-                <div className="absolute -bottom-1 -left-1 w-2.5 h-2.5 border-b-2 border-l-2 border-primary" />
-                <div className="absolute -bottom-1 -right-1 w-2.5 h-2.5 border-b-2 border-r-2 border-primary" />
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-1 h-1 bg-primary/70 rounded-full" />
-                </div>
-              </div>
-            </div>
-
-            {/* Bottom Bar OSD */}
-            <div className="flex items-center justify-between drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
-              <span className="tracking-widest font-black text-pink-400">PINKSNAP</span>
-              <span className="text-[8px] sm:text-[9px] font-bold text-white/80">
-                SHOT {Math.min(shotsCount + 1, maxShots)}/{maxShots}
-              </span>
-            </div>
+          {/* Minimal Viewfinder Corner Brackets */}
+          <div className="absolute inset-2 sm:inset-3 pointer-events-none border border-white/15 rounded-md">
+            <div className="absolute top-0 left-0 w-3 h-3 border-t-2 border-l-2 border-white/60 -translate-x-0.5 -translate-y-0.5" />
+            <div className="absolute top-0 right-0 w-3 h-3 border-t-2 border-r-2 border-white/60 translate-x-0.5 -translate-y-0.5" />
+            <div className="absolute bottom-0 left-0 w-3 h-3 border-b-2 border-l-2 border-white/60 -translate-x-0.5 translate-y-0.5" />
+            <div className="absolute bottom-0 right-0 w-3 h-3 border-b-2 border-r-2 border-white/60 translate-x-0.5 translate-y-0.5" />
           </div>
+
+          {/* Clean Screen Controls (Top Corners - Non-intrusive) */}
+          {!isCapturing && (
+            <div className="absolute top-2 inset-x-2 flex items-center justify-between z-20 pointer-events-auto">
+              {/* Flash Toggle */}
+              <button
+                type="button"
+                onClick={() => setFlashEnabled(prev => !prev)}
+                data-testid="button-toggle-flash"
+                aria-label={flashEnabled ? "Disable Flash" : "Enable Flash"}
+                title={flashEnabled ? "Flash ON" : "Flash OFF"}
+                className={`p-1.5 sm:p-2 rounded-full backdrop-blur-md transition-all cursor-pointer focus:outline-none ${
+                  flashEnabled
+                    ? 'bg-primary/80 hover:bg-primary text-white shadow-md'
+                    : 'bg-black/50 hover:bg-black/70 text-white/70 hover:text-white'
+                }`}
+              >
+                {flashEnabled ? <Zap className="w-3.5 h-3.5 fill-current" /> : <ZapOff className="w-3.5 h-3.5" />}
+              </button>
+
+              {/* Flip / Refresh Camera */}
+              <button
+                type="button"
+                onClick={restartCamera}
+                data-testid="button-restart-camera"
+                aria-label="Restart Camera"
+                title="Restart Camera"
+                className="p-1.5 sm:p-2 rounded-full bg-black/50 hover:bg-black/70 backdrop-blur-md text-white/70 hover:text-white transition-all cursor-pointer focus:outline-none"
+              >
+                <RefreshCw className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          )}
 
           {/* Countdown Overlay */}
           {countdown !== null && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/35 backdrop-blur-[1px] z-20">
+            <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/30 backdrop-blur-[1px] z-20 pointer-events-none">
               <span
                 ref={countdownRef}
                 className={`font-black text-white drop-shadow-[0_0_24px_rgba(245,61,137,0.95)] transition-transform duration-200 ${
@@ -177,26 +178,23 @@ export function CanonCamera({
               >
                 {countdown === 0 ? 'SMILE!' : countdown}
               </span>
-              <span className="text-[10px] sm:text-xs font-bold text-white/80 uppercase tracking-widest mt-1">
-                {countdown === 0 ? '★ FLASH ★' : 'HOLD STILL'}
-              </span>
             </div>
           )}
 
-          {/* Cancel button during capture sequence */}
+          {/* Cancel Button during capture */}
           {isCapturing && (
             <button
               type="button"
               onClick={cancelSequence}
               data-testid="button-cancel-capture"
-              className="absolute top-2 right-2 z-30 bg-black/70 hover:bg-black/90 text-white text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded-full border border-white/20 transition-colors cursor-pointer"
+              className="absolute top-2 right-2 z-30 bg-black/75 hover:bg-black/95 text-white text-[10px] font-bold px-2.5 py-1 rounded-full border border-white/20 transition-colors cursor-pointer"
             >
               CANCEL
             </button>
           )}
         </div>
 
-        {/* ── Authentic Canon Camera Frame (Overlay on top of video) ── */}
+        {/* ── Authentic Canon Camera Frame (Overlay) ── */}
         <img
           src="/canon_camera_frame.png"
           alt="Canon Digital Camera"
@@ -204,12 +202,10 @@ export function CanonCamera({
           draggable={false}
         />
 
-        {/* ── Interactive Physical Camera Controls ── */}
-
-        {/* 1. Main Shutter Button on Circular Metallic Dial / FUNC SET */}
+        {/* ── Interactive Physical Shutter on Circular Dial / FUNC SET ── */}
         <div
-          className="absolute z-20 flex items-center justify-center -translate-x-1/2 -translate-y-1/2"
-          style={{ left: '78.41%', top: '40.28%', width: '21.5%', height: '30%' }}
+          className="absolute z-20 flex items-center justify-center -translate-x-1/2 -translate-y-1/2 pointer-events-auto"
+          style={{ left: '78.41%', top: '40.28%' }}
         >
           <button
             type="button"
@@ -218,86 +214,49 @@ export function CanonCamera({
             data-testid="button-capture"
             aria-label="Take Photo Shutter"
             title={isComplete ? "Session Complete" : isCapturing ? "Capturing..." : "Press Shutter to Shoot"}
-            className={`group relative w-full h-full rounded-full flex items-center justify-center transition-all duration-150 focus:outline-none cursor-pointer ${
+            className={`group relative w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 lg:w-28 lg:h-28 rounded-full flex flex-col items-center justify-center transition-all duration-150 focus:outline-none cursor-pointer ${
               isCapturing || isComplete
-                ? 'opacity-60 cursor-not-allowed'
+                ? 'opacity-60 cursor-not-allowed scale-95'
                 : 'hover:scale-105 active:scale-95'
             }`}
           >
-            {/* Shutter Pulse / Glow Ring */}
+            {/* Ambient Shutter Pulse Ring */}
             {!isCapturing && !isComplete && (
-              <span className="absolute inset-1 rounded-full border-2 border-primary/60 animate-ping opacity-30 pointer-events-none" />
+              <span className="absolute inset-0 rounded-full border-2 border-primary/50 animate-ping opacity-40 pointer-events-none" />
             )}
 
-            {/* Inner Metallic Shutter Core (Sits precisely over FUNC / SET) */}
+            {/* Tactile Shutter Button Button Face */}
             <div
-              className={`w-[48%] h-[48%] rounded-full flex items-center justify-center transition-all shadow-md ${
+              className={`w-12 h-12 sm:w-15 sm:h-15 md:w-18 md:h-18 lg:w-20 lg:h-20 rounded-full flex flex-col items-center justify-center border-2 border-white/90 shadow-[0_4px_20px_rgba(245,61,137,0.6)] transition-all ${
                 isCapturing
-                  ? 'bg-zinc-700 text-white/40'
+                  ? 'bg-zinc-700 text-white/50 border-white/30'
                   : isComplete
-                  ? 'bg-emerald-600 text-white'
-                  : 'bg-gradient-to-tr from-[#e03178] to-[#ff6da8] text-white hover:brightness-110 shadow-[0_2px_12px_rgba(245,61,137,0.7)] group-active:translate-y-0.5'
+                  ? 'bg-emerald-600 text-white border-white/80'
+                  : 'bg-gradient-to-tr from-[#e03178] via-[#f53d89] to-[#ff78b0] text-white hover:brightness-110 shadow-[0_4px_24px_rgba(245,61,137,0.75)] group-active:translate-y-0.5'
               }`}
             >
               {isComplete ? (
-                <Check className="w-4 h-4 sm:w-5 sm:h-5 stroke-[3]" />
+                <Check className="w-5 h-5 sm:w-6 sm:h-6 stroke-[3]" />
               ) : (
-                <Camera className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5 drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]" />
+                <>
+                  <Camera className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]" />
+                  <span className="text-[8px] sm:text-[9px] md:text-[10px] font-black uppercase tracking-widest leading-none mt-0.5 drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]">
+                    SNAP
+                  </span>
+                </>
               )}
             </div>
 
-            {/* Sleek Y2K Shutter Tooltip Pill */}
+            {/* Clean Shutter Pill Label */}
             {!isCapturing && !isComplete && (
               <span className="absolute -bottom-6 left-1/2 -translate-x-1/2 whitespace-nowrap bg-black/90 text-pink-300 border border-pink-500/40 text-[9px] sm:text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                SNAP SHUTTER
+                PRESS TO SHOOT
               </span>
             )}
           </button>
         </div>
 
-        {/* 2. Interactive Flash Toggle Button (Over the Flash Icon at 3 o'clock on dial) */}
-        <button
-          type="button"
-          onClick={() => setFlashEnabled(prev => !prev)}
-          disabled={isCapturing}
-          data-testid="button-toggle-flash"
-          aria-label={flashEnabled ? "Disable Flash" : "Enable Flash"}
-          title={flashEnabled ? "Flash ON (Click to disable)" : "Flash OFF (Click to enable)"}
-          className={`absolute z-20 -translate-x-1/2 -translate-y-1/2 w-[7.5%] h-[10.5%] rounded-full flex items-center justify-center transition-all focus:outline-none cursor-pointer ${
-            flashEnabled
-              ? 'bg-primary/90 text-white shadow-[0_0_10px_rgba(245,61,137,0.8)] scale-100 hover:scale-110 active:scale-90'
-              : 'bg-black/60 hover:bg-black/80 text-white/70 hover:text-white scale-95 hover:scale-105 active:scale-90'
-          }`}
-          style={{ left: '87.5%', top: '40.28%' }}
-        >
-          {flashEnabled ? (
-            <Zap className="w-3 h-3 sm:w-3.5 sm:h-3.5 fill-current" />
-          ) : (
-            <ZapOff className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-          )}
-        </button>
-
-        {/* 3. Interactive Blue Button (Direct Print / Camera Flip & Restart at bottom-right) */}
-        <button
-          type="button"
-          onClick={restartCamera}
-          disabled={isCapturing}
-          data-testid="button-restart-camera"
-          aria-label="Restart Camera"
-          title="Refresh / Flip Camera"
-          className="group absolute z-20 -translate-x-1/2 -translate-y-1/2 w-[8%] h-[11%] rounded-full flex items-center justify-center bg-sky-500/0 hover:bg-sky-400/20 active:bg-sky-600/30 transition-all focus:outline-none cursor-pointer hover:scale-110 active:scale-90"
-          style={{ left: '67.61%', top: '77.38%' }}
-        >
-          <div className="w-4 h-4 sm:w-5 sm:h-5 rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity bg-sky-500/80 shadow-md">
-            <RefreshCw className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
-          </div>
-          <span className="absolute -top-6 left-1/2 -translate-x-1/2 whitespace-nowrap bg-black/90 text-sky-300 border border-sky-500/40 text-[8px] sm:text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-            REFRESH
-          </span>
-        </button>
-
       </div>
     </div>
   );
 }
-
