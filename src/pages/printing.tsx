@@ -61,8 +61,8 @@ export default function Printing() {
     phase === 'warming'
       ? 'Warming up the printer...'
       : phase === 'printing'
-        ? 'Printing your strip...'
-        : 'Almost done...';
+        ? 'Printing your receipt...'
+        : 'Yiepiee all done...';
 
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-white select-none">
