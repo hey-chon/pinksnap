@@ -44,7 +44,7 @@ export function CanonCamera({
   };
 
   return (
-    <div className="relative w-full max-w-[520px] sm:max-w-[620px] lg:max-w-[700px] xl:max-w-[760px] mx-auto select-none flex items-center justify-center">
+    <div className="relative w-full max-w-[440px] sm:max-w-[620px] lg:max-w-[700px] xl:max-w-[760px] mx-auto select-none flex items-center justify-center">
       {/* ── Main Aspect Ratio Frame (Canon 704 x 504 = 1.3968:1) ── */}
       <div className="relative w-full aspect-[704/504] max-h-none sm:max-h-[calc(100dvh-170px)] flex items-center justify-center">
         
@@ -163,7 +163,7 @@ export function CanonCamera({
           draggable={false}
         />
 
-        {/* ── Shutter Button fitting the Second Circle perfectly (No animations, No sound) ── */}
+        {/* ── Shutter Button matching Grok reference (No animations, No sounds) ── */}
         <button
           type="button"
           onClick={handleShutterPress}
@@ -172,9 +172,9 @@ export function CanonCamera({
           aria-label="Take Photo Shutter"
           title={isComplete ? "Session Complete" : isCapturing ? "Capturing..." : "Press Shutter"}
           style={{
-            left: '77.84%',
-            top: '61.51%',
-            width: '13.64%',
+            left: '78.3%',
+            top: '60.0%',
+            width: '18.5%',
             aspectRatio: '1 / 1',
           }}
           className={`absolute z-20 -translate-x-1/2 -translate-y-1/2 rounded-full flex items-center justify-center pointer-events-auto cursor-pointer focus:outline-none ${
@@ -183,18 +183,18 @@ export function CanonCamera({
               : 'hover:brightness-105 active:brightness-95'
           }`}
         >
-          {/* Authentic Machined Shutter Face fitting the Second Circle */}
+          {/* Pure white circular button face matching Grok design */}
           <div
-            className={`w-full h-full rounded-full flex items-center justify-center ${
+            className={`w-full h-full rounded-full flex items-center justify-center border-2 transition-all ${
               isComplete
-                ? 'bg-emerald-600 text-white'
-                : 'bg-[radial-gradient(circle_at_35%_30%,#ffffff_0%,#f0f0f4_42%,#d0d0d8_78%,#aaaaaa_100%)] text-[#2d2d35] border border-white/90 shadow-[0_2px_6px_rgba(0,0,0,0.45),inset_0_1px_2px_rgba(255,255,255,0.9),inset_0_-2px_3px_rgba(0,0,0,0.3)]'
+                ? 'bg-emerald-600 border-white text-white shadow-md'
+                : 'bg-white border-[#d8d8e0] text-[#1c1c24] shadow-[0_2px_8px_rgba(0,0,0,0.35),inset_0_1px_2px_rgba(255,255,255,1),inset_0_-1px_2px_rgba(0,0,0,0.12)]'
             }`}
           >
             {isComplete ? (
-              <Check className="w-4 h-4 sm:w-5 sm:h-5 stroke-[3]" />
+              <Check className="w-5 h-5 sm:w-6 sm:h-6 stroke-[3]" />
             ) : (
-              <Camera className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-[#2d2d35] drop-shadow-[0_1px_0_rgba(255,255,255,0.8)]" />
+              <Camera className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 text-[#1c1c24] stroke-[2.2]" />
             )}
           </div>
         </button>

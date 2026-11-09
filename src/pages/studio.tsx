@@ -163,7 +163,7 @@ export default function Studio() {
       
       <TopNav backTo={isRetaking ? undefined : '/setup'} onBack={isRetaking ? () => window.location.reload() : undefined} />
       
-      <main className="flex-1 overflow-y-auto lg:overflow-hidden flex flex-col items-center justify-start lg:justify-between px-2 py-1 sm:px-6 sm:py-2 studio-content-zoom">
+      <main className="flex-1 overflow-y-auto lg:overflow-hidden flex flex-col items-center justify-start lg:justify-between px-1.5 sm:px-6 py-1 sm:py-2 studio-content-zoom">
         {/* Studio Heading */}
         <div className="studio-heading text-center mb-1 sm:mb-2 w-full max-w-3xl shrink-0">
           <span className="booth-heading-kicker mb-0.5 sm:mb-1 hidden sm:inline-block">Step 2 of 3 · STUDIO</span>
@@ -178,8 +178,8 @@ export default function Studio() {
         {/* Central Stage: Canon Y2K Camera + Strip Preview */}
         <div className="flex flex-col lg:flex-row gap-3 lg:gap-8 xl:gap-10 w-full max-w-5xl xl:max-w-6xl items-center justify-center flex-1 min-h-0 my-auto pb-4 lg:pb-2">
 
-          {/* Authentic Y2K Canon Digital Camera View (Full size on mobile) */}
-          <div className="studio-panel flex-1 w-full max-w-full sm:max-w-xl lg:max-w-2xl xl:max-w-[750px] flex flex-col items-center justify-center shrink-0">
+          {/* Authentic Y2K Canon Digital Camera View (Maximized on mobile with only a bit of space left and right) */}
+          <div className="flex-1 w-full max-w-full sm:max-w-xl lg:max-w-2xl xl:max-w-[750px] flex flex-col items-center justify-center shrink-0">
             <CanonCamera
               videoRef={videoRef}
               isCapturing={isCapturing}
