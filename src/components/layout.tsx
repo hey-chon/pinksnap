@@ -313,23 +313,7 @@ export function TopNav({
 
             {/* Sidebar Footer — Minimal Legal Links */}
             <div className="pt-6 border-t border-white/10 flex items-center justify-between text-[11px] font-bold text-white/40 tracking-wider uppercase">
-              <Link
-                href="/privacy"
-                onClick={closeSidebar}
-                className="hover:text-white transition-colors"
-              >
-                Privacy
-              </Link>
-              <span className="text-white/20">·</span>
-              <Link
-                href="/terms"
-                onClick={closeSidebar}
-                className="hover:text-white transition-colors"
-              >
-                Terms
-              </Link>
-              <span className="text-white/20">·</span>
-              <span className="font-mono text-[9px] text-white/30">v2.0</span>
+
             </div>
           </aside>
         </div>
