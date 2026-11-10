@@ -148,10 +148,9 @@ async function preparePublicWallStrip(
   };
 }
 
-async function syncPublicWallJson(userId: string, currentBio: string, wallEntries: string[]) {
+async function syncPublicWallJson(userId: string, wallEntries: string[]) {
   try {
     const payload = JSON.stringify({
-      bio: currentBio || '',
       wallStrips: wallEntries,
       updatedAt: Date.now(),
     });
@@ -227,29 +226,55 @@ export default function ProfilePage() {
           avatar_url?: string | null;
           role?: string | null;
           created_at?: string;
-          bio?: string | null;
-          wall_strip_ids?: string[] | null;
         } | null = null;
 
-        // Tier 1: Query profiles table directly to retrieve id, display_name, avatar_url, role, created_at, and wall_strip_ids
-        const tryProfiles = await supabase
-          .from('profiles')
-          .select('id, display_name, avatar_url, role, created_at, wall_strip_ids')
-          .eq('id', targetUserId)
-          .maybeSingle();
+        const cleanTarget = targetUserId.trim();
+        const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(cleanTarget);
 
-        if (tryProfiles.data && !tryProfiles.error) {
-          baseData = tryProfiles.data;
-        } else {
-          // Tier 2: Try profiles_public view with core columns + wall_strip_ids
-          const tryCore = await supabase
-            .from('profiles_public')
-            .select('id, display_name, avatar_url, role, bio, wall_strip_ids')
-            .eq('id', targetUserId)
+        // Step 1: If cleanTarget is a valid UUID, query by ID
+        if (isUuid) {
+          const { data, error } = await supabase
+            .from('profiles')
+            .select('id, display_name, avatar_url, role, created_at')
+            .eq('id', cleanTarget)
             .maybeSingle();
 
-          if (tryCore.data && !tryCore.error) {
-            baseData = tryCore.data;
+          if (data && !error) {
+            baseData = data;
+          }
+        }
+
+        // Step 2: If not found or not a UUID, query by display_name (case-insensitive)
+        if (!baseData) {
+          const { data, error } = await supabase
+            .from('profiles')
+            .select('id, display_name, avatar_url, role, created_at')
+            .ilike('display_name', cleanTarget)
+            .maybeSingle();
+
+          if (data && !error) {
+            baseData = data;
+          }
+        }
+
+        // Step 3: Resilient fallback scan across all profiles
+        if (!baseData) {
+          const { data: allProfiles } = await supabase
+            .from('profiles')
+            .select('id, display_name, avatar_url, role, created_at')
+            .limit(100);
+
+          if (allProfiles && allProfiles.length > 0) {
+            const lower = cleanTarget.toLowerCase();
+            const matched = allProfiles.find(
+              (p) =>
+                p.id.toLowerCase() === lower ||
+                p.display_name?.toLowerCase() === lower ||
+                p.display_name?.toLowerCase().includes(lower)
+            );
+            if (matched) {
+              baseData = matched;
+            }
           }
         }
 
@@ -258,44 +283,47 @@ export default function ProfilePage() {
           return;
         }
 
-        // Now resolve bio and wall strips
-        let resolvedBio = baseData.bio || '';
-        let resolvedWallStrips: string[] = Array.isArray(baseData.wall_strip_ids) ? baseData.wall_strip_ids : [];
+        const actualUserId = baseData.id;
+        let resolvedWallStrips: string[] = [];
 
-        // Check if user has a wall.json in the avatars storage bucket.
-        // Use the public URL directly so unauthenticated visitors can also fetch it.
-        // wall.json is the most up-to-date source, so it takes priority over DB data.
+        // Fetch wall.json from public Supabase Storage using the user's actual UUID
         try {
           const { data: pubUrlData } = supabase.storage
             .from(AVATAR_BUCKET)
-            .getPublicUrl(`${targetUserId}/wall.json`);
+            .getPublicUrl(`${actualUserId}/wall.json`);
 
           if (pubUrlData?.publicUrl) {
-            // Bust cache to get fresh wall data
             const wallRes = await fetch(`${pubUrlData.publicUrl}?t=${Date.now()}`);
             if (wallRes.ok) {
               const parsed = await wallRes.json();
-              if (parsed && typeof parsed.bio === 'string' && !resolvedBio) {
-                resolvedBio = parsed.bio;
-              }
               if (parsed && Array.isArray(parsed.wallStrips) && parsed.wallStrips.length > 0) {
                 resolvedWallStrips = parsed.wallStrips;
               }
-            } else {
-              console.warn('[Public Profile] wall.json fetch failed:', wallRes.status);
             }
           }
         } catch (wallErr) {
           console.warn('[Public Profile] wall.json error:', wallErr);
         }
 
-        // Direct storage bucket scan for public wall keepsakes:
-        // Any strip uploaded as wall-{id}.webp in targetUserId's folder is a published public keepsake
-        if (resolvedWallStrips.length === 0 && targetUserId) {
+        // Local cache fallback for public wall strips if viewing on same client
+        if (typeof window !== 'undefined' && resolvedWallStrips.length === 0) {
+          try {
+            const localWall = localStorage.getItem(`pinksnap_wall_strips_${actualUserId}`);
+            if (localWall) {
+              const parsed = JSON.parse(localWall);
+              if (Array.isArray(parsed) && parsed.length > 0) {
+                resolvedWallStrips = parsed;
+              }
+            }
+          } catch {}
+        }
+
+        // Direct storage bucket scan for public wall keepsakes
+        if (resolvedWallStrips.length === 0 && actualUserId) {
           try {
             const { data: storageFiles, error: storageErr } = await supabase.storage
               .from(AVATAR_BUCKET)
-              .list(targetUserId, {
+              .list(actualUserId, {
                 search: 'wall-',
                 limit: 100,
                 sortBy: { column: 'created_at', order: 'desc' }
@@ -308,7 +336,7 @@ export default function ProfilePage() {
                   const stripId = f.name.replace(/^wall-/, '').replace(/\.webp$/, '');
                   const { data: pubData } = supabase.storage
                     .from(AVATAR_BUCKET)
-                    .getPublicUrl(`${targetUserId}/${f.name}`);
+                    .getPublicUrl(`${actualUserId}/${f.name}`);
                   const date = f.created_at
                     ? new Date(f.created_at).getTime()
                     : (f.updated_at ? new Date(f.updated_at).getTime() : Date.now());
@@ -330,30 +358,13 @@ export default function ProfilePage() {
           }
         }
 
-        // Local cache fallback (e.g. if viewing on same browser or localStorage has cached data)
-        if (typeof window !== 'undefined') {
-          try {
-            if (!resolvedBio) {
-              const localBio = localStorage.getItem(`pinksnap_user_bio_${targetUserId}`);
-              if (localBio) resolvedBio = localBio;
-            }
-            if (resolvedWallStrips.length === 0) {
-              const localWall = localStorage.getItem(`pinksnap_wall_strips_${targetUserId}`);
-              if (localWall) {
-                const parsed = JSON.parse(localWall);
-                if (Array.isArray(parsed)) resolvedWallStrips = parsed;
-              }
-            }
-          } catch {}
-        }
-
         // Role check: Jimson is always Creator, Rezn1r is always Contributor
         let resolvedRole = baseData.role || 'user';
         const isTargetRezn1r =
-          targetUserId === '8366e1a3-f9a4-44ca-8425-7af932c4fe66' ||
+          actualUserId === '8366e1a3-f9a4-44ca-8425-7af932c4fe66' ||
           baseData.display_name?.toLowerCase().includes('rezn1r');
         const isTargetCreator =
-          targetUserId === '3375e2f7-c77a-458d-b6aa-ae2aca636b16' ||
+          actualUserId === '3375e2f7-c77a-458d-b6aa-ae2aca636b16' ||
           baseData.display_name?.toLowerCase() === 'jimson';
 
         if (isTargetRezn1r) {
@@ -363,7 +374,7 @@ export default function ProfilePage() {
         } else if (typeof window !== 'undefined') {
           try {
             const storedOverrides = JSON.parse(localStorage.getItem('pinksnap_role_overrides') || '{}');
-            if (targetUserId && storedOverrides[targetUserId]) resolvedRole = storedOverrides[targetUserId];
+            if (actualUserId && storedOverrides[actualUserId]) resolvedRole = storedOverrides[actualUserId];
           } catch {}
         }
 
@@ -372,13 +383,12 @@ export default function ProfilePage() {
           : normalizeAvatarUrl(baseData.avatar_url) || null;
 
         if (!isCancelled) {
-          console.log('[Public Profile] Resolved wall strips:', resolvedWallStrips.length, resolvedWallStrips.slice(0, 2));
           setPublicProfile({
-            id: baseData.id,
+            id: actualUserId,
             displayName: baseData.display_name || 'PinkSnap Member',
             avatarUrl: resolvedAvatarUrl,
             role: resolvedRole,
-            bio: resolvedBio,
+            bio: '',
             wallStripIds: resolvedWallStrips,
             createdAt: baseData.created_at,
           });
@@ -554,7 +564,7 @@ export default function ProfilePage() {
   useEffect(() => {
     if (!isOwner || !user?.id || postedRawEntries.length === 0) return;
     console.log('[Wall Sync] Auto-syncing wall.json with', postedRawEntries.length, 'entries');
-    syncPublicWallJson(user.id, bio, postedRawEntries);
+    syncPublicWallJson(user.id, postedRawEntries);
   }, [isOwner, user?.id, wallEntryCount]);
 
   useEffect(() => {
@@ -926,21 +936,16 @@ export default function ProfilePage() {
       localStorage.setItem(`pinksnap_wall_strips_${user.id}`, JSON.stringify(nextRawEntries));
     } catch {}
 
-    // Debounce authenticated cloud sync directly to public.profiles.wall_strip_ids
+    // Immediately sync wall.json so visitors and stalkers can see the updated wall without delay
+    syncPublicWallJson(user.id, nextRawEntries);
+
+    // Debounce authenticated cloud sync directly to profiles
     if (cloudSyncTimeoutRef.current) {
       clearTimeout(cloudSyncTimeoutRef.current);
     }
     cloudSyncTimeoutRef.current = setTimeout(async () => {
       try {
-        const res = await updateProfile({ wallStripIds: nextRawEntries });
-        if (res.error) {
-          toast({
-            title: 'Wall Sync Warning',
-            description: res.error,
-            variant: 'destructive',
-          });
-        }
-        syncPublicWallJson(user.id, bio, nextRawEntries);
+        await updateProfile({ wallStripIds: nextRawEntries });
       } catch (syncErr) {
         console.error('[Wall Sync] Failed to update wall strips:', syncErr);
       }
@@ -961,6 +966,7 @@ export default function ProfilePage() {
       cloudSyncTimeoutRef.current = null;
     }
     if (user?.id) {
+      syncPublicWallJson(user.id, postedRawEntries);
       updateProfile({ wallStripIds: postedRawEntries }).catch(() => {});
     }
   };
@@ -980,7 +986,7 @@ export default function ProfilePage() {
           // Cloud sync across phone, laptop, and tablet
           updateProfile({ wallStripIds: next }).catch(() => {});
           supabase.storage.from(AVATAR_BUCKET).remove([`${user.id}/wall-${id}.webp`]).catch(() => {});
-          syncPublicWallJson(user.id, bio, next);
+          syncPublicWallJson(user.id, next);
           return next;
         });
       }
@@ -1006,10 +1012,8 @@ export default function ProfilePage() {
 
     setIsSaving(true);
     try {
-      const trimmedBio = bio.trim();
       const updates = {
         displayName: trimmedDisplayName,
-        bio: trimmedBio,
       };
 
       const res = await updateProfile(updates);
@@ -1022,16 +1026,10 @@ export default function ProfilePage() {
         });
       } else {
         setDisplayName(trimmedDisplayName);
-        setBio(trimmedBio);
-        syncPublicWallJson(user!.id, trimmedBio, postedRawEntries);
+        syncPublicWallJson(user!.id, postedRawEntries);
 
         if (typeof window !== 'undefined' && user?.id) {
           localStorage.setItem(`pinksnap_user_name_${user.id}`, trimmedDisplayName);
-          if (trimmedBio) {
-            localStorage.setItem(`pinksnap_user_bio_${user.id}`, trimmedBio);
-          } else {
-            localStorage.removeItem(`pinksnap_user_bio_${user.id}`);
-          }
         }
 
         toast({
