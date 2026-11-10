@@ -239,7 +239,8 @@ export default function ProfilePage() {
           created_at?: string;
         } | null = null;
 
-        const cleanTarget = targetUserId.trim();
+        const cleanTarget = (targetUserId ?? '').trim();
+        if (!cleanTarget) return;
         const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(cleanTarget);
 
         // Step 1: If cleanTarget is a valid UUID, query by ID
