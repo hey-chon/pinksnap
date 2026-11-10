@@ -221,7 +221,7 @@ export function TopNav({
         <div className="fixed inset-0 z-[100]">
           {/* Backdrop Dimmer */}
           <div
-            className={`fixed inset-0 bg-black/75 backdrop-blur-xs transition-opacity duration-300 ease-in-out ${
+            className={`fixed inset-0 bg-black/75 backdrop-blur-xs transition-opacity duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
               sidebarVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'
             }`}
             onClick={closeSidebar}
@@ -230,7 +230,7 @@ export function TopNav({
           {/* Drawer Panel */}
           <aside
             aria-label="Sidebar Navigation"
-            className={`fixed inset-y-0 right-0 z-10 w-72 sm:w-80 bg-[#140e19] border-l border-white/10 shadow-2xl flex flex-col justify-between p-6 sm:p-8 transform transition-transform duration-300 ease-in-out ${
+            className={`fixed inset-y-0 right-0 z-10 w-72 sm:w-80 bg-[#140e19] border-l border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.8)] flex flex-col justify-between p-6 sm:p-8 transform transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
               sidebarVisible ? 'translate-x-0' : 'translate-x-full'
             }`}
           >
@@ -245,20 +245,22 @@ export function TopNav({
                 type="button"
                 onClick={closeSidebar}
                 data-testid="button-sidebar-close"
-                className="p-2 rounded-full bg-white/5 hover:bg-white/10 text-white/70 hover:text-white transition-colors cursor-pointer"
+                className="p-2 rounded-full bg-white/5 hover:bg-white/15 text-white/70 hover:text-white transition-all active:scale-90 cursor-pointer"
                 aria-label="Close sidebar"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            {/* Navigation Links — Pure, Clean, No AI Fluff */}
-            <nav className="flex-1 py-8 flex flex-col gap-5">
+            {/* Navigation Links */}
+            <nav className="flex-1 py-6 flex flex-col gap-2">
               <Link
                 href="/"
                 onClick={closeSidebar}
-                className={`text-sm font-black uppercase tracking-[0.16em] transition-colors py-1 ${
-                  location === '/' ? 'text-primary' : 'text-white/70 hover:text-white'
+                className={`text-sm font-black uppercase tracking-[0.16em] px-3 py-2 rounded-xl transition-all active:scale-[0.98] ${
+                  location === '/'
+                    ? 'text-primary bg-primary/10'
+                    : 'text-white/70 hover:text-white hover:bg-white/5'
                 }`}
               >
                 Home
@@ -266,8 +268,10 @@ export function TopNav({
               <Link
                 href="/gallery"
                 onClick={closeSidebar}
-                className={`text-sm font-black uppercase tracking-[0.16em] transition-colors py-1 ${
-                  location === '/gallery' ? 'text-primary' : 'text-white/70 hover:text-white'
+                className={`text-sm font-black uppercase tracking-[0.16em] px-3 py-2 rounded-xl transition-all active:scale-[0.98] ${
+                  location === '/gallery'
+                    ? 'text-primary bg-primary/10'
+                    : 'text-white/70 hover:text-white hover:bg-white/5'
                 }`}
               >
                 Gallery
@@ -275,8 +279,10 @@ export function TopNav({
               <Link
                 href="/how-it-works"
                 onClick={closeSidebar}
-                className={`text-sm font-black uppercase tracking-[0.16em] transition-colors py-1 ${
-                  location === '/how-it-works' ? 'text-primary' : 'text-white/70 hover:text-white'
+                className={`text-sm font-black uppercase tracking-[0.16em] px-3 py-2 rounded-xl transition-all active:scale-[0.98] ${
+                  location === '/how-it-works'
+                    ? 'text-primary bg-primary/10'
+                    : 'text-white/70 hover:text-white hover:bg-white/5'
                 }`}
               >
                 Diagram
@@ -284,8 +290,10 @@ export function TopNav({
               <Link
                 href="/chat"
                 onClick={closeSidebar}
-                className={`text-sm font-black uppercase tracking-[0.16em] transition-colors py-1 ${
-                  location === '/chat' ? 'text-primary' : 'text-white/70 hover:text-white'
+                className={`text-sm font-black uppercase tracking-[0.16em] px-3 py-2 rounded-xl transition-all active:scale-[0.98] ${
+                  location === '/chat'
+                    ? 'text-primary bg-primary/10'
+                    : 'text-white/70 hover:text-white hover:bg-white/5'
                 }`}
               >
                 Community Chat
@@ -296,15 +304,17 @@ export function TopNav({
                   closeSidebar();
                   openCreator();
                 }}
-                className="text-left text-sm font-black uppercase tracking-[0.16em] text-white/70 hover:text-white transition-colors py-1 cursor-pointer"
+                className="text-left text-sm font-black uppercase tracking-[0.16em] px-3 py-2 rounded-xl text-white/70 hover:text-white hover:bg-white/5 transition-all active:scale-[0.98] cursor-pointer"
               >
                 Developer
               </button>
               <Link
                 href="/profile"
                 onClick={closeSidebar}
-                className={`text-sm font-black uppercase tracking-[0.16em] transition-colors py-1 ${
-                  location === '/profile' ? 'text-primary' : 'text-white/70 hover:text-white'
+                className={`text-sm font-black uppercase tracking-[0.16em] px-3 py-2 rounded-xl transition-all active:scale-[0.98] ${
+                  location === '/profile'
+                    ? 'text-primary bg-primary/10'
+                    : 'text-white/70 hover:text-white hover:bg-white/5'
                 }`}
               >
                 My Profile

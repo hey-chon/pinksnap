@@ -30,8 +30,17 @@ export function UserMenu() {
         setIsOpen(false);
       }
     }
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        setIsOpen(false);
+      }
+    }
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
   }, []);
 
   useEffect(() => {
@@ -121,84 +130,95 @@ export function UserMenu() {
           </span>
         </div>
 
-        <ChevronDown className={`w-3.5 h-3.5 text-white/70 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        <ChevronDown
+          className={`w-3.5 h-3.5 text-white/75 transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+            isOpen ? 'rotate-180' : 'rotate-0'
+          }`}
+        />
       </button>
 
-      {/* Dropdown Menu */}
-      {isOpen && (
-        <div className="absolute right-0 mt-2 w-56 rounded-2xl bg-white/95 backdrop-blur-md shadow-2xl border border-black/10 py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
-          {/* User Info Header */}
-          <div className="px-4 py-2.5 border-b border-black/5">
-            <div className="flex items-center gap-2 mb-1">
-              <span className="font-bold text-xs text-foreground truncate">{user.displayName}</span>
-              {isAdmin && (
-                <span className="px-1.5 py-0.5 rounded-full bg-purple-100 text-purple-700 text-[9px] font-black tracking-wider uppercase inline-flex items-center gap-1">
-                  <Crown className="w-2.5 h-2.5 stroke-[2.5]" aria-hidden="true" />
-                  <span>CREATOR</span>
-                </span>
-              )}
-              {isContributor && (
-                <span className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-300/70 text-[9px] font-black tracking-wider uppercase inline-flex items-center gap-1 shadow-xs">
-                  <Zap className="w-2.5 h-2.5 fill-current stroke-none" aria-hidden="true" />
-                  <span>CONTRIBUTOR</span>
-                </span>
-              )}
-            </div>
-            <p className="text-[10px] font-mono text-foreground/60 truncate">{user.email}</p>
-          </div>
-
-          {/* Navigation Links */}
-          <div className="py-1">
-            <Link
-              href="/profile"
-              onClick={() => {
-                setIsOpen(false);
-                if (typeof window !== 'undefined' && window.location.search.includes('user=')) {
-                  window.history.pushState({}, '', '/profile');
-                  window.dispatchEvent(new PopStateEvent('popstate'));
-                  window.dispatchEvent(new Event('pinksnap:nav-profile'));
-                }
-              }}
-              className="flex items-center gap-2.5 px-4 py-2 text-xs font-bold text-foreground/80 hover:text-primary hover:bg-primary/5 transition-colors"
-            >
-              <User className="w-4 h-4 text-primary" />
-              <span>Profile</span>
-            </Link>
-
-            <Link
-              href="/gallery"
-              onClick={() => setIsOpen(false)}
-              className="flex items-center gap-2.5 px-4 py-2 text-xs font-bold text-foreground/80 hover:text-primary hover:bg-primary/5 transition-colors"
-            >
-              <Images className="w-4 h-4 text-primary" />
-              <span>Gallery</span>
-            </Link>
-
+      {/* Dropdown Menu with True Open & Close Transitions */}
+      <div
+        role="menu"
+        aria-orientation="vertical"
+        aria-hidden={!isOpen}
+        className={`absolute right-0 mt-2.5 w-60 rounded-2xl bg-white/95 dark:bg-[#18111e]/95 backdrop-blur-xl shadow-[0_16px_40px_rgba(20,10,30,0.22),0_2px_8px_rgba(0,0,0,0.06)] border border-pink-200/60 dark:border-white/10 p-1.5 z-50 origin-top-right transform transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] select-none ${
+          isOpen
+            ? 'opacity-100 scale-100 translate-y-0 pointer-events-auto'
+            : 'opacity-0 scale-95 -translate-y-2 pointer-events-none'
+        }`}
+      >
+        {/* User Info Header */}
+        <div className="px-3.5 py-2.5 border-b border-black/5 dark:border-white/10">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="font-bold text-xs text-foreground truncate">{user.displayName}</span>
             {isAdmin && (
-              <Link
-                href="/admin"
-                onClick={() => setIsOpen(false)}
-                className="flex items-center gap-2.5 px-4 py-2 text-xs font-bold text-purple-700 hover:bg-purple-50 transition-colors"
-              >
-                <Shield className="w-4 h-4 text-purple-600" />
-                <span>Admin Dashboard</span>
-              </Link>
+              <span className="px-1.5 py-0.5 rounded-full bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 text-[9px] font-black tracking-wider uppercase inline-flex items-center gap-1 shadow-2xs">
+                <Crown className="w-2.5 h-2.5 stroke-[2.5]" aria-hidden="true" />
+                <span>CREATOR</span>
+              </span>
+            )}
+            {isContributor && (
+              <span className="px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-900 dark:text-amber-200 border border-amber-300/70 text-[9px] font-black tracking-wider uppercase inline-flex items-center gap-1 shadow-2xs">
+                <Zap className="w-2.5 h-2.5 fill-current stroke-none" aria-hidden="true" />
+                <span>CONTRIBUTOR</span>
+              </span>
             )}
           </div>
-
-          {/* Sign Out Button */}
-          <div className="pt-1 border-t border-black/5">
-            <button
-              type="button"
-              onClick={handleSignOut}
-              className="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-bold text-destructive hover:bg-destructive/10 transition-colors text-left"
-            >
-              <LogOut className="w-4 h-4" />
-              <span>Log Out</span>
-            </button>
-          </div>
+          <p className="text-[10px] font-mono text-foreground/55 truncate">{user.email}</p>
         </div>
-      )}
+
+        {/* Navigation Links */}
+        <div className="py-1 flex flex-col gap-0.5">
+          <Link
+            href="/profile"
+            onClick={() => {
+              setIsOpen(false);
+              if (typeof window !== 'undefined' && window.location.search.includes('user=')) {
+                window.history.pushState({}, '', '/profile');
+                window.dispatchEvent(new PopStateEvent('popstate'));
+                window.dispatchEvent(new Event('pinksnap:nav-profile'));
+              }
+            }}
+            className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-foreground/80 hover:text-primary hover:bg-primary/8 active:scale-[0.98] transition-all"
+          >
+            <User className="w-4 h-4 text-primary shrink-0" />
+            <span>Profile</span>
+          </Link>
+
+          <Link
+            href="/gallery"
+            onClick={() => setIsOpen(false)}
+            className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-foreground/80 hover:text-primary hover:bg-primary/8 active:scale-[0.98] transition-all"
+          >
+            <Images className="w-4 h-4 text-primary shrink-0" />
+            <span>Gallery</span>
+          </Link>
+
+          {isAdmin && (
+            <Link
+              href="/admin"
+              onClick={() => setIsOpen(false)}
+              className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-950/40 active:scale-[0.98] transition-all"
+            >
+              <Shield className="w-4 h-4 text-purple-600 shrink-0" />
+              <span>Admin Dashboard</span>
+            </Link>
+          )}
+        </div>
+
+        {/* Sign Out Button */}
+        <div className="pt-1 border-t border-black/5 dark:border-white/10">
+          <button
+            type="button"
+            onClick={handleSignOut}
+            className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-destructive hover:bg-destructive/10 active:scale-[0.98] transition-all text-left cursor-pointer"
+          >
+            <LogOut className="w-4 h-4 shrink-0" />
+            <span>Log Out</span>
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
