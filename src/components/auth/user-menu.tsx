@@ -10,7 +10,6 @@ import {
   Images,
   Sparkles,
   ChevronDown,
-  ChevronRight,
   LogIn,
   Sliders,
   Crown,
