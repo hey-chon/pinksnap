@@ -7,9 +7,14 @@ export default function StudioLoading() {
 
   useEffect(() => {
     sessionStorage.removeItem('receipt_completed');
-    sessionStorage.setItem('ps_has_loaded', 'true');
     sessionStorage.removeItem('ps_intent_start');
-    setLocation('/setup', { replace: true });
+
+    const timer = setTimeout(() => {
+      sessionStorage.setItem('ps_has_loaded', 'true');
+      setLocation('/setup', { replace: true });
+    }, 3100);
+
+    return () => clearTimeout(timer);
   }, [setLocation]);
 
   return (

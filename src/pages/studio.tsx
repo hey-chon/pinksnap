@@ -31,7 +31,7 @@ function createDemoShot(index: number) {
 
 export default function Studio() {
   const [, setLocation] = useLocation();
-  const { layout, frame, shots, addShot, removeShot, clearShots } = useAppContext();
+  const { layout, frame, shots, addShot, removeShot } = useAppContext();
   const { videoRef, startCamera, stopCamera, captureFrame, error } = useCamera();
   
   const [isCapturing, setIsCapturing] = useState(false);
@@ -42,7 +42,7 @@ export default function Studio() {
   const timerRef = useRef<ReturnType<typeof window.setInterval> | null>(null);
   const sequenceRef = useRef<ReturnType<typeof window.setTimeout> | null>(null);
   const studioRef = useRef<HTMLDivElement>(null);
-  const captureButtonRef = useRef<HTMLButtonElement>(null);
+
   const countdownRef = useRef<HTMLSpanElement>(null);
   
   const maxShots = layout === 'horizontal-3' ? 3 : 4;
@@ -147,11 +147,6 @@ export default function Studio() {
     stopCamera();
     await new Promise(resolve => setTimeout(resolve, 100));
     await startCamera();
-  };
-
-  const handleClearSession = () => {
-    cancelSequence();
-    clearShots();
   };
 
   const showDemoPrompt = Boolean(error) && !demoMode;

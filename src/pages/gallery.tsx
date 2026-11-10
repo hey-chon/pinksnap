@@ -57,10 +57,9 @@ export default function Gallery() {
 
   const handleStartSession = () => {
     sessionStorage.setItem('ps_has_entered_app', 'true');
-    sessionStorage.setItem('ps_has_loaded', 'true');
     sessionStorage.setItem('ps_intent_start', 'true');
     if (isAuthenticated) {
-      navigate('/setup');
+      navigate('/loading');
     } else {
       navigate('/auth');
     }

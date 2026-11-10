@@ -163,7 +163,7 @@ export function CanonCamera({
           draggable={false}
         />
 
-        {/* ── Shutter Button matching Grok reference adjusted to top-left ── */}
+        {/* ── Elegant Shutter Button vibed with Canon metallic theme (Solid opaque, No animations) ── */}
         <button
           type="button"
           onClick={handleShutterPress}
@@ -177,24 +177,24 @@ export function CanonCamera({
             width: '21.0%',
             aspectRatio: '1 / 1',
           }}
-          className={`absolute z-20 -translate-x-1/2 -translate-y-1/2 rounded-full flex items-center justify-center pointer-events-auto cursor-pointer focus:outline-none ${
+          className={`absolute z-20 -translate-x-1/2 -translate-y-1/2 rounded-full flex items-center justify-center pointer-events-auto focus:outline-none transition-all ${
             isCapturing || isComplete
-              ? 'opacity-65 cursor-not-allowed'
-              : 'hover:brightness-105 active:brightness-95'
+              ? 'cursor-not-allowed'
+              : 'cursor-pointer hover:brightness-105 active:brightness-95 active:scale-[0.97]'
           }`}
         >
-          {/* Pure white circular button face matching Grok design */}
+          {/* Elegant Champagne-Platinum Hardware Face (Solid, No opacity drop on click) */}
           <div
-            className={`w-full h-full rounded-full flex items-center justify-center border-2 transition-all ${
+            className={`w-full h-full rounded-full flex items-center justify-center transition-all ${
               isComplete
-                ? 'bg-emerald-600 border-white text-white shadow-md'
-                : 'bg-white border-[#d8d8e0] text-[#1c1c24] shadow-[0_2px_8px_rgba(0,0,0,0.35),inset_0_1px_2px_rgba(255,255,255,1),inset_0_-1px_2px_rgba(0,0,0,0.12)]'
+                ? 'bg-emerald-600 border-2 border-white text-white shadow-md'
+                : 'bg-[radial-gradient(circle_at_36%_32%,#ffffff_0%,#f5f4f8_35%,#e4e2eb_70%,#c2becb_100%)] border-2 border-white/95 shadow-[0_3px_10px_rgba(0,0,0,0.36),inset_0_1.5px_2px_rgba(255,255,255,1),inset_0_-2px_4px_rgba(0,0,0,0.2)]'
             }`}
           >
             {isComplete ? (
               <Check className="w-5 h-5 sm:w-6 sm:h-6 stroke-[3]" />
             ) : (
-              <Camera className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 text-[#1c1c24] stroke-[2.2]" />
+              <Camera className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 text-[#221f29] stroke-[2.2] drop-shadow-[0_1px_0_rgba(255,255,255,0.7)]" />
             )}
           </div>
         </button>
