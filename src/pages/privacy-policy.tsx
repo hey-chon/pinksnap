@@ -344,13 +344,7 @@ export default function PrivacyPolicy() {
                 Cookie Preferences
               </button>
             </div>
-            <button
-              type="button"
-              onClick={handleStartSnapping}
-              className="inline-flex items-center gap-2 bg-primary text-white px-6 py-3 rounded-full font-black text-sm uppercase tracking-wider shadow-lg shadow-primary/25 hover:scale-105 active:scale-95 transition-all"
-            >
-              Let's Go <ArrowRight className="w-4 h-4" />
-            </button>
+        
           </div>
         </div>
       </main>
