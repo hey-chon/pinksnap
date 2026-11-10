@@ -60,44 +60,55 @@ export interface PublicWallStrip {
   layout?: string;
 }
 
-export function parseWallStripEntry(entry: string, ownerUserId?: string): PublicWallStrip | null {
+export function parseWallStripEntry(entry: any, ownerUserId?: string): PublicWallStrip | null {
   if (!entry) return null;
-  if (typeof entry === 'string' && entry.trim().startsWith('{')) {
-    try {
-      const parsed = JSON.parse(entry);
-      if (parsed && typeof parsed.id === 'string') {
-        const finalUrl = (parsed.url && !parsed.url.startsWith('blob:'))
-          ? parsed.url
-          : (ownerUserId ? supabase.storage.from(AVATAR_BUCKET).getPublicUrl(`${ownerUserId}/wall-${parsed.id}.webp`).data?.publicUrl || '' : '');
-        return {
-          id: parsed.id,
-          url: finalUrl,
-          date: typeof parsed.date === 'number' ? parsed.date : Date.now(),
-          frame: parsed.frame || 'classic',
-          layout: parsed.layout || 'vertical-4',
-        };
+  let parsed: any = entry;
+  if (typeof entry === 'string') {
+    if (entry.trim().startsWith('{')) {
+      try {
+        parsed = JSON.parse(entry);
+      } catch {
+        parsed = null;
       }
-    } catch {}
+    } else {
+      // Plain ID string — reconstruct public preview URL from avatars bucket if owner ID is known
+      let reconstructedUrl = '';
+      if (ownerUserId && entry) {
+        const { data } = supabase.storage
+          .from(AVATAR_BUCKET)
+          .getPublicUrl(`${ownerUserId}/wall-${entry}.webp`);
+        if (data?.publicUrl) reconstructedUrl = data.publicUrl;
+      }
+      return { id: entry, url: reconstructedUrl, date: Date.now(), frame: 'classic', layout: 'vertical-4' };
+    }
   }
-  // Plain string ID — reconstruct public preview URL from avatars bucket if owner ID is known
-  let reconstructedUrl = '';
-  if (ownerUserId && entry) {
-    const { data } = supabase.storage
-      .from(AVATAR_BUCKET)
-      .getPublicUrl(`${ownerUserId}/wall-${entry}.webp`);
-    if (data?.publicUrl) reconstructedUrl = data.publicUrl;
+
+  if (parsed && typeof parsed === 'object' && parsed.id) {
+    const finalUrl = (parsed.url && !parsed.url.startsWith('blob:'))
+      ? parsed.url
+      : (ownerUserId ? supabase.storage.from(AVATAR_BUCKET).getPublicUrl(`${ownerUserId}/wall-${parsed.id}.webp`).data?.publicUrl || '' : '');
+    return {
+      id: String(parsed.id),
+      url: finalUrl,
+      date: typeof parsed.date === 'number' ? parsed.date : Date.now(),
+      frame: parsed.frame || 'classic',
+      layout: parsed.layout || 'vertical-4',
+    };
   }
-  return { id: entry, url: reconstructedUrl, date: Date.now(), frame: 'classic', layout: 'vertical-4' };
+
+  return null;
 }
 
-export function getWallStripId(entry: string): string {
+export function getWallStripId(entry: any): string {
+  if (!entry) return '';
+  if (typeof entry === 'object' && entry.id) return String(entry.id);
   if (typeof entry === 'string' && entry.trim().startsWith('{')) {
     try {
       const parsed = JSON.parse(entry);
       if (parsed && typeof parsed.id === 'string') return parsed.id;
     } catch {}
   }
-  return entry;
+  return String(entry);
 }
 
 async function preparePublicWallStrip(
@@ -1387,17 +1398,6 @@ export default function ProfilePage() {
                   <span>Joined {joinedDate}</span>
                 </span>
               </div>
-
-              {/* Custom User Bio */}
-              {(isOwner ? bio : effectiveUser?.bio) ? (
-                <p className={`text-xs sm:text-sm font-medium leading-relaxed pt-1 whitespace-pre-wrap break-words ${isProfileAdmin ? 'text-white/65' : 'text-foreground/80'}`}>
-                  {isOwner ? bio : effectiveUser?.bio}
-                </p>
-              ) : (
-                <p className={`text-xs italic font-medium pt-1 ${isProfileAdmin ? 'text-white/30' : 'text-foreground/40'}`}>
-                  {isOwner ? 'No bio yet. Tap "Settings" to add your bio!' : 'No bio shared yet.'}
-                </p>
-              )}
             </div>
 
             {/* ROW 3: Social Media Stats Counters — Customized By Role */}
@@ -1686,7 +1686,7 @@ export default function ProfilePage() {
                 </div>
                 <div>
                   <h2 className="text-base font-black uppercase tracking-wider text-foreground">Profile Settings</h2>
-                  <p className="text-[11px] text-foreground/50 font-medium">Update your public name and bio</p>
+                  <p className="text-[11px] text-foreground/50 font-medium">Update your public display name</p>
                 </div>
               </div>
 
@@ -1758,31 +1758,6 @@ export default function ProfilePage() {
                   />
                   <p className="text-[11px] text-foreground/45 mt-1.5 font-medium">
                     This name appears on your profile and public chat.
-                  </p>
-                </div>
-
-                {/* Custom User Bio Input */}
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <label className="block text-[11px] font-black uppercase tracking-wider text-foreground/60">
-                      Bio
-                    </label>
-                    <span className="text-[10px] font-bold text-foreground/40">
-                      {bio.length}/160
-                    </span>
-                  </div>
-                  <textarea
-                    value={bio}
-                    onChange={(e) => setBio(e.target.value.slice(0, 160))}
-                    placeholder="Write something about yourself, your booth style, favorite memories..."
-                    rows={3}
-                    enterKeyHint="done"
-                    autoCorrect="on"
-                    className="w-full px-4 py-3 bg-foreground/[0.02] border border-black/[0.08] focus:border-primary/50 focus:ring-4 focus:ring-primary/10 rounded-2xl text-sm font-medium outline-none transition-all placeholder:text-foreground/30 resize-none"
-                    style={{ fontSize: '16px' }}
-                  />
-                  <p className="text-[11px] text-foreground/45 mt-1.5 font-medium">
-                    Share a personal description on your social profile. Visible to the community.
                   </p>
                 </div>
 
