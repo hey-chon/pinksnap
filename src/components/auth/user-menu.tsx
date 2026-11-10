@@ -10,6 +10,7 @@ import {
   Images,
   Sparkles,
   ChevronDown,
+  ChevronRight,
   LogIn,
   Sliders,
   Crown,
@@ -142,34 +143,55 @@ export function UserMenu() {
         role="menu"
         aria-orientation="vertical"
         aria-hidden={!isOpen}
-        className={`absolute right-0 mt-2.5 w-60 rounded-2xl bg-white/95 dark:bg-[#18111e]/95 backdrop-blur-xl shadow-[0_16px_40px_rgba(20,10,30,0.22),0_2px_8px_rgba(0,0,0,0.06)] border border-pink-200/60 dark:border-white/10 p-1.5 z-50 origin-top-right transform transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] select-none ${
+        className={`absolute right-0 top-full mt-2 w-64 rounded-2xl bg-[#160f1c]/95 backdrop-blur-2xl shadow-[0_20px_50px_rgba(0,0,0,0.85),0_0_28px_rgba(245,61,137,0.18)] border border-white/12 p-1.5 z-50 origin-top-right transform transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] select-none ${
           isOpen
             ? 'opacity-100 scale-100 translate-y-0 pointer-events-auto'
-            : 'opacity-0 scale-95 -translate-y-2 pointer-events-none'
+            : 'opacity-0 scale-90 -translate-y-2 pointer-events-none'
         }`}
       >
-        {/* User Info Header */}
-        <div className="px-3.5 py-2.5 border-b border-black/5 dark:border-white/10">
-          <div className="flex items-center gap-2 mb-1">
-            <span className="font-bold text-xs text-foreground truncate">{user.displayName}</span>
-            {isAdmin && (
-              <span className="px-1.5 py-0.5 rounded-full bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 text-[9px] font-black tracking-wider uppercase inline-flex items-center gap-1 shadow-2xs">
-                <Crown className="w-2.5 h-2.5 stroke-[2.5]" aria-hidden="true" />
-                <span>CREATOR</span>
-              </span>
-            )}
-            {isContributor && (
-              <span className="px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-900 dark:text-amber-200 border border-amber-300/70 text-[9px] font-black tracking-wider uppercase inline-flex items-center gap-1 shadow-2xs">
-                <Zap className="w-2.5 h-2.5 fill-current stroke-none" aria-hidden="true" />
-                <span>CONTRIBUTOR</span>
-              </span>
-            )}
+        {/* User Info Header Card */}
+        <div className="p-3 bg-gradient-to-b from-white/[0.08] to-transparent rounded-xl border border-white/[0.06] mb-1">
+          <div className="flex items-center gap-2.5">
+            {/* Glowing Avatar */}
+            <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-primary via-[#ff8cb8] to-[#b31454] p-[1.5px] shadow-[0_0_12px_rgba(245,61,137,0.5)] shrink-0">
+              <div className="w-full h-full rounded-full bg-[#160f1c] overflow-hidden flex items-center justify-center text-white font-black text-xs">
+                {safeAvatarUrl && !imgError ? (
+                  <img
+                    src={safeAvatarUrl}
+                    alt={user.displayName}
+                    onError={() => setImgError(true)}
+                    className="w-full h-full object-cover"
+                    referrerPolicy="no-referrer"
+                  />
+                ) : (
+                  initial
+                )}
+              </div>
+            </div>
+
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <span className="font-extrabold text-xs text-white truncate max-w-[100px]">{user.displayName}</span>
+                {isAdmin && (
+                  <span className="px-1.5 py-0.5 rounded-full bg-purple-500/25 border border-purple-400/50 text-purple-200 text-[8.5px] font-black tracking-wider uppercase inline-flex items-center gap-1 shadow-2xs">
+                    <Crown className="w-2.5 h-2.5 stroke-[2.5]" aria-hidden="true" />
+                    <span>CREATOR</span>
+                  </span>
+                )}
+                {isContributor && !isAdmin && (
+                  <span className="px-1.5 py-0.5 rounded-full bg-amber-500/20 border border-amber-400/40 text-amber-300 text-[8.5px] font-black tracking-wider uppercase inline-flex items-center gap-1">
+                    <Zap className="w-2.5 h-2.5 fill-current stroke-none" aria-hidden="true" />
+                    <span>CONTRIBUTOR</span>
+                  </span>
+                )}
+              </div>
+              <p className="text-[11px] text-white/45 truncate mt-0.5 font-medium">{user.email}</p>
+            </div>
           </div>
-          <p className="text-[10px] font-mono text-foreground/55 truncate">{user.email}</p>
         </div>
 
         {/* Navigation Links */}
-        <div className="py-1 flex flex-col gap-0.5">
+        <div className="py-1 flex flex-col gap-1">
           <Link
             href="/profile"
             onClick={() => {
@@ -180,42 +202,71 @@ export function UserMenu() {
                 window.dispatchEvent(new Event('pinksnap:nav-profile'));
               }
             }}
-            className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-foreground/80 hover:text-primary hover:bg-primary/8 active:scale-[0.98] transition-all"
+            className="group flex items-center justify-between px-2.5 py-2 rounded-xl hover:bg-white/[0.08] active:scale-[0.98] transition-all cursor-pointer"
           >
-            <User className="w-4 h-4 text-primary shrink-0" />
-            <span>Profile</span>
+            <div className="flex items-center gap-2.5">
+              <div className="w-7 h-7 rounded-lg bg-primary/20 border border-primary/30 flex items-center justify-center text-primary group-hover:scale-105 group-hover:bg-primary/30 transition-all shrink-0">
+                <User className="w-3.5 h-3.5" />
+              </div>
+              <div className="text-left">
+                <span className="block text-xs font-bold text-white/90 group-hover:text-white transition-colors">Profile</span>
+                <span className="block text-[9.5px] text-white/40 group-hover:text-white/60 transition-colors">View public wall & bio</span>
+              </div>
+            </div>
+            <ChevronRight className="w-3.5 h-3.5 text-white/25 group-hover:text-white/70 group-hover:translate-x-0.5 transition-all" />
           </Link>
 
           <Link
             href="/gallery"
             onClick={() => setIsOpen(false)}
-            className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-foreground/80 hover:text-primary hover:bg-primary/8 active:scale-[0.98] transition-all"
+            className="group flex items-center justify-between px-2.5 py-2 rounded-xl hover:bg-white/[0.08] active:scale-[0.98] transition-all cursor-pointer"
           >
-            <Images className="w-4 h-4 text-primary shrink-0" />
-            <span>Gallery</span>
+            <div className="flex items-center gap-2.5">
+              <div className="w-7 h-7 rounded-lg bg-pink-500/20 border border-pink-400/30 flex items-center justify-center text-pink-300 group-hover:scale-105 group-hover:bg-pink-500/30 transition-all shrink-0">
+                <Images className="w-3.5 h-3.5" />
+              </div>
+              <div className="text-left">
+                <span className="block text-xs font-bold text-white/90 group-hover:text-white transition-colors">Gallery</span>
+                <span className="block text-[9.5px] text-white/40 group-hover:text-white/60 transition-colors">Community photostrips</span>
+              </div>
+            </div>
+            <ChevronRight className="w-3.5 h-3.5 text-white/25 group-hover:text-white/70 group-hover:translate-x-0.5 transition-all" />
           </Link>
 
           {isAdmin && (
             <Link
               href="/admin"
               onClick={() => setIsOpen(false)}
-              className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-950/40 active:scale-[0.98] transition-all"
+              className="group flex items-center justify-between px-2.5 py-2 rounded-xl hover:bg-purple-500/20 active:scale-[0.98] transition-all cursor-pointer"
             >
-              <Shield className="w-4 h-4 text-purple-600 shrink-0" />
-              <span>Admin Dashboard</span>
+              <div className="flex items-center gap-2.5">
+                <div className="w-7 h-7 rounded-lg bg-purple-500/25 border border-purple-400/40 flex items-center justify-center text-purple-300 group-hover:scale-105 group-hover:bg-purple-500/35 transition-all shrink-0">
+                  <Shield className="w-3.5 h-3.5" />
+                </div>
+                <div className="text-left">
+                  <span className="block text-xs font-bold text-purple-200 group-hover:text-white transition-colors">Admin Dashboard</span>
+                  <span className="block text-[9.5px] text-purple-300/50 group-hover:text-purple-200/70 transition-colors">Manage users & posts</span>
+                </div>
+              </div>
+              <ChevronRight className="w-3.5 h-3.5 text-purple-400/40 group-hover:text-purple-300 group-hover:translate-x-0.5 transition-all" />
             </Link>
           )}
         </div>
 
         {/* Sign Out Button */}
-        <div className="pt-1 border-t border-black/5 dark:border-white/10">
+        <div className="pt-1 mt-1 border-t border-white/[0.08]">
           <button
             type="button"
             onClick={handleSignOut}
-            className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-destructive hover:bg-destructive/10 active:scale-[0.98] transition-all text-left cursor-pointer"
+            className="group w-full flex items-center justify-between px-2.5 py-2 rounded-xl hover:bg-rose-500/15 active:scale-[0.98] transition-all text-left cursor-pointer"
           >
-            <LogOut className="w-4 h-4 shrink-0" />
-            <span>Log Out</span>
+            <div className="flex items-center gap-2.5">
+              <div className="w-7 h-7 rounded-lg bg-rose-500/20 border border-rose-400/30 flex items-center justify-center text-rose-400 group-hover:scale-105 group-hover:bg-rose-500/30 transition-all shrink-0">
+                <LogOut className="w-3.5 h-3.5" />
+              </div>
+              <span className="text-xs font-bold text-rose-300 group-hover:text-rose-200 transition-colors">Log Out</span>
+            </div>
+            <ChevronRight className="w-3.5 h-3.5 text-rose-400/40 group-hover:text-rose-300/80 group-hover:translate-x-0.5 transition-all" />
           </button>
         </div>
       </div>
