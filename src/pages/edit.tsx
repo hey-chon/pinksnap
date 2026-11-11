@@ -714,13 +714,7 @@ export default function Edit() {
                 </div>
               )}
 
-              {/* Lightbox inspection status badge */}
-              <div className="mt-4 flex items-center gap-1.5 px-3 py-1 rounded-full bg-foreground/[0.04] border border-foreground/8">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-[9px] font-mono font-bold uppercase tracking-wider text-foreground/60">
-                  PRINT READY · 300 DPI
-                </span>
-              </div>
+             
             </div>
           </div>
 
