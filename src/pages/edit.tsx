@@ -841,12 +841,10 @@ export default function Edit() {
                     <div className="flex items-center gap-2">
                       <Film className="w-3.5 h-3.5 text-primary" />
                       <span className="text-[11px] font-black uppercase tracking-[0.18em] text-foreground/80">
-                        ANALOG FILM EMULSION
+                        FILTER / EFFECTS  
                       </span>
                     </div>
-                    <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-primary px-2.5 py-0.5 rounded-lg bg-primary/10 border border-primary/20">
-                      {getFilterOption(filter).label}
-                    </span>
+                   
                   </div>
                   <div className="grid grid-cols-5 sm:grid-cols-9 gap-2">
                     {FILTER_OPTIONS.map((option) => (
