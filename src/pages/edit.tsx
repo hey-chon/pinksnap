@@ -682,7 +682,7 @@ export default function Edit() {
               <div className="w-full max-w-[190px] mb-4 flex items-center justify-between px-3 py-1.5 rounded-xl bg-gradient-to-r from-zinc-200 via-zinc-100 to-zinc-200 dark:from-zinc-800 dark:via-zinc-700 dark:to-zinc-800 border border-black/15 dark:border-white/10 shadow-sm">
                 <span className="w-1.5 h-1.5 rounded-full bg-zinc-400 dark:bg-zinc-500 shadow-inner" />
                 <span className="text-[8.5px] font-mono font-black uppercase tracking-[0.2em] text-foreground/70">
-                  PINKSNAP ARCHIVE
+                  PREVIEW
                 </span>
                 <span className="w-1.5 h-1.5 rounded-full bg-zinc-400 dark:bg-zinc-500 shadow-inner" />
               </div>
