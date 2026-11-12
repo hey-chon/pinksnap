@@ -117,16 +117,16 @@ export function TopNav({
               onClick={scrollToTop}
               data-testid="link-brand"
               aria-label="Back to top"
-              className="group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-xl cursor-pointer select-none text-left py-1"
+              className="group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-xl cursor-pointer select-none text-left"
             >
-              <div className="flex items-center gap-2 sm:gap-2.5 leading-none">
+              <div className="flex items-center gap-2.5 leading-none">
                 <img
                   src="/pinksnap-axolotl-icon.png"
                   alt="PinkSnap Axolotl"
-                  className="h-8 w-8 sm:h-9 sm:w-9 md:h-10 md:w-10 object-contain shrink-0 drop-shadow-[0_2px_10px_rgba(245,61,137,0.5)] group-hover:scale-105 group-hover:rotate-[-4deg] transition-all duration-200 select-none pointer-events-none"
+                  className="h-8 w-8 sm:h-9 sm:w-9 object-contain shrink-0 drop-shadow-[0_2px_8px_rgba(245,61,137,0.45)] select-none pointer-events-none"
                   draggable={false}
                 />
-                <span className="font-hero text-[22px] sm:text-[26px] md:text-[28px] tracking-[0.2em] uppercase text-white font-black leading-none drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)] group-hover:opacity-90 transition-opacity">
+                <span className="font-hero text-[19px] sm:text-[22px] tracking-[0.2em] uppercase text-white font-black leading-none">
                   PINK<span className="text-primary cinematic-glow-pink">SNAP</span>
                 </span>
               </div>
@@ -140,16 +140,16 @@ export function TopNav({
               }}
               data-testid="link-brand"
               aria-label="PinkSnap home"
-              className="group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-xl cursor-pointer select-none text-left py-1"
+              className="group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-xl cursor-pointer select-none text-left"
             >
-              <div className="flex items-center gap-2 sm:gap-2.5 leading-none">
+              <div className="flex items-center gap-2.5 leading-none">
                 <img
                   src="/pinksnap-axolotl-icon.png"
                   alt="PinkSnap Axolotl"
-                  className="h-8 w-8 sm:h-9 sm:w-9 md:h-10 md:w-10 object-contain shrink-0 drop-shadow-[0_2px_10px_rgba(245,61,137,0.5)] group-hover:scale-105 group-hover:rotate-[-4deg] transition-all duration-200 select-none pointer-events-none"
+                  className="h-8 w-8 sm:h-9 sm:w-9 object-contain shrink-0 drop-shadow-[0_2px_8px_rgba(245,61,137,0.45)] select-none pointer-events-none"
                   draggable={false}
                 />
-                <span className="font-hero text-[22px] sm:text-[26px] md:text-[28px] tracking-[0.2em] uppercase text-white font-black leading-none drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)] group-hover:opacity-90 transition-opacity">
+                <span className="font-hero text-[19px] sm:text-[22px] tracking-[0.2em] uppercase text-white font-black leading-none">
                   PINK<span className="text-primary cinematic-glow-pink">SNAP</span>
                 </span>
               </div>
