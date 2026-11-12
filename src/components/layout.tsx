@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Link, useLocation } from 'wouter';
 import { Camera, ChevronLeft, HelpCircle, Images, MessageCircle, UserRound, Home, Menu, X } from 'lucide-react';
 import { UserMenu } from '@/components/auth/user-menu';
@@ -55,41 +55,30 @@ export function TopNav({
   title?: string;
 }) {
   const [location, setLocation] = useLocation();
-  const [sidebarMounted, setSidebarMounted] = useState(false);
-  const [sidebarVisible, setSidebarVisible] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const isHome = location === '/';
 
-  const openSidebar = () => {
-    setSidebarMounted(true);
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        setSidebarVisible(true);
-      });
-    });
-  };
+  const openSidebar = useCallback(() => {
+    setIsSidebarOpen(true);
+  }, []);
 
-  const closeSidebar = () => {
-    setSidebarVisible(false);
-    setTimeout(() => {
-      setSidebarMounted(false);
-    }, 300);
-  };
+  const closeSidebar = useCallback(() => {
+    setIsSidebarOpen(false);
+  }, []);
 
   // Close sidebar on ESC key
   useEffect(() => {
-    if (!sidebarMounted) return;
+    if (!isSidebarOpen) return;
     const handleKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') closeSidebar();
     };
     window.addEventListener('keydown', handleKey);
     return () => window.removeEventListener('keydown', handleKey);
-  }, [sidebarMounted]);
+  }, [isSidebarOpen, closeSidebar]);
 
   // Close sidebar on location change
   useEffect(() => {
-    if (sidebarMounted) {
-      closeSidebar();
-    }
+    setIsSidebarOpen(false);
   }, [location]);
 
   const scrollToTop = () => {
@@ -207,8 +196,10 @@ export function TopNav({
             type="button"
             onClick={openSidebar}
             data-testid="button-hamburger-menu"
-            className="p-2 sm:p-2.5 bg-[#251828] hover:bg-[#342038] text-white/90 hover:text-white rounded-full transition-all border border-[#3d2542] hover:border-white/25 active:scale-95 cursor-pointer shadow-sm"
+            style={{ touchAction: 'manipulation' }}
+            className="p-2 sm:p-2.5 bg-[#251828] hover:bg-[#342038] text-white/90 hover:text-white rounded-full transition-all border border-[#3d2542] hover:border-white/25 active:scale-95 cursor-pointer shadow-sm touch-manipulation"
             aria-label="Open Navigation Menu"
+            aria-expanded={isSidebarOpen}
             title="Menu"
           >
             <Menu className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
@@ -216,118 +207,124 @@ export function TopNav({
         </div>
       </header>
 
-      {/* ── Slide-Out Sidebar Drawer with Smooth Open & Close Transitions ── */}
-      {sidebarMounted && (
-        <div className="fixed inset-0 z-[100]">
-          {/* Backdrop Dimmer */}
-          <div
-            className={`fixed inset-0 bg-black/75 backdrop-blur-xs transition-opacity duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
-              sidebarVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'
-            }`}
-            onClick={closeSidebar}
-          />
+      {/* ── Slide-Out Sidebar Drawer with Instant 60/120fps GPU Transitions (Zero Lag) ── */}
+      <div
+        className={`fixed inset-0 z-[100] transition-[visibility] duration-200 ${
+          isSidebarOpen ? 'visible pointer-events-auto' : 'invisible pointer-events-none delay-200'
+        }`}
+        aria-hidden={!isSidebarOpen}
+      >
+        {/* Backdrop Dimmer — Pure opacity on GPU layer, no laggy backdrop-blur */}
+        <div
+          className={`fixed inset-0 bg-black/70 transition-opacity duration-200 ease-out cursor-pointer ${
+            isSidebarOpen ? 'opacity-100' : 'opacity-0'
+          }`}
+          style={{ touchAction: 'manipulation' }}
+          onClick={closeSidebar}
+        />
 
-          {/* Drawer Panel */}
-          <aside
-            aria-label="Sidebar Navigation"
-            className={`fixed inset-y-0 right-0 z-10 w-72 sm:w-80 bg-[#140e19] border-l border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.8)] flex flex-col justify-between p-6 sm:p-8 transform transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
-              sidebarVisible ? 'translate-x-0' : 'translate-x-full'
-            }`}
-          >
-            {/* Sidebar Header */}
-            <div className="flex items-center justify-between pb-6 border-b border-white/10">
-              <div className="flex items-center gap-2">
-                <span className="font-hero text-base tracking-[0.22em] uppercase text-white font-black">
-                  PINK<span className="text-primary cinematic-glow-pink">SNAP</span>
-                </span>
-              </div>
-              <button
-                type="button"
-                onClick={closeSidebar}
-                data-testid="button-sidebar-close"
-                className="p-2 rounded-full bg-white/5 hover:bg-white/15 text-white/70 hover:text-white transition-all active:scale-90 cursor-pointer"
-                aria-label="Close sidebar"
-              >
-                <X className="w-4 h-4" />
-              </button>
+        {/* Drawer Panel — Hardware-accelerated transform */}
+        <aside
+          aria-label="Sidebar Navigation"
+          className={`fixed inset-y-0 right-0 z-10 w-72 sm:w-80 bg-[#140e19] border-l border-white/10 shadow-[-12px_0_30px_rgba(0,0,0,0.5)] flex flex-col justify-between p-6 sm:p-8 transform-gpu will-change-transform transition-transform duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+            isSidebarOpen ? 'translate-x-0' : 'translate-x-full'
+          }`}
+        >
+          {/* Sidebar Header */}
+          <div className="flex items-center justify-between pb-6 border-b border-white/10">
+            <div className="flex items-center gap-2">
+              <span className="font-hero text-base tracking-[0.22em] uppercase text-white font-black">
+                PINK<span className="text-primary cinematic-glow-pink">SNAP</span>
+              </span>
             </div>
+            <button
+              type="button"
+              onClick={closeSidebar}
+              data-testid="button-sidebar-close"
+              style={{ touchAction: 'manipulation' }}
+              className="p-2 rounded-full bg-white/5 hover:bg-white/15 text-white/70 hover:text-white transition-all active:scale-90 cursor-pointer touch-manipulation"
+              aria-label="Close sidebar"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
 
-            {/* Navigation Links */}
-            <nav className="flex-1 py-6 flex flex-col gap-2">
-              <Link
-                href="/"
-                onClick={closeSidebar}
-                className={`text-sm font-black uppercase tracking-[0.16em] px-3 py-2 rounded-xl transition-all active:scale-[0.98] ${
-                  location === '/'
-                    ? 'text-primary bg-primary/10'
-                    : 'text-white/70 hover:text-white hover:bg-white/5'
-                }`}
-              >
-                Home
-              </Link>
-              <Link
-                href="/gallery"
-                onClick={closeSidebar}
-                className={`text-sm font-black uppercase tracking-[0.16em] px-3 py-2 rounded-xl transition-all active:scale-[0.98] ${
-                  location === '/gallery'
-                    ? 'text-primary bg-primary/10'
-                    : 'text-white/70 hover:text-white hover:bg-white/5'
-                }`}
-              >
-                Gallery
-              </Link>
-              <Link
-                href="/how-it-works"
-                onClick={closeSidebar}
-                className={`text-sm font-black uppercase tracking-[0.16em] px-3 py-2 rounded-xl transition-all active:scale-[0.98] ${
-                  location === '/how-it-works'
-                    ? 'text-primary bg-primary/10'
-                    : 'text-white/70 hover:text-white hover:bg-white/5'
-                }`}
-              >
-                Diagram
-              </Link>
-              <Link
-                href="/chat"
-                onClick={closeSidebar}
-                className={`text-sm font-black uppercase tracking-[0.16em] px-3 py-2 rounded-xl transition-all active:scale-[0.98] ${
-                  location === '/chat'
-                    ? 'text-primary bg-primary/10'
-                    : 'text-white/70 hover:text-white hover:bg-white/5'
-                }`}
-              >
-                Community Chat
-              </Link>
-              <button
-                type="button"
-                onClick={() => {
-                  closeSidebar();
-                  openCreator();
-                }}
-                className="text-left text-sm font-black uppercase tracking-[0.16em] px-3 py-2 rounded-xl text-white/70 hover:text-white hover:bg-white/5 transition-all active:scale-[0.98] cursor-pointer"
-              >
-                Developer
-              </button>
-              <Link
-                href="/profile"
-                onClick={closeSidebar}
-                className={`text-sm font-black uppercase tracking-[0.16em] px-3 py-2 rounded-xl transition-all active:scale-[0.98] ${
-                  location === '/profile'
-                    ? 'text-primary bg-primary/10'
-                    : 'text-white/70 hover:text-white hover:bg-white/5'
-                }`}
-              >
-                My Profile
-              </Link>
-            </nav>
+          {/* Navigation Links */}
+          <nav className="flex-1 py-6 flex flex-col gap-2">
+            <Link
+              href="/"
+              onClick={closeSidebar}
+              className={`text-sm font-black uppercase tracking-[0.16em] px-3 py-2 rounded-xl transition-all active:scale-[0.98] ${
+                location === '/'
+                  ? 'text-primary bg-primary/10'
+                  : 'text-white/70 hover:text-white hover:bg-white/5'
+              }`}
+            >
+              Home
+            </Link>
+            <Link
+              href="/gallery"
+              onClick={closeSidebar}
+              className={`text-sm font-black uppercase tracking-[0.16em] px-3 py-2 rounded-xl transition-all active:scale-[0.98] ${
+                location === '/gallery'
+                  ? 'text-primary bg-primary/10'
+                  : 'text-white/70 hover:text-white hover:bg-white/5'
+              }`}
+            >
+              Gallery
+            </Link>
+            <Link
+              href="/how-it-works"
+              onClick={closeSidebar}
+              className={`text-sm font-black uppercase tracking-[0.16em] px-3 py-2 rounded-xl transition-all active:scale-[0.98] ${
+                location === '/how-it-works'
+                  ? 'text-primary bg-primary/10'
+                  : 'text-white/70 hover:text-white hover:bg-white/5'
+              }`}
+            >
+              Diagram
+            </Link>
+            <Link
+              href="/chat"
+              onClick={closeSidebar}
+              className={`text-sm font-black uppercase tracking-[0.16em] px-3 py-2 rounded-xl transition-all active:scale-[0.98] ${
+                location === '/chat'
+                  ? 'text-primary bg-primary/10'
+                  : 'text-white/70 hover:text-white hover:bg-white/5'
+              }`}
+            >
+              Community Chat
+            </Link>
+            <button
+              type="button"
+              onClick={() => {
+                closeSidebar();
+                openCreator();
+              }}
+              style={{ touchAction: 'manipulation' }}
+              className="text-left text-sm font-black uppercase tracking-[0.16em] px-3 py-2 rounded-xl text-white/70 hover:text-white hover:bg-white/5 transition-all active:scale-[0.98] cursor-pointer touch-manipulation"
+            >
+              Developer
+            </button>
+            <Link
+              href="/profile"
+              onClick={closeSidebar}
+              className={`text-sm font-black uppercase tracking-[0.16em] px-3 py-2 rounded-xl transition-all active:scale-[0.98] ${
+                location === '/profile'
+                  ? 'text-primary bg-primary/10'
+                  : 'text-white/70 hover:text-white hover:bg-white/5'
+              }`}
+            >
+              My Profile
+            </Link>
+          </nav>
 
-            {/* Sidebar Footer — Minimal Legal Links */}
-            <div className="pt-6 border-t border-white/10 flex items-center justify-between text-[11px] font-bold text-white/40 tracking-wider uppercase">
+          {/* Sidebar Footer — Minimal Legal Links */}
+          <div className="pt-6 border-t border-white/10 flex items-center justify-between text-[11px] font-bold text-white/40 tracking-wider uppercase">
 
-            </div>
-          </aside>
-        </div>
-      )}
+          </div>
+        </aside>
+      </div>
     </>
   );
 }
