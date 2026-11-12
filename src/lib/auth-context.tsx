@@ -181,7 +181,13 @@ async function resolveUserProfile(sbUser: User, preferCloud = false): Promise<Us
   if (typeof window !== 'undefined') {
     try {
       const storedOverrides = JSON.parse(localStorage.getItem('pinksnap_role_overrides') || '{}');
-      roleOverride = storedOverrides[sbUser.id] || storedOverrides[emailLower];
+      const candidateOverride = storedOverrides[sbUser.id] || storedOverrides[emailLower];
+      // SECURITY GUARD: Never allow client-side override to elevate to 'admin'
+      if (candidateOverride === 'admin' && !isCreatorAccount && dbProfile?.role !== 'admin') {
+        roleOverride = 'user';
+      } else {
+        roleOverride = candidateOverride;
+      }
     } catch {}
   }
   const resolvedRole: UserRole = isCreatorAccount

@@ -165,14 +165,25 @@ async function syncPublicWallJson(userId: string, wallEntries: string[]) {
       wallStrips: wallEntries,
       updatedAt: Date.now(),
     });
-    const blob = new Blob([payload], { type: 'application/json' });
-    const { error } = await supabase.storage.from(AVATAR_BUCKET).upload(`${userId}/wall.json`, blob, {
+    // First attempt: standard application/json
+    const jsonBlob = new Blob([payload], { type: 'application/json' });
+    let { error } = await supabase.storage.from(AVATAR_BUCKET).upload(`${userId}/wall.json`, jsonBlob, {
       upsert: true,
       cacheControl: '60',
       contentType: 'application/json',
     });
+    // If strict bucket MIME policy rejected application/json, fallback to text/plain
+    if (error && (error.message?.includes('mime') || error.message?.includes('type'))) {
+      const textBlob = new Blob([payload], { type: 'text/plain' });
+      const retry = await supabase.storage.from(AVATAR_BUCKET).upload(`${userId}/wall.json`, textBlob, {
+        upsert: true,
+        cacheControl: '60',
+        contentType: 'text/plain',
+      });
+      error = retry.error;
+    }
     if (error) {
-      console.warn('[Wall Sync] Upload error:', error.message);
+      console.warn('[Wall Sync] Upload notice:', error.message);
     } else {
       console.log('[Wall Sync] wall.json synced successfully with', wallEntries.length, 'entries');
     }
@@ -207,7 +218,11 @@ export default function ProfilePage() {
 
   const searchParams = React.useMemo(() => new URLSearchParams(searchString), [searchString]);
   const targetUserId = routeParams?.id || searchParams.get('user') || null;
-  const isOwner = !targetUserId || (Boolean(user?.id) && user?.id === targetUserId);
+  const isOwner = !targetUserId || (Boolean(user?.id) && (
+    user?.id === targetUserId ||
+    (user?.displayName && targetUserId && user.displayName.toLowerCase() === targetUserId.toLowerCase()) ||
+    (publicProfile?.id && user?.id && publicProfile.id === user.id)
+  ));
 
   const [publicProfile, setPublicProfile] = useState<{
     id: string;
@@ -237,55 +252,97 @@ export default function ProfilePage() {
           avatar_url?: string | null;
           role?: string | null;
           created_at?: string;
+          wall_strip_ids?: string[];
         } | null = null;
 
         const cleanTarget = (targetUserId ?? '').trim();
         if (!cleanTarget) return;
         const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(cleanTarget);
 
-        // Step 1: If cleanTarget is a valid UUID, query by ID
-        if (isUuid) {
-          const { data, error } = await supabase
-            .from('profiles')
-            .select('id, display_name, avatar_url, role, created_at')
-            .eq('id', cleanTarget)
-            .maybeSingle();
-
-          if (data && !error) {
-            baseData = data;
+        // Tier 1: Query public view (profiles_public) — specifically designed for public reading without leaking emails
+        try {
+          if (isUuid) {
+            const { data } = await supabase
+              .from('profiles_public')
+              .select('id, display_name, avatar_url, role')
+              .eq('id', cleanTarget)
+              .maybeSingle();
+            if (data) baseData = data;
           }
+
+          if (!baseData) {
+            const { data } = await supabase
+              .from('profiles_public')
+              .select('id, display_name, avatar_url, role')
+              .ilike('display_name', cleanTarget)
+              .maybeSingle();
+            if (data) baseData = data;
+          }
+
+          if (!baseData) {
+            const { data: allPub } = await supabase
+              .from('profiles_public')
+              .select('id, display_name, avatar_url, role')
+              .limit(100);
+
+            if (allPub && allPub.length > 0) {
+              const lower = cleanTarget.toLowerCase();
+              const matched = allPub.find(
+                (p) =>
+                  p.id.toLowerCase() === lower ||
+                  p.display_name?.toLowerCase() === lower ||
+                  p.display_name?.toLowerCase().includes(lower)
+              );
+              if (matched) baseData = matched;
+            }
+          }
+        } catch {
+          // View may not exist, continue to direct query
         }
 
-        // Step 2: If not found or not a UUID, query by display_name (case-insensitive)
+        // Tier 2: Direct profiles query fallback
         if (!baseData) {
-          const { data, error } = await supabase
-            .from('profiles')
-            .select('id, display_name, avatar_url, role, created_at')
-            .ilike('display_name', cleanTarget)
-            .maybeSingle();
+          if (isUuid) {
+            const { data, error } = await supabase
+              .from('profiles')
+              .select('id, display_name, avatar_url, role, created_at')
+              .eq('id', cleanTarget)
+              .maybeSingle();
 
-          if (data && !error) {
-            baseData = data;
+            if (data && !error) {
+              baseData = data;
+            }
           }
-        }
 
-        // Step 3: Resilient fallback scan across all profiles
-        if (!baseData) {
-          const { data: allProfiles } = await supabase
-            .from('profiles')
-            .select('id, display_name, avatar_url, role, created_at')
-            .limit(100);
+          if (!baseData) {
+            const { data, error } = await supabase
+              .from('profiles')
+              .select('id, display_name, avatar_url, role, created_at')
+              .ilike('display_name', cleanTarget)
+              .maybeSingle();
 
-          if (allProfiles && allProfiles.length > 0) {
-            const lower = cleanTarget.toLowerCase();
-            const matched = allProfiles.find(
-              (p) =>
-                p.id.toLowerCase() === lower ||
-                p.display_name?.toLowerCase() === lower ||
-                p.display_name?.toLowerCase().includes(lower)
-            );
-            if (matched) {
-              baseData = matched;
+            if (data && !error) {
+              baseData = data;
+            }
+          }
+
+          if (!baseData) {
+            const { data: allProfiles } = await supabase
+              .from('profiles')
+              .select('id, display_name, avatar_url, role, created_at')
+              .limit(100);
+
+            if (allProfiles && allProfiles.length > 0) {
+              const lower = cleanTarget.toLowerCase();
+              const matched = allProfiles.find(
+                (p) =>
+                  p.id.toLowerCase() === lower ||
+                  p.display_name?.toLowerCase() === lower ||
+                  p.display_name?.toLowerCase().includes(lower)
+              );
+              if (matched) {
+                baseData = matched;
+              }
             }
           }
         }
@@ -307,10 +364,13 @@ export default function ProfilePage() {
           if (pubUrlData?.publicUrl) {
             const wallRes = await fetch(`${pubUrlData.publicUrl}?t=${Date.now()}`);
             if (wallRes.ok) {
-              const parsed = await wallRes.json();
-              if (parsed && Array.isArray(parsed.wallStrips) && parsed.wallStrips.length > 0) {
-                resolvedWallStrips = parsed.wallStrips;
-              }
+              const text = await wallRes.text();
+              try {
+                const parsed = JSON.parse(text);
+                if (parsed && Array.isArray(parsed.wallStrips) && parsed.wallStrips.length > 0) {
+                  resolvedWallStrips = parsed.wallStrips;
+                }
+              } catch {}
             }
           }
         } catch (wallErr) {
@@ -368,6 +428,11 @@ export default function ProfilePage() {
           } catch (storageErr) {
             console.warn('[Public Profile] Error scanning storage for wall strips:', storageErr);
           }
+        }
+
+        // Database cloud wall entries fallback if available
+        if (resolvedWallStrips.length === 0 && Array.isArray(baseData.wall_strip_ids) && baseData.wall_strip_ids.length > 0) {
+          resolvedWallStrips = baseData.wall_strip_ids;
         }
 
         // Role check: Jimson is always Creator, Rezn1r is always Contributor

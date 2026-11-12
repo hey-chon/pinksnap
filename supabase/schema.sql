@@ -93,7 +93,7 @@ VALUES (
   'avatars',
   true,
   3145728,
-  ARRAY['image/jpeg', 'image/png', 'image/webp']
+  ARRAY['image/jpeg', 'image/png', 'image/webp', 'application/json', 'text/plain']
 )
 ON CONFLICT (id) DO UPDATE
 SET
