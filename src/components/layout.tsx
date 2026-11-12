@@ -89,18 +89,6 @@ export function TopNav({
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const openCreator = () => {
-    const scrollToCreator = () =>
-      document.getElementById('creator-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    if (location === '/') {
-      scrollToCreator();
-      return;
-    }
-    resetAppFlow();
-    setLocation('/');
-    window.setTimeout(scrollToCreator, 120);
-  };
-
   return (
     <>
       <header className="booth-marquee w-full flex min-h-[64px] sm:min-h-[72px] items-center justify-between gap-3 px-3 py-2 sm:px-5 sm:py-2.5 md:px-7 shrink-0 relative z-50 pt-[calc(.6rem+env(safe-area-inset-top))]">
@@ -295,17 +283,6 @@ export function TopNav({
             >
               Community Chat
             </Link>
-            <button
-              type="button"
-              onClick={() => {
-                closeSidebar();
-                openCreator();
-              }}
-              style={{ touchAction: 'manipulation' }}
-              className="text-left text-sm font-black uppercase tracking-[0.16em] px-3 py-2 rounded-xl text-white/70 hover:text-white hover:bg-white/5 transition-all active:scale-[0.98] cursor-pointer touch-manipulation"       
-             >
-              Developer
-            </button>
             <Link
               href="/profile"
               onClick={closeSidebar}
@@ -315,7 +292,6 @@ export function TopNav({
                   : 'text-white/70 hover:text-white hover:bg-white/5'
               }`}
             >
-            
               My Profile
             </Link>
           </nav>
