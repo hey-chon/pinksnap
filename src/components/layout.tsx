@@ -128,7 +128,7 @@ export function TopNav({
                 />
                 <div className="flex flex-col justify-center font-hero uppercase tracking-[0.16em] font-black leading-none select-none">
                   <span className="text-white text-[17px] sm:text-[20px] md:text-[22px]">PINK</span>
-                  <span className="text-primary cinematic-glow-pink text-[17px] sm:text-[20px] md:text-[22px] mt-1 sm:mt-1.5">SNAP</span>
+                  <span className="text-primary cinematic-glow-pink text-[17px] sm:text-[20px] md:text-[22px] -mt-[1px] sm:-mt-[2px]">SNAP</span>
                 </div>
               </div>
             </button>
@@ -152,7 +152,7 @@ export function TopNav({
                 />
                 <div className="flex flex-col justify-center font-hero uppercase tracking-[0.16em] font-black leading-none select-none">
                   <span className="text-white text-[17px] sm:text-[20px] md:text-[22px]">PINK</span>
-                  <span className="text-primary cinematic-glow-pink text-[17px] sm:text-[20px] md:text-[22px] mt-1 sm:mt-1.5">SNAP</span>
+                  <span className="text-primary cinematic-glow-pink text-[17px] sm:text-[20px] md:text-[22px] -mt-[1px] sm:-mt-[2px]">SNAP</span>
                 </div>
               </div>
             </Link>
@@ -243,7 +243,7 @@ export function TopNav({
               />
               <div className="flex flex-col justify-center font-hero uppercase tracking-[0.16em] font-black leading-none select-none">
                 <span className="text-white text-[17px] sm:text-[20px]">PINK</span>
-                <span className="text-primary cinematic-glow-pink text-[17px] sm:text-[20px] mt-1 sm:mt-1.5">SNAP</span>
+                <span className="text-primary cinematic-glow-pink text-[17px] sm:text-[20px] -mt-[1px] sm:-mt-[2px]">SNAP</span>
               </div>
             </div>
             <button
