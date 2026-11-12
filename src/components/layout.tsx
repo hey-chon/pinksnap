@@ -302,8 +302,8 @@ export function TopNav({
                 openCreator();
               }}
               style={{ touchAction: 'manipulation' }}
-              className="text-left text-sm font-black uppercase tracking-[0.16em] px-3 py-2 rounded-xl text-white/70 hover:text-white hover:bg-white/5 transition-all active:scale-[0.98] cursor-pointer touch-manipulation"
-            >
+              className="text-left text-sm font-black uppercase tracking-[0.16em] px-3 py-2 rounded-xl text-white/70 hover:text-white hover:bg-white/5 transition-all active:scale-[0.98] cursor-pointer touch-manipulation"       
+             >
               Developer
             </button>
             <Link
@@ -315,6 +315,7 @@ export function TopNav({
                   : 'text-white/70 hover:text-white hover:bg-white/5'
               }`}
             >
+            
               My Profile
             </Link>
           </nav>
