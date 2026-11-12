@@ -123,7 +123,7 @@ export function TopNav({
                 <img
                   src="/pinksnap-axolotl-icon.png"
                   alt="PinkSnap Axolotl"
-                  className="w-9 h-9 sm:w-10 sm:h-10 object-contain shrink-0 drop-shadow-[0_2px_10px_rgba(245,61,137,0.5)] group-hover:scale-105 group-hover:rotate-[-4deg] transition-all duration-200 select-none pointer-events-none"
+                  className="w-11 h-11 sm:w-12 sm:h-12 md:w-13 md:h-13 object-contain shrink-0 drop-shadow-[0_2px_12px_rgba(245,61,137,0.55)] group-hover:scale-105 group-hover:rotate-[-4deg] transition-all duration-200 select-none pointer-events-none"
                   draggable={false}
                 />
                 <span className="font-hero text-[19px] sm:text-[23px] tracking-[0.24em] uppercase text-white font-black drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)] group-hover:opacity-90 transition-opacity">
@@ -146,7 +146,7 @@ export function TopNav({
                 <img
                   src="/pinksnap-axolotl-icon.png"
                   alt="PinkSnap Axolotl"
-                  className="w-9 h-9 sm:w-10 sm:h-10 object-contain shrink-0 drop-shadow-[0_2px_10px_rgba(245,61,137,0.5)] group-hover:scale-105 group-hover:rotate-[-4deg] transition-all duration-200 select-none pointer-events-none"
+                  className="w-11 h-11 sm:w-12 sm:h-12 md:w-13 md:h-13 object-contain shrink-0 drop-shadow-[0_2px_12px_rgba(245,61,137,0.55)] group-hover:scale-105 group-hover:rotate-[-4deg] transition-all duration-200 select-none pointer-events-none"
                   draggable={false}
                 />
                 <span className="font-hero text-[19px] sm:text-[23px] tracking-[0.24em] uppercase text-white font-black drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)] group-hover:opacity-90 transition-opacity">
@@ -236,7 +236,7 @@ export function TopNav({
               <img
                 src="/pinksnap-axolotl-icon.png"
                 alt="PinkSnap Axolotl"
-                className="w-8.5 h-8.5 sm:w-9 sm:h-9 object-contain drop-shadow-[0_2px_8px_rgba(245,61,137,0.45)] select-none pointer-events-none"
+                className="w-10 h-10 sm:w-11 sm:h-11 object-contain drop-shadow-[0_2px_10px_rgba(245,61,137,0.5)] select-none pointer-events-none"
                 draggable={false}
               />
               <span className="font-hero text-base sm:text-lg tracking-[0.22em] uppercase text-white font-black">
