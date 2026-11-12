@@ -218,11 +218,6 @@ export default function ProfilePage() {
 
   const searchParams = React.useMemo(() => new URLSearchParams(searchString), [searchString]);
   const targetUserId = routeParams?.id || searchParams.get('user') || null;
-  const isOwner = !targetUserId || (Boolean(user?.id) && (
-    user?.id === targetUserId ||
-    (user?.displayName && targetUserId && user.displayName.toLowerCase() === targetUserId.toLowerCase()) ||
-    (publicProfile?.id && user?.id && publicProfile.id === user.id)
-  ));
 
   const [publicProfile, setPublicProfile] = useState<{
     id: string;
@@ -234,6 +229,12 @@ export default function ProfilePage() {
     createdAt?: string;
   } | null>(null);
   const [isLoadingPublicProfile, setIsLoadingPublicProfile] = useState(false);
+
+  const isOwner = !targetUserId || (Boolean(user?.id) && (
+    user?.id === targetUserId ||
+    (user?.displayName && targetUserId && user.displayName.toLowerCase() === targetUserId.toLowerCase()) ||
+    (publicProfile?.id && user?.id && publicProfile.id === user.id)
+  ));
 
   useEffect(() => {
     if (isOwner || !targetUserId) {
