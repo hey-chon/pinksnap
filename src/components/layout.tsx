@@ -126,7 +126,7 @@ export function TopNav({
                   className="h-8 w-8 sm:h-9 sm:w-9 object-contain shrink-0 drop-shadow-[0_2px_8px_rgba(245,61,137,0.45)] select-none pointer-events-none"
                   draggable={false}
                 />
-                <span className="font-hero text-[19px] sm:text-[22px] tracking-[0.2em] uppercase text-white font-black leading-none">
+                <span className="font-hero text-[19px] sm:text-[22px] tracking-[0.2em] uppercase text-white font-black leading-none translate-y-[2px]">
                   PINK<span className="text-primary cinematic-glow-pink">SNAP</span>
                 </span>
               </div>
@@ -149,7 +149,7 @@ export function TopNav({
                   className="h-8 w-8 sm:h-9 sm:w-9 object-contain shrink-0 drop-shadow-[0_2px_8px_rgba(245,61,137,0.45)] select-none pointer-events-none"
                   draggable={false}
                 />
-                <span className="font-hero text-[19px] sm:text-[22px] tracking-[0.2em] uppercase text-white font-black leading-none">
+                <span className="font-hero text-[19px] sm:text-[22px] tracking-[0.2em] uppercase text-white font-black leading-none translate-y-[2px]">
                   PINK<span className="text-primary cinematic-glow-pink">SNAP</span>
                 </span>
               </div>
@@ -239,7 +239,7 @@ export function TopNav({
                 className="h-8 w-8 sm:h-9 sm:w-9 object-contain shrink-0 drop-shadow-[0_2px_8px_rgba(245,61,137,0.45)] select-none pointer-events-none"
                 draggable={false}
               />
-              <span className="font-hero text-[19px] sm:text-[22px] tracking-[0.2em] uppercase text-white font-black leading-none">
+              <span className="font-hero text-[19px] sm:text-[22px] tracking-[0.2em] uppercase text-white font-black leading-none translate-y-[2px]">
                 PINK<span className="text-primary cinematic-glow-pink">SNAP</span>
               </span>
             </div>
