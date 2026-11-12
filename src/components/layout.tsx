@@ -126,9 +126,9 @@ export function TopNav({
                   className="h-11 w-11 sm:h-12 sm:w-12 md:h-13 md:w-13 object-contain shrink-0 drop-shadow-[0_2px_10px_rgba(245,61,137,0.5)] group-hover:scale-105 group-hover:rotate-[-3deg] -translate-y-[1px] sm:-translate-y-[1.5px] transition-all duration-200 select-none pointer-events-none"
                   draggable={false}
                 />
-                <div className="flex flex-col justify-center font-hero uppercase font-black leading-none select-none">
-                  <span className="text-white text-[15.5px] sm:text-[18.5px] md:text-[20px] tracking-[0.2em]">PINK</span>
-                  <span className="text-primary cinematic-glow-pink text-[17px] sm:text-[20px] md:text-[22px] tracking-[0.16em] -mt-[1px] sm:-mt-[2px]">SNAP</span>
+                <div className="flex flex-col justify-center font-hero uppercase tracking-[0.16em] font-black leading-none select-none">
+                  <span className="text-white text-[17px] sm:text-[20px] md:text-[22px]">PINK</span>
+                  <span className="text-primary cinematic-glow-pink text-[17px] sm:text-[20px] md:text-[22px] -mt-[1px] sm:-mt-[2px]">SNAP</span>
                 </div>
               </div>
             </button>
@@ -150,9 +150,9 @@ export function TopNav({
                   className="h-11 w-11 sm:h-12 sm:w-12 md:h-13 md:w-13 object-contain shrink-0 drop-shadow-[0_2px_10px_rgba(245,61,137,0.5)] group-hover:scale-105 group-hover:rotate-[-3deg] -translate-y-[1px] sm:-translate-y-[1.5px] transition-all duration-200 select-none pointer-events-none"
                   draggable={false}
                 />
-                <div className="flex flex-col justify-center font-hero uppercase font-black leading-none select-none">
-                  <span className="text-white text-[15.5px] sm:text-[18.5px] md:text-[20px] tracking-[0.2em]">PINK</span>
-                  <span className="text-primary cinematic-glow-pink text-[17px] sm:text-[20px] md:text-[22px] tracking-[0.16em] -mt-[1px] sm:-mt-[2px]">SNAP</span>
+                <div className="flex flex-col justify-center font-hero uppercase tracking-[0.16em] font-black leading-none select-none">
+                  <span className="text-white text-[17px] sm:text-[20px] md:text-[22px]">PINK</span>
+                  <span className="text-primary cinematic-glow-pink text-[17px] sm:text-[20px] md:text-[22px] -mt-[1px] sm:-mt-[2px]">SNAP</span>
                 </div>
               </div>
             </Link>
@@ -241,9 +241,9 @@ export function TopNav({
                 className="h-11 w-11 sm:h-12 sm:w-12 object-contain shrink-0 drop-shadow-[0_2px_8px_rgba(245,61,137,0.45)] -translate-y-[1px] sm:-translate-y-[1.5px] select-none pointer-events-none"
                 draggable={false}
               />
-              <div className="flex flex-col justify-center font-hero uppercase font-black leading-none select-none">
-                <span className="text-white text-[15.5px] sm:text-[18.5px] tracking-[0.2em]">PINK</span>
-                <span className="text-primary cinematic-glow-pink text-[17px] sm:text-[20px] tracking-[0.16em] -mt-[1px] sm:-mt-[2px]">SNAP</span>
+              <div className="flex flex-col justify-center font-hero uppercase tracking-[0.16em] font-black leading-none select-none">
+                <span className="text-white text-[17px] sm:text-[20px]">PINK</span>
+                <span className="text-primary cinematic-glow-pink text-[17px] sm:text-[20px] -mt-[1px] sm:-mt-[2px]">SNAP</span>
               </div>
             </div>
             <button
