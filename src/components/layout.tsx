@@ -327,7 +327,7 @@ export function TopNav({
   );
 }
 
-// BottomNav is permanently retired to maximize screen real estate and eliminate cramped layouts
+
 export function BottomNav() {
   return null;
 }
