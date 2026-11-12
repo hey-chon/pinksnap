@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link, useLocation } from 'wouter';
-import { Camera, ChevronLeft, HelpCircle, Images, MessageCircle, UserRound, Home, Menu, X } from 'lucide-react';
+import { ChevronLeft, MessageCircle, Menu, X } from 'lucide-react';
 import { UserMenu } from '@/components/auth/user-menu';
 import { resetAppFlow } from '@/App';
 
@@ -9,39 +9,6 @@ function Bulbs({ count = 10 }: { count?: number }) {
     <span className="bulb-row" aria-hidden="true">
       {Array.from({ length: count }).map((_, i) => <i key={i} />)}
     </span>
-  );
-}
-
-function PremiumCameraBadge() {
-  return (
-    <div className="relative group/camera select-none">
-      {/* Luxury Metallic/Enamel Camera Housing - No glow blur */}
-      <div className="relative w-10 h-10 sm:w-11 sm:h-11 rounded-[14px] bg-gradient-to-br from-[#ff6ba9] via-[#f53d89] to-[#b31454] p-[1.5px] shadow-[0_4px_12px_rgba(0,0,0,0.4)] group-hover/camera:rotate-[-5deg] group-hover/camera:scale-105 active:scale-95 transition-all duration-200">
-        {/* Chamfered inner body */}
-        <div className="w-full h-full rounded-[12.5px] bg-gradient-to-b from-[#ff5a9c] via-[#f53d89] to-[#9e0f49] p-1 flex items-center justify-center relative overflow-hidden shadow-[inset_0_1.5px_1px_rgba(255,255,255,0.6),inset_0_-2px_4px_rgba(0,0,0,0.4)]">
-          {/* Specular 45deg lens sweep */}
-          <div className="absolute -top-6 -left-6 w-16 h-16 bg-gradient-to-br from-white/30 via-transparent to-transparent rotate-45 pointer-events-none" />
-
-          {/* Camera hardware icon */}
-          <div className="relative flex items-center justify-center">
-            <Camera className="w-5 h-5 sm:w-5.5 sm:h-5.5 text-white stroke-[2.4] drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]" />
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function PremiumHomeBadge() {
-  return (
-    <div className="relative group/home select-none">
-      <div className="relative w-10 h-10 sm:w-11 sm:h-11 rounded-[14px] bg-gradient-to-br from-[#ff6ba9] via-[#f53d89] to-[#b31454] p-[1.5px] shadow-[0_4px_12px_rgba(0,0,0,0.4)] group-hover/home:rotate-[-5deg] group-hover/home:scale-105 active:scale-95 transition-all duration-200">
-        <div className="w-full h-full rounded-[12.5px] bg-gradient-to-b from-[#ff5a9c] via-[#f53d89] to-[#9e0f49] p-1 flex items-center justify-center relative overflow-hidden shadow-[inset_0_1.5px_1px_rgba(255,255,255,0.6),inset_0_-2px_4px_rgba(0,0,0,0.4)]">
-          <div className="absolute -top-6 -left-6 w-16 h-16 bg-gradient-to-br from-white/30 via-transparent to-transparent rotate-45 pointer-events-none" />
-          <Home className="w-5 h-5 sm:w-5.5 sm:h-5.5 text-white stroke-[2.4] drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]" />
-        </div>
-      </div>
-    </div>
   );
 }
 
@@ -157,26 +124,13 @@ export function TopNav({
               </div>
             </Link>
           )}
+
+          <span className="hidden sm:block"><Bulbs count={7} /></span>
         </div>
 
         {/* ── Right Action Controls ── */}
         <div className="flex items-center gap-2 sm:gap-3">
-          {/* Subtle Privacy & Terms on wide screens */}
-          <div className="hidden xl:flex items-center gap-2 text-[10px] font-bold text-white/40 tracking-wider uppercase mr-1">
-            <Link
-              href="/privacy"
-              className={`hover:text-primary transition-colors ${location === '/privacy' ? 'text-primary font-black' : ''}`}
-            >
-              Privacy
-            </Link>
-            <span className="text-white/20">·</span>
-            <Link
-              href="/terms"
-              className={`hover:text-primary transition-colors ${location === '/terms' ? 'text-primary font-black' : ''}`}
-            >
-              Terms
-            </Link>
-          </div>
+          <span className="hidden sm:block"><Bulbs count={7} /></span>
 
           <Link
             href="/chat"
