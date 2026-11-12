@@ -119,11 +119,11 @@ export function TopNav({
               aria-label="Back to top"
               className="group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-xl cursor-pointer select-none text-left py-1"
             >
-              <div className="flex items-center gap-2 sm:gap-2.5 leading-none">
+              <div className="flex items-center gap-2.5 sm:gap-3 leading-none">
                 <img
                   src="/pinksnap-axolotl-icon.png"
                   alt="PinkSnap Axolotl"
-                  className="w-7 h-7 sm:w-8 sm:h-8 object-contain shrink-0 drop-shadow-[0_2px_8px_rgba(245,61,137,0.45)] group-hover:scale-105 group-hover:rotate-[-4deg] transition-all duration-200 select-none pointer-events-none"
+                  className="w-9 h-9 sm:w-10 sm:h-10 object-contain shrink-0 drop-shadow-[0_2px_10px_rgba(245,61,137,0.5)] group-hover:scale-105 group-hover:rotate-[-4deg] transition-all duration-200 select-none pointer-events-none"
                   draggable={false}
                 />
                 <span className="font-hero text-[19px] sm:text-[23px] tracking-[0.24em] uppercase text-white font-black drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)] group-hover:opacity-90 transition-opacity">
@@ -142,11 +142,11 @@ export function TopNav({
               aria-label="PinkSnap home"
               className="group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-xl cursor-pointer select-none text-left py-1"
             >
-              <div className="flex items-center gap-2 sm:gap-2.5 leading-none">
+              <div className="flex items-center gap-2.5 sm:gap-3 leading-none">
                 <img
                   src="/pinksnap-axolotl-icon.png"
                   alt="PinkSnap Axolotl"
-                  className="w-7 h-7 sm:w-8 sm:h-8 object-contain shrink-0 drop-shadow-[0_2px_8px_rgba(245,61,137,0.45)] group-hover:scale-105 group-hover:rotate-[-4deg] transition-all duration-200 select-none pointer-events-none"
+                  className="w-9 h-9 sm:w-10 sm:h-10 object-contain shrink-0 drop-shadow-[0_2px_10px_rgba(245,61,137,0.5)] group-hover:scale-105 group-hover:rotate-[-4deg] transition-all duration-200 select-none pointer-events-none"
                   draggable={false}
                 />
                 <span className="font-hero text-[19px] sm:text-[23px] tracking-[0.24em] uppercase text-white font-black drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)] group-hover:opacity-90 transition-opacity">
@@ -236,10 +236,10 @@ export function TopNav({
               <img
                 src="/pinksnap-axolotl-icon.png"
                 alt="PinkSnap Axolotl"
-                className="w-7 h-7 object-contain drop-shadow-[0_2px_8px_rgba(245,61,137,0.45)] select-none pointer-events-none"
+                className="w-8.5 h-8.5 sm:w-9 sm:h-9 object-contain drop-shadow-[0_2px_8px_rgba(245,61,137,0.45)] select-none pointer-events-none"
                 draggable={false}
               />
-              <span className="font-hero text-base tracking-[0.22em] uppercase text-white font-black">
+              <span className="font-hero text-base sm:text-lg tracking-[0.22em] uppercase text-white font-black">
                 PINK<span className="text-primary cinematic-glow-pink">SNAP</span>
               </span>
             </div>
