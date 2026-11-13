@@ -266,7 +266,7 @@ export default function Home() {
         ref={mainRef}
         onScroll={handleScroll}
         style={{ WebkitOverflowScrolling: 'touch' }}
-        className="flex-1 overflow-y-auto overflow-x-hidden px-2.5 pt-4 pb-3 sm:p-8 relative overscroll-none"
+        className="flex-1 overflow-y-auto overflow-x-hidden px-2.5 py-5 sm:p-8 relative overscroll-none"
       >
         {/* Background glows */}
         <div className="absolute top-1/4 left-10 md:left-32 w-64 h-64 bg-primary/20 rounded-full blur-3xl -z-10 mix-blend-multiply pointer-events-none" />
@@ -291,7 +291,7 @@ export default function Home() {
           </div>
         </div>
         {/* ── Hero ── */}
-        <div className="text-center z-10 max-w-3xl lg:max-w-5xl mx-auto min-h-0 sm:min-h-[calc(100svh-4rem)] flex flex-col items-center justify-center pt-6 sm:pt-14 pb-4 sm:pb-16">
+        <div className="text-center z-10 max-w-3xl lg:max-w-5xl mx-auto min-h-[calc(100svh-4rem)] flex flex-col items-center justify-center pt-9 sm:pt-14 pb-16">
           <div className="home-hero-item inline-flex items-center gap-1.5 sm:gap-2 rounded-full bg-white/60 border border-white/80 px-3 py-1.5 sm:px-4 sm:py-2 lg:px-5 lg:py-2.5 text-[9.5px] sm:text-[11px] lg:text-xs font-black tracking-[.16em] sm:tracking-[.18em] text-primary uppercase shadow-sm">
             <Sparkles className="w-3 h-3 sm:w-3.5 sm:h-3.5 lg:w-4 lg:h-4" /> Your pocket photo booth
           </div>
@@ -301,7 +301,7 @@ export default function Home() {
             <span className="text-primary cinematic-glow-pink whitespace-nowrap">PINKSNAP.</span>
           </h1>
 
-          <p className="home-hero-item text-[10px] sm:text-sm lg:text-base font-black text-foreground/60 mb-5 sm:mb-8 lg:mb-10 tracking-[.22em] uppercase">
+          <p className="home-hero-item text-[10px] sm:text-sm lg:text-base font-black text-foreground/60 mb-8 lg:mb-10 tracking-[.22em] uppercase">
             YOUR VIRTUAL PHOTOBOOTH.
           </p>
 

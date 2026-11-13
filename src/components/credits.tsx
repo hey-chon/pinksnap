@@ -56,7 +56,7 @@ export default function Credits() {
   }, []);
 
   return (
-    <section id="creator-section" ref={sectionRef} aria-labelledby="credits-title" className="relative z-10 max-w-6xl mx-auto pb-6 sm:pb-20 pt-10 sm:pt-24 mt-6 sm:mt-16 scroll-mt-6">
+    <section id="creator-section" ref={sectionRef} aria-labelledby="credits-title" className="relative z-10 max-w-6xl mx-auto pb-14 sm:pb-20 pt-14 sm:pt-24 mt-8 sm:mt-16 scroll-mt-6">
       {/* Cinematic Header matching Artisan Showcase */}
       <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-3 mb-6 px-1">
         <div className="min-w-0">
