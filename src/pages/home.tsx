@@ -261,9 +261,9 @@ export default function Home() {
             <Sparkles className="w-3 h-3 sm:w-3.5 sm:h-3.5 lg:w-4 lg:h-4" /> Your pocket photo booth
           </div>
 
-          <h1 className="home-hero-item font-hero text-[clamp(3.15rem,13vw,4.25rem)] sm:text-[clamp(2.5rem,9vw,4.5rem)] lg:text-[5.5rem] xl:text-[6.2rem] text-foreground mt-4 sm:mt-5 lg:mt-7 mb-3 sm:mb-4 lg:mb-5 leading-[.9]">
-            WELCOME TO <br />
-            <span className="text-primary cinematic-glow-pink">PINKSNAP.</span>
+          <h1 className="home-hero-item font-hero text-[clamp(2.35rem,8.8vw,3.15rem)] sm:text-[clamp(2.5rem,9vw,4.5rem)] lg:text-[5.5rem] xl:text-[6.2rem] text-foreground mt-4 sm:mt-5 lg:mt-7 mb-3 sm:mb-4 lg:mb-5 leading-[.9]">
+            <span className="whitespace-nowrap">WELCOME TO</span> <br />
+            <span className="text-primary cinematic-glow-pink whitespace-nowrap">PINKSNAP.</span>
           </h1>
 
           <p className="home-hero-item text-[10px] sm:text-sm lg:text-base font-black text-foreground/60 mb-8 lg:mb-10 tracking-[.22em] uppercase">
