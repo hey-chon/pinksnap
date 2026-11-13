@@ -59,6 +59,7 @@ export default function Receipt() {
   const contentRef = useRef<HTMLDivElement>(null);
   const receiptRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(1);
+  const [contentHeight, setContentHeight] = useState(0);
   const [printTarget, setPrintTarget] = useState<'receipt' | 'strip'>('receipt');
 
   // Scale the side-by-side layout to fit narrow viewports
@@ -67,13 +68,31 @@ export default function Receipt() {
     const vw = window.innerWidth;
     const padding = 32; // 16px on each side
     const available = vw - padding;
-    setScale(available < CONTENT_WIDTH ? available / CONTENT_WIDTH : 1);
+    const s = available < CONTENT_WIDTH ? available / CONTENT_WIDTH : 1;
+    setScale(s);
+    if (contentRef.current) {
+      setContentHeight(contentRef.current.offsetHeight);
+    }
   }, []);
 
   useEffect(() => {
     computeScale();
     window.addEventListener('resize', computeScale);
-    return () => window.removeEventListener('resize', computeScale);
+
+    let ro: ResizeObserver | null = null;
+    if (typeof ResizeObserver !== 'undefined' && contentRef.current) {
+      ro = new ResizeObserver(() => {
+        if (contentRef.current) {
+          setContentHeight(contentRef.current.offsetHeight);
+        }
+      });
+      ro.observe(contentRef.current);
+    }
+
+    return () => {
+      window.removeEventListener('resize', computeScale);
+      ro?.disconnect();
+    };
   }, [computeScale]);
 
   const primaryMemory = savedMemories.length > 0 ? savedMemories[0] : null;
@@ -227,7 +246,7 @@ export default function Receipt() {
     'flex items-center justify-center gap-2 min-h-[44px] px-4 py-3.5 bg-white border border-black/10 text-black/70 font-black text-xs tracking-wider rounded-xl shadow-sm hover:bg-black/5 active:bg-black/10 active:opacity-85 transition-colors touch-manipulation select-none outline-none focus:outline-none';
 
   return (
-    <div className={`min-h-[100dvh] flex flex-col items-center justify-center px-4 py-8 sm:py-12 bg-[#f5f0eb] pb-[max(2rem,env(safe-area-inset-bottom))] overflow-x-hidden ${printTarget === 'strip' ? 'is-printing-strip' : 'is-printing-receipt'}`}>
+    <div className={`min-h-[100dvh] flex flex-col items-center justify-center px-4 pt-4 sm:pt-8 pb-4 sm:pb-8 bg-[#f5f0eb] pb-[max(1rem,env(safe-area-inset-bottom))] overflow-x-hidden ${printTarget === 'strip' ? 'is-printing-strip' : 'is-printing-receipt'}`}>
       <style>{`
         * {
           touch-action: manipulation;
@@ -305,14 +324,20 @@ export default function Receipt() {
 
         {/* Center content: receipt card + actions panel + mobile bottom branding */}
         <div
-          ref={contentRef}
-          className="receipt-container shrink-0 flex flex-col items-center justify-center"
+          className="receipt-scale-wrapper flex flex-col items-center justify-center shrink-0"
           style={{
-            transform: scale < 1 ? `scale(${scale})` : undefined,
-            transformOrigin: 'top center',
-            width: scale < 1 ? '640px' : undefined,
+            height: scale < 1 && contentHeight ? `${Math.round(contentHeight * scale)}px` : undefined,
           }}
         >
+          <div
+            ref={contentRef}
+            className="receipt-container shrink-0 flex flex-col items-center justify-center"
+            style={{
+              transform: scale < 1 ? `scale(${scale})` : undefined,
+              transformOrigin: 'top center',
+              width: scale < 1 ? '640px' : undefined,
+            }}
+          >
           <div className="flex flex-row items-center justify-center gap-6 md:gap-8">
             {/* Receipt card — original full ticket */}
             <div
@@ -517,15 +542,16 @@ export default function Receipt() {
         </div>
       </div>
 
-      <div className={`lg:hidden mt-12 sm:mt-16 text-center select-none print:hidden ${revealed ? 'receipt-fade' : 'opacity-0'}`}>
-        <h2 className="font-hero text-[5rem] sm:text-[5.75rem] tracking-tighter leading-none uppercase">
+      <div className={`lg:hidden mt-4 sm:mt-8 text-center select-none print:hidden ${revealed ? 'receipt-fade' : 'opacity-0'}`}>
+        <h2 className="font-hero text-3xl sm:text-5xl tracking-tighter leading-none uppercase">
           <span className="text-[#1a1520]">PINK</span><span className="text-primary">SNAP</span>
         </h2>
-        <p className="font-mono text-xs sm:text-sm text-black/40 tracking-[0.3em] uppercase mt-2 sm:mt-2.5">
+        <p className="font-mono text-[9px] sm:text-xs text-black/40 tracking-[0.25em] uppercase mt-1 sm:mt-1.5">
           Virtual Photo Booth
         </p>
       </div>
     </div>
+  </div>
 
 
     <div className={`hidden lg:flex flex-col items-center justify-center flex-1 select-none pointer-events-none text-center px-6 ${revealed ? 'receipt-fade' : 'opacity-0'}`}>
