@@ -229,14 +229,14 @@ export default function Home() {
   };
 
   return (
-    <div className="flex flex-col h-[100dvh] overflow-hidden desktop-zoom-95">
+    <div className="flex flex-col h-[100dvh] overflow-hidden desktop-zoom-95 overscroll-none">
       <TopNav />
 
       <main
         ref={mainRef}
         onScroll={handleScroll}
-        style={{ WebkitOverflowScrolling: 'touch', overscrollBehaviorY: 'contain' }}
-        className="flex-1 overflow-y-auto overflow-x-hidden px-2.5 py-5 sm:p-8 relative touch-pan-y"
+        style={{ WebkitOverflowScrolling: 'touch' }}
+        className="flex-1 overflow-y-auto overflow-x-hidden px-2.5 py-5 sm:p-8 relative touch-pan-y overscroll-contain"
       >
         {/* Background glows */}
         <div className="absolute top-1/4 left-10 md:left-32 w-64 h-64 bg-primary/20 rounded-full blur-3xl -z-10 mix-blend-multiply pointer-events-none" />
@@ -417,11 +417,11 @@ export default function Home() {
               const el = document.getElementById('creator-section');
               if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }}
-            className="home-hero-item scroll-cue mt-8 inline-flex flex-col items-center gap-1.5 text-center text-foreground/45 hover:text-primary transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-full px-3 py-2"
+            className="home-hero-item scroll-cue mt-5 sm:mt-6 inline-flex flex-col items-center gap-1 text-center text-foreground/45 hover:text-primary transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-full px-2.5 py-1.5"
             aria-label="Scroll to learn more"
           >
-            <span className="h-7 border-l-2 border-current opacity-45" />
-            <span className="text-[10px] font-black tracking-[.2em] uppercase">SCROLL TO EXPLORE</span>
+            <span className="h-5 border-l-[1.5px] border-current opacity-40" />
+            <span className="text-[8.5px] sm:text-[9.5px] font-black tracking-[.18em] uppercase">SCROLL TO EXPLORE</span>
           </button>
         </div>
 
