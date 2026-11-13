@@ -214,6 +214,35 @@ export default function Home() {
     return () => observer.disconnect();
   }, [showArtisan]);
 
+  // Prevent top overscroll stretch glitch when pulling down at scrollTop === 0
+  useEffect(() => {
+    const el = mainRef.current;
+    if (!el) return;
+
+    let startY = 0;
+    const onTouchStart = (e: TouchEvent) => {
+      startY = e.touches[0].clientY;
+    };
+
+    const onTouchMove = (e: TouchEvent) => {
+      const currentY = e.touches[0].clientY;
+      // If at or above the top and pulling down, block overscroll stretch
+      if (el.scrollTop <= 0 && currentY > startY) {
+        if (e.cancelable) {
+          e.preventDefault();
+        }
+      }
+    };
+
+    el.addEventListener('touchstart', onTouchStart, { passive: true });
+    el.addEventListener('touchmove', onTouchMove, { passive: false });
+
+    return () => {
+      el.removeEventListener('touchstart', onTouchStart);
+      el.removeEventListener('touchmove', onTouchMove);
+    };
+  }, []);
+
   const handleGetStarted = () => {
     sessionStorage.setItem('ps_has_entered_app', 'true');
     sessionStorage.setItem('ps_intent_start', 'true');
@@ -223,7 +252,8 @@ export default function Home() {
 
   const handleScroll = (e: React.UIEvent<HTMLElement>) => {
     if (floatingStripRef.current) {
-      const y = e.currentTarget.scrollTop * 0.7;
+      const top = Math.max(0, e.currentTarget.scrollTop);
+      const y = top * 0.7;
       floatingStripRef.current.style.transform = `translateY(${y}px) rotate(6deg)`;
     }
   };
@@ -236,7 +266,7 @@ export default function Home() {
         ref={mainRef}
         onScroll={handleScroll}
         style={{ WebkitOverflowScrolling: 'touch' }}
-        className="flex-1 overflow-y-auto overflow-x-hidden px-2.5 py-5 sm:p-8 relative touch-pan-y overscroll-contain"
+        className="flex-1 overflow-y-auto overflow-x-hidden px-2.5 py-5 sm:p-8 relative overscroll-none"
       >
         {/* Background glows */}
         <div className="absolute top-1/4 left-10 md:left-32 w-64 h-64 bg-primary/20 rounded-full blur-3xl -z-10 mix-blend-multiply pointer-events-none" />

@@ -58,7 +58,10 @@ export function TopNav({
 
   return (
     <>
-      <header className="booth-marquee w-full flex min-h-[64px] sm:min-h-[72px] items-center justify-between gap-3 px-3 py-2 sm:px-5 sm:py-2.5 md:px-7 shrink-0 relative z-50 pt-[calc(.6rem+env(safe-area-inset-top))]">
+      <header
+        style={{ touchAction: 'none' }}
+        className="booth-marquee w-full flex min-h-[64px] sm:min-h-[72px] items-center justify-between gap-3 px-3 py-2 sm:px-5 sm:py-2.5 md:px-7 shrink-0 relative z-50 pt-[calc(.6rem+env(safe-area-inset-top))]"
+      >
         <div className="flex items-center gap-2 sm:gap-4 min-w-0">
           {(backTo || onBack) && (
             <button

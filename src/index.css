@@ -103,7 +103,7 @@ html, body, #root {
 
 main {
   -webkit-overflow-scrolling: touch;
-  overscroll-behavior-y: contain;
+  overscroll-behavior-y: none;
 }
 
 body {
