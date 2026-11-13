@@ -257,11 +257,11 @@ export default function Home() {
         </div>
         {/* ── Hero ── */}
         <div className="text-center z-10 max-w-3xl lg:max-w-5xl mx-auto min-h-[calc(100svh-4rem)] flex flex-col items-center justify-center pt-9 sm:pt-14 pb-16">
-          <div className="home-hero-item inline-flex items-center gap-2 rounded-full bg-white/60 border border-white/80 px-4 py-2 lg:px-5 lg:py-2.5 text-[11px] lg:text-xs font-black tracking-[.18em] text-primary uppercase shadow-sm">
-            <Sparkles className="w-3.5 h-3.5 lg:w-4 lg:h-4" /> Your pocket photo booth
+          <div className="home-hero-item inline-flex items-center gap-1.5 sm:gap-2 rounded-full bg-white/60 border border-white/80 px-3 py-1.5 sm:px-4 sm:py-2 lg:px-5 lg:py-2.5 text-[9.5px] sm:text-[11px] lg:text-xs font-black tracking-[.16em] sm:tracking-[.18em] text-primary uppercase shadow-sm">
+            <Sparkles className="w-3 h-3 sm:w-3.5 sm:h-3.5 lg:w-4 lg:h-4" /> Your pocket photo booth
           </div>
 
-          <h1 className="home-hero-item font-hero text-[clamp(2.5rem,9vw,4.5rem)] lg:text-[5.5rem] xl:text-[6.2rem] text-foreground mt-5 lg:mt-7 mb-4 lg:mb-5 leading-[.9]">
+          <h1 className="home-hero-item font-hero text-[clamp(3.15rem,13vw,4.25rem)] sm:text-[clamp(2.5rem,9vw,4.5rem)] lg:text-[5.5rem] xl:text-[6.2rem] text-foreground mt-4 sm:mt-5 lg:mt-7 mb-3 sm:mb-4 lg:mb-5 leading-[.9]">
             WELCOME TO <br />
             <span className="text-primary cinematic-glow-pink">PINKSNAP.</span>
           </h1>
