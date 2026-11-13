@@ -191,7 +191,7 @@ export default function Home() {
   const [, navigate] = useLocation();
   const { isAuthenticated } = useAuth();
   const mainRef = useRef<HTMLElement>(null);
-  const [scrollY, setScrollY] = useState(0);
+  const floatingStripRef = useRef<HTMLDivElement>(null);
   const [activeStep, setActiveStep] = useState(0);
 
   // Lazy-mount the heavy artisan showcase only when user scrolls near it
@@ -222,7 +222,10 @@ export default function Home() {
   };
 
   const handleScroll = (e: React.UIEvent<HTMLElement>) => {
-    setScrollY(e.currentTarget.scrollTop);
+    if (floatingStripRef.current) {
+      const y = e.currentTarget.scrollTop * 0.7;
+      floatingStripRef.current.style.transform = `translateY(${y}px) rotate(6deg)`;
+    }
   };
 
   return (
@@ -232,7 +235,8 @@ export default function Home() {
       <main
         ref={mainRef}
         onScroll={handleScroll}
-        className="flex-1 overflow-y-auto overflow-x-hidden px-2.5 py-5 sm:p-8 relative scroll-smooth"
+        style={{ WebkitOverflowScrolling: 'touch', overscrollBehaviorY: 'contain' }}
+        className="flex-1 overflow-y-auto overflow-x-hidden px-2.5 py-5 sm:p-8 relative touch-pan-y"
       >
         {/* Background glows */}
         <div className="absolute top-1/4 left-10 md:left-32 w-64 h-64 bg-primary/20 rounded-full blur-3xl -z-10 mix-blend-multiply pointer-events-none" />
@@ -240,8 +244,9 @@ export default function Home() {
 
         {/* Floating strip decoration */}
         <div
-          className="hidden lg:block absolute right-[6%] md:right-[8%] top-[25%] z-0 pointer-events-none transition-transform duration-100 ease-out will-change-transform"
-          style={{ transform: `translateY(${scrollY * 0.7}px) rotate(6deg)` }}
+          ref={floatingStripRef}
+          className="hidden lg:block absolute right-[6%] md:right-[8%] top-[25%] z-0 pointer-events-none will-change-transform"
+          style={{ transform: 'translateY(0px) rotate(6deg)' }}
           aria-hidden="true"
         >
           <div className="bg-white p-3 rounded-lg shadow-xl border border-pink-100/80 flex flex-col gap-2.5 w-28 md:w-32 opacity-85">
