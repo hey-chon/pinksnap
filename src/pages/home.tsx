@@ -232,7 +232,7 @@ export default function Home() {
       <main
         ref={mainRef}
         onScroll={handleScroll}
-        className="flex-1 overflow-y-auto overflow-x-hidden p-5 sm:p-8 relative scroll-smooth"
+        className="flex-1 overflow-y-auto overflow-x-hidden px-2.5 py-5 sm:p-8 relative scroll-smooth"
       >
         {/* Background glows */}
         <div className="absolute top-1/4 left-10 md:left-32 w-64 h-64 bg-primary/20 rounded-full blur-3xl -z-10 mix-blend-multiply pointer-events-none" />
@@ -261,7 +261,7 @@ export default function Home() {
             <Sparkles className="w-3 h-3 sm:w-3.5 sm:h-3.5 lg:w-4 lg:h-4" /> Your pocket photo booth
           </div>
 
-          <h1 className="home-hero-item font-hero text-[clamp(2.35rem,8.8vw,3.15rem)] sm:text-[clamp(2.5rem,9vw,4.5rem)] lg:text-[5.5rem] xl:text-[6.2rem] text-foreground mt-4 sm:mt-5 lg:mt-7 mb-3 sm:mb-4 lg:mb-5 leading-[.9]">
+          <h1 className="home-hero-item font-hero text-[clamp(2.75rem,11.5vw,3.75rem)] sm:text-[clamp(2.5rem,9vw,4.5rem)] lg:text-[5.5rem] xl:text-[6.2rem] tracking-tight sm:tracking-normal text-foreground mt-4 sm:mt-5 lg:mt-7 mb-3 sm:mb-4 lg:mb-5 leading-[.9]">
             <span className="whitespace-nowrap">WELCOME TO</span> <br />
             <span className="text-primary cinematic-glow-pink whitespace-nowrap">PINKSNAP.</span>
           </h1>
