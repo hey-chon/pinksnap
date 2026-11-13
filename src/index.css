@@ -824,13 +824,28 @@ img { max-width: 100%; }
   width: 7px;
   height: 7px;
   border-radius: 999px;
-  background: #ffd9ec;
-  box-shadow: 0 0 8px rgba(255, 168, 210, .95);
+  background: #f53d89;
+  box-shadow: 0 0 8px rgba(245, 61, 137, 0.95), 0 0 14px rgba(245, 61, 137, 0.45);
   animation: bulb-blink 2.4s ease-in-out infinite;
 }
 
-.bulb-row i:nth-child(2n) { animation-delay: .3s; background: #ffe9b8; box-shadow: 0 0 8px rgba(255, 216, 140, .9); }
-.bulb-row i:nth-child(3n) { animation-delay: .6s; background: #b8f3ff; box-shadow: 0 0 8px rgba(160, 235, 255, .9); }
+.bulb-row i:nth-child(2n) {
+  animation-delay: .3s;
+  background: #ffd6e7;
+  box-shadow: 0 0 8px rgba(255, 182, 215, 0.95), 0 0 14px rgba(255, 182, 215, 0.4);
+}
+
+.bulb-row i:nth-child(3n) {
+  animation-delay: .6s;
+  background: #ff75b2;
+  box-shadow: 0 0 8px rgba(255, 100, 170, 0.95), 0 0 14px rgba(255, 100, 170, 0.45);
+}
+
+.bulb-row i:nth-child(4n) {
+  animation-delay: .9s;
+  background: #ff3385;
+  box-shadow: 0 0 8px rgba(255, 51, 133, 0.95), 0 0 14px rgba(255, 51, 133, 0.45);
+}
 
 @keyframes bulb-blink {
   0%, 100% { opacity: 1; }
