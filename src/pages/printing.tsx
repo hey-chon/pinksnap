@@ -13,6 +13,7 @@ import { useAppContext } from '@/lib/store';
  *   2. Sneak peek hold/teaser (~1.4s)
  *   3. Continuous smooth motor feed dispensing the long strip down (~3.3s)
  *   4. Gentle physical settle & auto-navigate to /receipt (~4.2s total)
+ * - Realistic & premium photobooth printer SFX synchronized directly to the strip feed
  * - Tapping anywhere immediately collects the strip and navigates
  * - Non-dismissible back navigation preserved
  */
@@ -21,6 +22,7 @@ export default function Printing() {
   const { latestStrip, savedMemories } = useAppContext();
   const [printingStarted, setPrintingStarted] = useState(false);
   const finishTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   // Retrieve actual strip from store or fallback
   const stripUrl =
@@ -39,33 +41,6 @@ export default function Printing() {
     return () => window.removeEventListener('popstate', blockBack);
   }, []);
 
-  // Safe subtle stepper motor sound effect
-  const triggerAudioTick = () => {
-    try {
-      const AudioCtx =
-        window.AudioContext ||
-        (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-      if (!AudioCtx) return;
-      const ctx = new AudioCtx();
-      if (ctx.state === 'suspended') {
-        void ctx.resume();
-      }
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = 'triangle';
-      osc.frequency.setValueAtTime(150, ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(75, ctx.currentTime + 0.08);
-      gain.gain.setValueAtTime(0.03, ctx.currentTime);
-      gain.gain.linearRampToValueAtTime(0.001, ctx.currentTime + 0.08);
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start();
-      osc.stop(ctx.currentTime + 0.09);
-    } catch {
-      // AudioContext blocked or not supported — ignore safely
-    }
-  };
-
   // Safe haptic vibration
   const triggerHaptic = () => {
     try {
@@ -77,55 +52,73 @@ export default function Printing() {
     }
   };
 
-  // Timeline with sneak peek action and full dispense
+  // Play realistic premium printer sound effect right with the printing of the strip
+  const startPrintAudio = () => {
+    try {
+      if (!audioRef.current) {
+        const audio = new Audio('/photobooth-print.wav');
+        audio.preload = 'auto';
+        audio.volume = 0.85;
+        audioRef.current = audio;
+      }
+      const playPromise = audioRef.current.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(() => {
+          // Silent fallback if browser autoplay policy delays audio until gesture
+        });
+      }
+    } catch {
+      // Audio playback unavailable
+    }
+  };
+
+  // Timeline with sneak peek action, synchronized audio, and full dispense
   useEffect(() => {
-    // Start animation on mount
+    // Start animation & SFX right on the print initiation
     const startTimer = setTimeout(() => {
       setPrintingStarted(true);
-      triggerAudioTick();
+      startPrintAudio();
       triggerHaptic();
     }, 100);
 
-    // Sneak peek pause moment tick
+    // Sneak peek hold haptic
     const sneakPeekTick = setTimeout(() => {
-      triggerAudioTick();
       triggerHaptic();
     }, 850);
 
-    // Full motor roll kick tick
-    const motorKickTick = setTimeout(() => {
-      triggerAudioTick();
-    }, 1450);
-
-    // Mid-feed tick
-    const midFeedTick = setTimeout(() => {
-      triggerAudioTick();
-    }, 2400);
-
-    // Settle tick when feed completes (~3.4s)
+    // Final settle haptic when feed completes (~3.4s)
     const settleTick = setTimeout(() => {
       triggerHaptic();
     }, 3400);
 
     // Full finish & auto navigate to receipt at 4.2s
     finishTimeoutRef.current = setTimeout(() => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+      }
       setLocation('/receipt', { replace: true });
     }, 4200);
 
     return () => {
       clearTimeout(startTimer);
       clearTimeout(sneakPeekTick);
-      clearTimeout(motorKickTick);
-      clearTimeout(midFeedTick);
       clearTimeout(settleTick);
       if (finishTimeoutRef.current) {
         clearTimeout(finishTimeoutRef.current);
         finishTimeoutRef.current = null;
       }
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
     };
   }, [setLocation]);
 
   const handleInstantCollect = () => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current = null;
+    }
     if (finishTimeoutRef.current) clearTimeout(finishTimeoutRef.current);
     setLocation('/receipt', { replace: true });
   };
