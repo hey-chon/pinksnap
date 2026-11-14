@@ -8,14 +8,14 @@ import { useAppContext } from '@/lib/store';
  * Minimal, authentic real-life photobooth machine:
  * - Pure printer only: zero extraneous UI, HUDs, buttons, or badges
  * - Background seamlessly matches the plaque's brushed metal silver tone
- * - Slender, elongated photo strip with real-time audio-synchronized motion:
- *   1. 0.08s: Startup click -> paper begins to feed
- *   2. 0.10s - 0.85s: Sneak peek motor whir & paper friction -> top of strip peeks out
- *   3. 0.85s - 1.38s: Motor pause & silence -> strip freezes in sneak peek hold
- *   4. 1.39s: Re-engage click -> continuous motorized feed downwards
- *   5. 1.40s - 3.30s: Full motor glide -> long strip dispenses into full view
- *   6. 3.32s: Final release click -> subtle physical settle bounce
- *   7. 3.90s: Seamless auto-advance to /receipt
+ * - Slender, elongated photo strip with 3 teaser "sneak peeks" before full print:
+ *   1. 0.08s - 0.70s: Sneak Peek 1 (top edge peeks out) -> pause & hold at 0.70s - 1.15s
+ *   2. 1.15s - 1.75s: Sneak Peek 2 (first photo emerges) -> pause & hold at 1.75s - 2.20s
+ *   3. 2.20s - 2.80s: Sneak Peek 3 (second photo emerges) -> pause & hold at 2.80s - 3.25s
+ *   4. 3.25s - 5.20s: Full Rollout (long strip dispenses continuously all the way down)
+ *   5. 5.22s - 5.60s: Roller release click & physical settle
+ *   6. 5.70s: Seamless auto-advance to /receipt
+ * - Real-time photobooth mechanical sound effect locked to each movement
  * - Tapping anywhere immediately collects the strip and navigates
  * - Non-dismissible back navigation preserved
  */
@@ -44,10 +44,10 @@ export default function Printing() {
   }, []);
 
   // Safe haptic vibration
-  const triggerHaptic = () => {
+  const triggerHaptic = (pattern: number[] = [18, 30, 18]) => {
     try {
       if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
-        navigator.vibrate([18, 30, 18]);
+        navigator.vibrate(pattern);
       }
     } catch {
       // Haptics not available
@@ -61,44 +61,41 @@ export default function Printing() {
     audio.volume = 0.9;
     audioRef.current = audio;
 
-    // Small delay on mount to ensure browser paint and audio buffer are ready
     const startTimer = setTimeout(() => {
       setPrintingStarted(true);
       try {
         const playPromise = audio.play();
         if (playPromise !== undefined) {
           playPromise.catch(() => {
-            // If autoplay is blocked by browser, user can tap screen
+            // Autoplay delayed until interaction
           });
         }
       } catch {
         // Audio unavailable
       }
-      triggerHaptic();
+      triggerHaptic([20]);
     }, 60);
 
-    // Sneak peek hold haptic (synchronized with the 0.85s audio click)
-    const sneakPeekHaptic = setTimeout(() => {
-      triggerHaptic();
-    }, 60 + 850);
+    // Haptics synchronized with the 3 sneak peeks and final release
+    const haptic1 = setTimeout(() => triggerHaptic([15, 20, 15]), 60 + 700);
+    const haptic2 = setTimeout(() => triggerHaptic([15, 20, 15]), 60 + 1750);
+    const haptic3 = setTimeout(() => triggerHaptic([15, 20, 15]), 60 + 2800);
+    const hapticFinal = setTimeout(() => triggerHaptic([30, 40, 20]), 60 + 5220);
 
-    // Feed completion haptic (synchronized with the 3.32s release click)
-    const finishHaptic = setTimeout(() => {
-      triggerHaptic();
-    }, 60 + 3320);
-
-    // Auto-advance to /receipt right after audio tail finishes
+    // Auto-advance to /receipt right after audio finishes (5.7s total)
     finishTimeoutRef.current = setTimeout(() => {
       if (audioRef.current) {
         audioRef.current.pause();
       }
       setLocation('/receipt', { replace: true });
-    }, 60 + 3850);
+    }, 60 + 5650);
 
     return () => {
       clearTimeout(startTimer);
-      clearTimeout(sneakPeekHaptic);
-      clearTimeout(finishHaptic);
+      clearTimeout(haptic1);
+      clearTimeout(haptic2);
+      clearTimeout(haptic3);
+      clearTimeout(hapticFinal);
       if (finishTimeoutRef.current) {
         clearTimeout(finishTimeoutRef.current);
         finishTimeoutRef.current = null;
@@ -130,56 +127,73 @@ export default function Printing() {
     >
       <style>{`
         /*
-         * Precise Real-Time Audio Synchronization for photobooth-print.wav (3.80s total)
-         * 0.00s - 0.08s (0% - 2%): Startup relay click, stationary in slit
-         * 0.08s - 0.85s (2% - 22.4%): Motor Feed 1 -> SNEAK PEEK slides down
-         * 0.85s - 1.38s (22.4% - 36.3%): SNEAK PEEK PAUSE -> holds frozen during silence
-         * 1.39s (36.6%): Motor clutch re-engage click
-         * 1.40s - 3.30s (36.8% - 86.8%): Motor Feed 2 -> continuous smooth full strip dispense
-         * 3.32s - 3.45s (87.4% - 90.8%): Roller release click -> gentle physical settle bounce
-         * 3.45s - 3.80s (90.8% - 100%): Resting in full view
+         * 3 Sneak Peeks + Full Rollout Animation (5.60s total, synchronized with photobooth-print.wav)
+         * 0.08s - 0.70s: Sneak Peek 1 (top edge peeks out)
+         * 0.70s - 1.14s: Sneak Peek 1 hold / silence
+         * 1.14s - 1.75s: Sneak Peek 2 (photo 1 emerges)
+         * 1.75s - 2.19s: Sneak Peek 2 hold / silence
+         * 2.19s - 2.80s: Sneak Peek 3 (photo 2 emerges)
+         * 2.80s - 3.24s: Sneak Peek 3 hold / silence
+         * 3.24s - 5.20s: Full Rollout (long strip rolls down into full view)
+         * 5.20s - 5.35s: Release click & settle bounce
+         * 5.35s - 5.60s: Fully settled
          */
-        @keyframes photoboothAudioSyncFeed {
+        @keyframes photobooth3SneakPeeksFeed {
           0% {
             transform: translate(-50%, -92%) translateZ(0);
             animation-timing-function: cubic-bezier(0.2, 0.8, 0.4, 1);
           }
-          2.1% {
+          1.4% {
             /* 0.08s: Startup click */
             transform: translate(-50%, -92%) translateZ(0);
             animation-timing-function: cubic-bezier(0.2, 0.8, 0.4, 1);
           }
-          22.4% {
-            /* 0.85s: Sneak peek peak reached */
-            transform: translate(-50%, -68%) translateZ(0);
+          12.5% {
+            /* 0.70s: Sneak Peek 1 reached */
+            transform: translate(-50%, -78%) translateZ(0);
             animation-timing-function: step-end;
           }
-          36.3% {
-            /* 1.38s: Frozen hold during the motor pause */
-            transform: translate(-50%, -68%) translateZ(0);
+          20.4% {
+            /* 1.14s: Sneak Peek 1 pause / frozen hold */
+            transform: translate(-50%, -78%) translateZ(0);
+            animation-timing-function: cubic-bezier(0.2, 0.8, 0.4, 1);
+          }
+          31.2% {
+            /* 1.75s: Sneak Peek 2 reached */
+            transform: translate(-50%, -58%) translateZ(0);
+            animation-timing-function: step-end;
+          }
+          39.1% {
+            /* 2.19s: Sneak Peek 2 pause / frozen hold */
+            transform: translate(-50%, -58%) translateZ(0);
+            animation-timing-function: cubic-bezier(0.2, 0.8, 0.4, 1);
+          }
+          50.0% {
+            /* 2.80s: Sneak Peek 3 reached */
+            transform: translate(-50%, -36%) translateZ(0);
+            animation-timing-function: step-end;
+          }
+          57.9% {
+            /* 3.24s: Sneak Peek 3 pause / frozen hold */
+            transform: translate(-50%, -36%) translateZ(0);
             animation-timing-function: cubic-bezier(0.18, 0.85, 0.3, 1);
           }
-          36.8% {
-            /* 1.40s: Motor resumes */
-            transform: translate(-50%, -67.5%) translateZ(0);
-            animation-timing-function: cubic-bezier(0.18, 0.85, 0.3, 1);
-          }
-          86.8% {
-            /* 3.30s: Full strip emerges */
+          92.8% {
+            /* 5.20s: Full strip fully emerged */
             transform: translate(-50%, 0%) translateZ(0);
             animation-timing-function: cubic-bezier(0.25, 1.4, 0.5, 1);
           }
-          88.2% {
-            /* 3.35s: Micro settle bounce matching 3.32s release click */
+          94.0% {
+            /* 5.26s: Physical settle bounce matching release click */
             transform: translate(-50%, 2.5px) translateZ(0);
             animation-timing-function: ease-out;
           }
-          92.0% {
-            /* 3.50s: Settled in place */
+          96.5% {
+            /* 5.40s: Settled in place */
             transform: translate(-50%, 0%) translateZ(0);
           }
           100% {
-            /* 3.80s: Audio ends */
+            /* 5.60s: Fully settled */
             transform: translate(-50%, 0%) translateZ(0);
           }
         }
@@ -194,7 +208,7 @@ export default function Printing() {
           className="absolute inset-0 w-full h-full object-cover object-top select-none pointer-events-none z-0"
         />
 
-        {/* Layer 2 (z-10): Photo Strip emerging downwards in lockstep with the audio waveform */}
+        {/* Layer 2 (z-10): Photo Strip emerging downwards with 3 sneak peeks + full dispense */}
         {/* Slit origin: y = 418px / 1308px = 31.96% from the top */}
         <div
           className="absolute z-10 will-change-transform transform-gpu pointer-events-none"
@@ -203,7 +217,7 @@ export default function Printing() {
             left: '50%',
             width: '42%',
             transform: 'translate(-50%, -92%) translateZ(0)',
-            animation: printingStarted ? 'photoboothAudioSyncFeed 3.8s linear forwards' : 'none',
+            animation: printingStarted ? 'photobooth3SneakPeeksFeed 5.6s linear forwards' : 'none',
           }}
         >
           {/* Physical Photo Strip Card */}
