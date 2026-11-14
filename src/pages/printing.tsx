@@ -5,13 +5,13 @@ import { useAppContext } from '@/lib/store';
 /**
  * Photobooth IRL Dispenser — Printing Page
  *
- * Recreates the physical photobooth dispensing experience inspired by the industrial
- * metallic dispenser slot reference:
- * - Brushed aluminum plaque with signature centered PINKSNAP (PINK in titanium charcoal, SNAP in hot pink)
+ * Uses the authentic photobooth dispensing machine asset (`Photobooth Printer _ Motion Graphic Idea`):
+ * - Authentic industrial metallic machine casing & brushed metal plaque from root
+ * - Signature centered PINKSNAP branding (PINK in dark titanium, SNAP in signature hot pink #f53d89)
  * - Authentic engraved "PHOTOS DELIVERED HERE" signage with down arrow (NO "IN 4 MINUTES")
- * - 3D extruded metallic pill-shaped dispenser bezel with deep dark mechanical cavity
- * - Hardware-accelerated smooth photo strip feed animation emerging directly from the slot
- * - Fast, optimized, IRL feel (~2.5s total) auto-navigating to /receipt
+ * - Real extruded metallic pill dispenser bezel with dark mechanical interior mouth
+ * - Hardware-accelerated smooth photo strip feed emerging from behind the top bezel lip and hanging down
+ * - Quick & smooth physical feed (~2.3s total) auto-navigating to /receipt
  * - Non-dismissible back-navigation lock preserved
  */
 export default function Printing() {
@@ -54,8 +54,8 @@ export default function Printing() {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.type = 'triangle';
-      osc.frequency.setValueAtTime(160, ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(80, ctx.currentTime + 0.08);
+      osc.frequency.setValueAtTime(150, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(75, ctx.currentTime + 0.08);
       gain.gain.setValueAtTime(0.03, ctx.currentTime);
       gain.gain.linearRampToValueAtTime(0.001, ctx.currentTime + 0.08);
       osc.connect(gain);
@@ -80,14 +80,13 @@ export default function Printing() {
 
   // Quick, smooth, optimized print animation loop (~2.4s total)
   useEffect(() => {
-    // Small initial delay before feed starts for authentic mechanical startup
     const startTimer = setTimeout(() => {
       setPrintingStarted(true);
       triggerAudioTick();
       triggerHaptic();
-    }, 150);
+    }, 120);
 
-    const TOTAL_MS = 2200; // Fast and snappy print feed
+    const TOTAL_MS = 2200; // Quick and snappy mechanical feed
     const STEP_MS = 35;
     let elapsed = 0;
 
@@ -104,10 +103,10 @@ export default function Printing() {
         setIsCompleted(true);
         triggerHaptic();
 
-        // Brief settle time then replace location with /receipt
+        // Settle then replace location with /receipt
         finishTimeoutRef.current = setTimeout(() => {
           setLocation('/receipt', { replace: true });
-        }, 350);
+        }, 380);
       }
     }, STEP_MS);
 
@@ -131,201 +130,120 @@ export default function Printing() {
   };
 
   return (
-    <div
-      className="fixed inset-0 z-[9999] flex flex-col items-center justify-between select-none overflow-hidden"
-      style={{
-        background: `
-          radial-gradient(ellipse 120% 90% at 30% 10%, rgba(255, 255, 255, 0.22) 0%, transparent 60%),
-          radial-gradient(ellipse 90% 90% at 75% 85%, rgba(0, 0, 0, 0.28) 0%, transparent 65%),
-          linear-gradient(145deg, #a4aab1 0%, #8b9198 35%, #767c83 70%, #666c72 100%)
-        `,
-      }}
-    >
-      {/* Subtle fine metal grain overlay */}
-      <div
-        className="pointer-events-none absolute inset-0 opacity-[0.14]"
-        style={{
-          backgroundImage: `repeating-linear-gradient(90deg, rgba(255,255,255,0.06) 0px, rgba(255,255,255,0.06) 1px, transparent 1px, transparent 3px),
-                            repeating-linear-gradient(0deg, rgba(0,0,0,0.04) 0px, rgba(0,0,0,0.04) 1px, transparent 1px, transparent 4px)`,
-        }}
-      />
+    <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-[#18191b] select-none overflow-hidden p-0 sm:p-4">
+      {/* Container framing the realistic photobooth machine (736 x 1308 aspect ratio) */}
+      <div className="relative w-full h-[100dvh] sm:h-auto sm:max-h-[92vh] max-w-[460px] aspect-[736/1308] flex items-center justify-center overflow-hidden sm:rounded-2xl shadow-[0_25px_60px_rgba(0,0,0,0.85)]">
+        {/* Layer 1 (z-0): Authentic Photobooth Machine Base with clean plaque & empty slot */}
+        <img
+          src="/photobooth-machine-base.png"
+          alt="Photobooth Machine"
+          className="absolute inset-0 w-full h-full object-cover object-top select-none pointer-events-none z-0"
+        />
 
-      {/* Top Header / Status bar */}
-      <div className="relative z-20 w-full max-w-md px-6 pt-5 sm:pt-8 flex items-center justify-between">
-        {/* Machine Status Pill */}
-        <div className="flex items-center gap-2 bg-black/35 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/15 shadow-inner">
-          <span
-            className={`w-2 h-2 rounded-full transition-all duration-300 ${
-              isCompleted
-                ? 'bg-emerald-400 shadow-[0_0_8px_#34d399]'
-                : 'bg-emerald-400 shadow-[0_0_8px_#34d399] animate-pulse'
-            }`}
-          />
-          <span className="font-mono text-[10px] uppercase tracking-widest text-white/90 font-semibold">
-            {isCompleted ? 'DISPENSED' : 'PRINTING IN PROGRESS'}
-          </span>
-        </div>
-
-        {/* Progress indicator */}
-        <div className="font-mono text-[11px] text-white/70 tracking-widest font-bold">
-          {Math.round(progress)}%
-        </div>
-      </div>
-
-      {/* Main Dispenser Kiosk Face */}
-      <div className="relative z-10 w-full max-w-lg flex flex-col items-center justify-start flex-1 px-4 pt-4 sm:pt-8 pb-4">
-        {/* 1. Metal Brushed Plaque (Mar & Ma replacement with centered PINKSNAP) */}
+        {/* Layer 2 (z-10): The Real Photo Strip emerging downwards from the slot slit */}
+        {/* Slit origin: y = 418px / 1308px = 31.96% from the top */}
         <div
-          className="relative w-52 sm:w-60 rounded-md p-4 sm:p-5 flex flex-col items-center justify-center text-center shadow-[0_8px_20px_rgba(0,0,0,0.4),0_1px_0_rgba(255,255,255,0.8)_inset]"
+          onClick={handleInstantCollect}
+          title="Tap to collect photo strip"
+          className="absolute z-10 will-change-transform transform-gpu cursor-pointer group"
           style={{
-            background: `
-              linear-gradient(135deg, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0.05) 50%, rgba(0,0,0,0.12) 100%),
-              linear-gradient(170deg, #d8dce1 0%, #c4c9cf 45%, #b1b7be 75%, #c8cdd3 100%)
-            `,
-            border: '1px solid rgba(255, 255, 255, 0.75)',
-            outline: '1px solid rgba(0, 0, 0, 0.25)',
+            top: '31.96%',
+            left: '50%',
+            width: '50%', // 368px / 736px matching reference asset
+            transform: printingStarted
+              ? 'translate(-50%, 0%) translateZ(0)'
+              : 'translate(-50%, -86%) translateZ(0)',
+            transition: 'transform 2.1s cubic-bezier(0.22, 1, 0.36, 1)',
           }}
         >
-          {/* 4 Corner Screws */}
-          <div className="absolute top-2 left-2 w-2 h-2 rounded-full bg-gradient-to-br from-[#ffffff] via-[#c2c7ce] to-[#697078] shadow-[0_1px_1px_rgba(0,0,0,0.4)] flex items-center justify-center">
-            <div className="w-1 h-[0.5px] bg-[#424850] rotate-45" />
-          </div>
-          <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-gradient-to-br from-[#ffffff] via-[#c2c7ce] to-[#697078] shadow-[0_1px_1px_rgba(0,0,0,0.4)] flex items-center justify-center">
-            <div className="w-1 h-[0.5px] bg-[#424850] -rotate-45" />
-          </div>
-          <div className="absolute bottom-2 left-2 w-2 h-2 rounded-full bg-gradient-to-br from-[#ffffff] via-[#c2c7ce] to-[#697078] shadow-[0_1px_1px_rgba(0,0,0,0.4)] flex items-center justify-center">
-            <div className="w-1 h-[0.5px] bg-[#424850] -rotate-45" />
-          </div>
-          <div className="absolute bottom-2 right-2 w-2 h-2 rounded-full bg-gradient-to-br from-[#ffffff] via-[#c2c7ce] to-[#697078] shadow-[0_1px_1px_rgba(0,0,0,0.4)] flex items-center justify-center">
-            <div className="w-1 h-[0.5px] bg-[#424850] rotate-45" />
-          </div>
+          {/* Physical Photo Strip Card */}
+          <div className="relative bg-white rounded-[2px] p-1.5 shadow-[0_20px_45px_rgba(0,0,0,0.7),0_6px_14px_rgba(0,0,0,0.4)] border border-black/10 overflow-hidden transition-transform duration-200 group-hover:scale-[1.01]">
+            {/* Top cavern shadow: simulates strip emerging from dark interior cavity */}
+            <div className="pointer-events-none absolute inset-x-0 top-0 h-8 bg-gradient-to-b from-black/85 via-black/35 to-transparent z-20" />
 
-          {/* Signature Centered PINKSNAP Branding */}
-          <div className="flex items-center justify-center select-none pt-0.5">
-            <span className="font-hero text-2xl sm:text-[28px] text-[#1c1e22] tracking-wider leading-none drop-shadow-[0_1px_0_rgba(255,255,255,0.7)]">
-              PINK
-            </span>
-            <span className="font-hero text-2xl sm:text-[28px] text-[#f53d89] tracking-wider leading-none ml-1.5 drop-shadow-[0_1px_0_rgba(255,255,255,0.7)]">
-              SNAP
-            </span>
-          </div>
+            {/* Glossy photographic paper sheen */}
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-tr from-transparent via-white/20 to-transparent z-15" />
 
-          {/* Authentic Engraved Photobooth Signage (Strictly NO 'in 4 minutes') */}
-          <div className="mt-2.5 sm:mt-3 text-center select-none">
-            <p className="font-sans font-black text-[10px] sm:text-[11px] text-[#2c3036] tracking-[0.24em] uppercase leading-snug drop-shadow-[0_1px_0_rgba(255,255,255,0.6)]">
-              PHOTOS
-            </p>
-            <p className="font-sans font-black text-[10px] sm:text-[11px] text-[#2c3036] tracking-[0.24em] uppercase leading-snug drop-shadow-[0_1px_0_rgba(255,255,255,0.6)] mt-0.5">
-              DELIVERED HERE
-            </p>
-          </div>
-
-          {/* Photobooth Industrial Arrow */}
-          <div className="mt-2 flex justify-center">
-            <svg
-              className="w-4 h-5 sm:w-5 sm:h-6 text-[#1c1e22] drop-shadow-[0_1px_0_rgba(255,255,255,0.6)]"
-              viewBox="0 0 24 28"
-              fill="currentColor"
-            >
-              <path d="M10 0 H14 V15 H19 L12 25 L5 15 H10 Z" />
-            </svg>
-          </div>
-        </div>
-
-        {/* 2. Dispenser Slot & Animated Real-Life Photo Strip */}
-        <div className="relative w-full max-w-[340px] sm:max-w-[420px] mt-6 sm:mt-8 flex flex-col items-center">
-          {/* Outer Extruded Metallic Bezel (Pill shape from the reference) */}
-          <div
-            className="relative w-full h-[74px] sm:h-[84px] rounded-full p-2.5 sm:p-3 shadow-[0_18px_36px_rgba(0,0,0,0.5),0_1px_0_rgba(255,255,255,0.8)_inset,0_-1px_0_rgba(0,0,0,0.6)_inset]"
-            style={{
-              background: `
-                linear-gradient(180deg, #f1f3f6 0%, #b8bec6 35%, #88909a 70%, #5d646d 100%)
-              `,
-              border: '1px solid rgba(255,255,255,0.7)',
-            }}
-          >
-            {/* Inner Dark Cavity (The Mouth) */}
-            <div
-              className="relative w-full h-full rounded-full bg-[#0b0c0e] shadow-[inset_0_12px_20px_rgba(0,0,0,0.98),inset_0_2px_4px_rgba(0,0,0,0.9)] overflow-visible flex justify-center"
-            >
-              {/* Internal Slit Paper Shadow (casts depth onto the emerging strip) */}
-              <div className="pointer-events-none absolute inset-x-0 top-0 h-4 bg-gradient-to-b from-black/90 to-transparent z-30 rounded-t-full" />
-
-              {/* Photo Strip emerging downwards from the slot */}
-              <div
-                onClick={handleInstantCollect}
-                title="Tap to collect photo strip"
-                className="absolute top-2 w-[150px] sm:w-[175px] cursor-pointer will-change-transform transform-gpu z-20 group"
-                style={{
-                  // The strip starts rolled up in the slit (-82%) and smoothly feeds down into view
-                  transform: printingStarted
-                    ? 'translateY(12px) translateZ(0)'
-                    : 'translateY(-86%) translateZ(0)',
-                  transition: 'transform 2.1s cubic-bezier(0.22, 1, 0.36, 1)',
-                }}
-              >
-                {/* Physical Photo Strip Container with real photo paper styling */}
-                <div className="relative rounded-[3px] bg-white p-2 shadow-[0_24px_45px_rgba(0,0,0,0.65),0_8px_16px_rgba(0,0,0,0.4)] border border-black/10 overflow-hidden transition-transform duration-200 group-hover:scale-[1.01]">
-                  {/* Glossy paper reflection sheen */}
-                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-tr from-transparent via-white/20 to-transparent z-10" />
-
-                  {/* Top internal shadow simulating paper coming out of the roller cavern */}
-                  <div className="pointer-events-none absolute inset-x-0 top-0 h-6 bg-gradient-to-b from-black/60 via-black/20 to-transparent z-20" />
-
-                  {stripUrl ? (
-                    <img
-                      src={stripUrl}
-                      alt="Your printed photo strip"
-                      draggable={false}
-                      className="w-full h-auto object-contain select-none block"
-                    />
-                  ) : (
-                    /* Elegant fallback mockup if strip is loaded directly without photo session */
-                    <div className="flex flex-col gap-1.5 py-1">
-                      <div className="w-full aspect-[4/3] bg-gradient-to-br from-pink-100 to-rose-200 rounded-[2px]" />
-                      <div className="w-full aspect-[4/3] bg-gradient-to-br from-purple-100 to-pink-200 rounded-[2px]" />
-                      <div className="w-full aspect-[4/3] bg-gradient-to-br from-amber-100 to-rose-200 rounded-[2px]" />
-                      <div className="w-full aspect-[4/3] bg-gradient-to-br from-sky-100 to-pink-200 rounded-[2px]" />
-                      <div className="pt-2 text-center">
-                        <span className="font-hero text-xs text-[#1c1e22]">PINK</span>
-                        <span className="font-hero text-xs text-[#f53d89] ml-1">SNAP</span>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Bottom glossy edge highlight */}
-                  <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[2px] bg-white/70" />
-                </div>
-
-                {/* Subtle paper feed helper pill */}
-                <div className="text-center mt-3">
-                  <span className="inline-block font-mono text-[9px] uppercase tracking-wider text-black/80 bg-white/80 backdrop-blur-sm px-2.5 py-0.5 rounded-full shadow-sm font-semibold">
-                    Tap to grab strip
-                  </span>
+            {stripUrl ? (
+              <img
+                src={stripUrl}
+                alt="Your printed photo strip"
+                draggable={false}
+                className="w-full h-auto object-contain select-none block"
+              />
+            ) : (
+              /* Fallback preview strip mockup if loaded directly */
+              <div className="flex flex-col gap-1.5 py-1">
+                <div className="w-full aspect-[4/3] bg-gradient-to-br from-pink-100 to-rose-200 rounded-[1px]" />
+                <div className="w-full aspect-[4/3] bg-gradient-to-br from-purple-100 to-pink-200 rounded-[1px]" />
+                <div className="w-full aspect-[4/3] bg-gradient-to-br from-amber-100 to-rose-200 rounded-[1px]" />
+                <div className="w-full aspect-[4/3] bg-gradient-to-br from-sky-100 to-pink-200 rounded-[1px]" />
+                <div className="pt-2 text-center">
+                  <span className="font-hero text-xs text-[#1c1e22]">PINK</span>
+                  <span className="font-hero text-xs text-[#f53d89] ml-1">SNAP</span>
                 </div>
               </div>
-            </div>
+            )}
+          </div>
+
+          {/* Quick collect pill */}
+          <div className="text-center mt-3">
+            <span className="inline-block font-mono text-[9px] uppercase tracking-wider text-black/85 bg-white/90 backdrop-blur-md px-3 py-1 rounded-full shadow-md font-bold">
+              Tap to collect strip
+            </span>
           </div>
         </div>
-      </div>
 
-      {/* Bottom Control / Skip button */}
-      <div className="relative z-20 w-full max-w-md px-6 pb-6 sm:pb-8 flex flex-col items-center">
-        {/* Progress bar line */}
-        <div className="w-full h-1.5 bg-black/30 rounded-full overflow-hidden border border-white/10 mb-3 shadow-inner">
-          <div
-            className="h-full bg-gradient-to-r from-[#f53d89] via-[#ff7eb3] to-[#f53d89] rounded-full transition-all duration-75 ease-out"
-            style={{ width: `${progress}%` }}
+        {/* Layer 3 (z-20): Top machine face overlay (covers y = 0 to 418px) */}
+        {/* Ensures the unprinted paper section remains hidden inside the machine behind the top bezel lip */}
+        <div
+          className="absolute top-0 left-0 w-full pointer-events-none select-none z-20 overflow-hidden"
+          style={{ height: '31.96%' }}
+        >
+          <img
+            src="/photobooth-machine-top.png"
+            alt="Photobooth Bezel Top"
+            className="w-full h-full object-cover object-top select-none pointer-events-none block"
           />
         </div>
 
-        <button
-          onClick={handleInstantCollect}
-          className="text-white/80 hover:text-white font-mono text-xs uppercase tracking-widest font-semibold transition-colors flex items-center gap-1.5 py-1"
-        >
-          <span>{isCompleted ? 'View Receipt & Save' : 'Skip Animation'}</span>
-          <span>&rarr;</span>
-        </button>
+        {/* Status Overlay HUD at the Top */}
+        <div className="absolute top-4 inset-x-4 z-30 flex items-center justify-between pointer-events-none">
+          <div className="flex items-center gap-2 bg-black/45 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/20 shadow-lg">
+            <span
+              className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                isCompleted
+                  ? 'bg-emerald-400 shadow-[0_0_8px_#34d399]'
+                  : 'bg-emerald-400 shadow-[0_0_8px_#34d399] animate-pulse'
+              }`}
+            />
+            <span className="font-mono text-[10px] uppercase tracking-widest text-white/95 font-bold">
+              {isCompleted ? 'DISPENSED' : 'PRINTING IN REAL TIME'}
+            </span>
+          </div>
+
+          <div className="font-mono text-xs text-white/90 tracking-widest font-black bg-black/45 backdrop-blur-md px-2.5 py-1 rounded-full border border-white/15">
+            {Math.round(progress)}%
+          </div>
+        </div>
+
+        {/* Bottom Progress Bar & Skip Control */}
+        <div className="absolute bottom-4 inset-x-6 z-30 flex flex-col items-center">
+          <div className="w-full h-1.5 bg-black/40 rounded-full overflow-hidden border border-white/15 mb-2.5 shadow-inner">
+            <div
+              className="h-full bg-gradient-to-r from-[#f53d89] via-[#ff7eb3] to-[#f53d89] rounded-full transition-all duration-75 ease-out"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+
+          <button
+            onClick={handleInstantCollect}
+            className="text-white/85 hover:text-white font-mono text-[11px] uppercase tracking-widest font-bold transition-colors flex items-center gap-1.5 py-1 px-3 rounded-full bg-black/35 backdrop-blur-sm border border-white/10"
+          >
+            <span>{isCompleted ? 'View Receipt & Save' : 'Skip Animation'}</span>
+            <span>&rarr;</span>
+          </button>
+        </div>
       </div>
     </div>
   );
