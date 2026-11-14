@@ -126,11 +126,10 @@ export default function Printing() {
   return (
     <div
       onClick={handleInstantCollect}
-      className="fixed inset-0 z-[9999] flex items-center justify-center select-none overflow-hidden cursor-pointer"
+      className="fixed inset-0 z-[9999] flex items-center justify-center select-none overflow-hidden cursor-pointer bg-cover bg-center"
       style={{
-        background: `
-          radial-gradient(ellipse 100% 100% at 48% 38%, #d8d4d3 0%, #c5c0bf 45%, #aba6a5 85%, #9c9796 100%)
-        `,
+        backgroundImage: 'url(/photobooth-plaque-bg.jpg)',
+        backgroundColor: '#d8d4d3',
       }}
     >
       <style>{`
