@@ -73,22 +73,33 @@ export default function Printing() {
     }
   };
 
-  // Short, fast, smooth print animation matching the motion graphic (~1.4s total)
+  // Authentic photobooth dispensing feed duration (~4.0s total)
   useEffect(() => {
     const startTimer = setTimeout(() => {
       setPrintingStarted(true);
       triggerAudioTick();
       triggerHaptic();
-    }, 80);
+    }, 120);
 
-    // Fast print duration: 1150ms feed + 250ms settle = ~1400ms total
+    // Subtle intermediate mechanical ticks during the gradual feed
+    const midTick1 = setTimeout(() => {
+      triggerAudioTick();
+    }, 1200);
+
+    const midTick2 = setTimeout(() => {
+      triggerAudioTick();
+    }, 2400);
+
+    // Feed finishes at ~3.4s, settles for 600ms, then navigates at 4.0s
     finishTimeoutRef.current = setTimeout(() => {
       triggerHaptic();
       setLocation('/receipt', { replace: true });
-    }, 1400);
+    }, 4000);
 
     return () => {
       clearTimeout(startTimer);
+      clearTimeout(midTick1);
+      clearTimeout(midTick2);
       if (finishTimeoutRef.current) {
         clearTimeout(finishTimeoutRef.current);
         finishTimeoutRef.current = null;
@@ -131,7 +142,7 @@ export default function Printing() {
             transform: printingStarted
               ? 'translate(-50%, 0%) translateZ(0)'
               : 'translate(-50%, -86%) translateZ(0)',
-            transition: 'transform 1.15s cubic-bezier(0.22, 1, 0.36, 1)',
+            transition: 'transform 3.4s cubic-bezier(0.18, 0.9, 0.32, 1)',
           }}
         >
           {/* Physical Photo Strip Card */}
