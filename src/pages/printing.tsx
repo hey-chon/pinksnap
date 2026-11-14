@@ -161,8 +161,8 @@ export default function Printing() {
         }
       `}</style>
 
-      {/* Printer Only — framing the realistic photobooth machine (736 x 1308 aspect ratio) */}
-      <div className="relative w-full h-[100dvh] sm:h-auto sm:max-h-[92vh] max-w-[460px] aspect-[736/1308] flex items-center justify-center overflow-hidden sm:rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.4)]">
+      {/* Printer Only — fills the entire mobile viewport, capped on desktop */}
+      <div className="relative w-full h-[100dvh] sm:h-[92vh] sm:max-w-[520px] sm:aspect-[736/1308] flex items-center justify-center overflow-hidden sm:rounded-2xl sm:shadow-[0_20px_50px_rgba(0,0,0,0.4)]">
         {/* Layer 1 (z-0): Authentic Photobooth Machine Base with clean plaque & empty slot */}
         <img
           src="/photobooth-machine-base.png"
@@ -170,15 +170,14 @@ export default function Printing() {
           className="absolute inset-0 w-full h-full object-cover object-top select-none pointer-events-none z-0"
         />
 
-        {/* Layer 2 (z-10): Slender & Long Photo Strip emerging downwards with sneak-peek action */}
+        {/* Layer 2 (z-10): Photo Strip emerging downwards with sneak-peek action */}
         {/* Slit origin: y = 418px / 1308px = 31.96% from the top */}
-        {/* Width: 38% makes it noticeably smaller, slender, and elongated */}
         <div
           className="absolute z-10 will-change-transform transform-gpu pointer-events-none"
           style={{
             top: '31.96%',
             left: '50%',
-            width: '38%',
+            width: '42%',
             transform: 'translate(-50%, -92%) translateZ(0)',
             animation: printingStarted
               ? 'photoboothSneakPeakFeed 3.6s cubic-bezier(0.2, 0.85, 0.35, 1) forwards'
