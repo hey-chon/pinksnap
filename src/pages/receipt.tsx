@@ -5,7 +5,7 @@ import { useAppContext, LayoutType } from '@/lib/store';
 import { getFrameOption, getFilterOption, FrameType, ARTISAN_TEMPLATES } from '@/lib/customization';
 import { resetAppFlow } from '@/App';
 import { Download, Share2, Image as ImageIcon, Home, Printer } from 'lucide-react';
-import { downloadImage, dataUrlToBlob } from '@/lib/image-utils';
+import { downloadImage, dataUrlToBlob, IS_IOS } from '@/lib/image-utils';
 import { useToast } from '@/hooks/use-toast.tsx';
 
 const AUTO_DOWNLOAD_KEY = 'ps_strip_autodownloaded';
@@ -61,6 +61,7 @@ export default function Receipt() {
   const [scale, setScale] = useState(1);
   const [contentHeight, setContentHeight] = useState(0);
   const [printTarget, setPrintTarget] = useState<'receipt' | 'strip'>('receipt');
+  const [showIosSaveModal, setShowIosSaveModal] = useState(false);
 
   // Scale the side-by-side layout to fit narrow viewports
   const computeScale = useCallback(() => {
@@ -133,11 +134,25 @@ export default function Receipt() {
     };
   }, []);
 
-  // Auto-download the strip once the receipt is shown. Silent mode skips
-  // the iOS share sheet so the user is not forced to tap anything.
+  // Auto-download the strip once the receipt is shown on desktop/Android.
+  // On iOS Safari, display the native save sheet choices via modal prompt.
   useEffect(() => {
     if (!latestMemory || autoDownloadStarted.current) return;
     autoDownloadStarted.current = true;
+
+    // Detect if the user just completed printing
+    try {
+      const justPrinted = sessionStorage.getItem('ps_print_just_completed') === 'true';
+      if (justPrinted && IS_IOS) {
+        setShowIosSaveModal(true);
+      }
+      sessionStorage.removeItem('ps_print_just_completed');
+    } catch {
+      // ignore
+    }
+
+    // iOS Safari does not support automated background downloads to camera roll without user gesture
+    if (IS_IOS) return;
 
     let already = '';
     try {
@@ -162,6 +177,16 @@ export default function Receipt() {
 
     return () => window.clearTimeout(timer);
   }, [latestMemory, sessionDate]);
+
+  const handleSaveStrip = async () => {
+    if (!latestMemory?.url) return;
+    try {
+      toast({ title: 'Saving photo strip...', description: 'Opening save choices...' });
+      await downloadImage(latestMemory.url, `pinksnap-${sessionDate}.png`, { silent: false });
+    } catch {
+      toast({ title: 'Save failed', description: 'Please try again.', variant: 'destructive' });
+    }
+  };
 
   const handleDownload = async () => {
     if (!receiptRef.current) return;
@@ -485,8 +510,11 @@ export default function Receipt() {
 
         {/* Actions: under the ticket on phones, to the right on tablets/desktops */}
         <div className={`actions-panel w-[240px] shrink-0 flex flex-col justify-center gap-3 print:hidden ${revealed ? 'receipt-fade' : 'opacity-0'}`} style={{ maxWidth: '240px' }}>
+          <button type="button" onClick={handleSaveStrip} onFocus={(e) => e.currentTarget.blur()} className={actionBtn}>
+            <Download className="w-4 h-4 text-[#f53d89]" /> SAVE PHOTO STRIP
+          </button>
           <button type="button" onClick={handleDownload} onFocus={(e) => e.currentTarget.blur()} className={actionBtn}>
-            <Download className="w-4 h-4" /> SAVE
+            <Download className="w-4 h-4" /> SAVE RECEIPT
           </button>
           <button type="button" onClick={handleShare} onFocus={(e) => e.currentTarget.blur()} className={actionBtn}>
             <Share2 className="w-4 h-4" /> SHARE
@@ -564,6 +592,38 @@ export default function Receipt() {
       </p>
     </div>
   </div>
+
+  {/* iOS Safari Save Image Modal / Choice Prompt */}
+  {showIosSaveModal && latestMemory?.url && (
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200 print:hidden">
+      <div className="bg-white dark:bg-zinc-900 rounded-3xl p-6 max-w-sm w-full text-center shadow-2xl border border-black/10 dark:border-white/10 animate-in slide-in-from-bottom duration-300">
+        <div className="w-12 h-12 bg-pink-100 dark:bg-pink-950/50 rounded-2xl flex items-center justify-center mx-auto mb-3">
+          <Download className="w-6 h-6 text-[#f53d89]" />
+        </div>
+        <h3 className="font-hero text-lg text-foreground mb-1 tracking-wide uppercase">
+          PHOTO STRIP PRINTED!
+        </h3>
+        <p className="text-xs text-foreground/70 mb-5 leading-relaxed">
+          Tap below to open iOS save choices and select <span className="font-bold text-foreground">"Save Image"</span> to save directly to your Photos app.
+        </p>
+        <button
+          onClick={() => {
+            setShowIosSaveModal(false);
+            void handleSaveStrip();
+          }}
+          className="w-full py-3.5 px-4 bg-gradient-to-r from-[#f53d89] to-[#ff4d94] text-white font-black text-xs sm:text-sm tracking-wider uppercase rounded-2xl flex items-center justify-center gap-2 shadow-lg shadow-pink-500/25 active:scale-[0.98] transition-transform cursor-pointer"
+        >
+          <Share2 className="w-4 h-4" /> SAVE IMAGE TO PHOTOS
+        </button>
+        <button
+          onClick={() => setShowIosSaveModal(false)}
+          className="w-full mt-2.5 py-2.5 text-xs font-semibold text-foreground/50 hover:text-foreground transition-colors cursor-pointer"
+        >
+          I'LL DO IT LATER
+        </button>
+      </div>
+    </div>
+  )}
 </div>
 );
 }

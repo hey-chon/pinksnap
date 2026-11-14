@@ -57,8 +57,10 @@ export function createMemoryId(): string {
   return `memory-${Date.now()}-${randomPart}`;
 }
 
-const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
-  (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+export const IS_IOS = typeof navigator !== 'undefined' && (
+  /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+  (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
+);
 
 function triggerAnchorDownload(objectUrl: string, filename: string) {
   const link = document.createElement('a');

@@ -234,6 +234,7 @@ export default function Edit() {
 
   const [isSaving, setIsSaving] = useState(false);
   const [printProgress, setPrintProgress] = useState<PackageLoadProgress | null>(null);
+  const [isTransitioning, setIsTransitioning] = useState(false);
   const [category, setCategory] = useState<TabMode>(() => (sessionStorage.getItem('ps_edit_category') as TabMode) || 'booth');
   const [artisanId, setArtisanId] = useState<ArtisanTemplateId>(() => (sessionStorage.getItem('ps_edit_artisan') as ArtisanTemplateId) || 'port-archive');
   const [showArtisanWarning, setShowArtisanWarning] = useState(false);
@@ -512,7 +513,7 @@ export default function Edit() {
     await downloadImage(dataUrl, `pinksnap-${Date.now()}.png`, { silent: true });
   };
 
-  const handleSave = async (skipDownload = false) => {
+  const handleSave = async (_skipDownload = false) => {
     if (shots.length === 0) return;
     setIsSaving(true);
     setPrintProgress({ percent: 10, label: 'PRINTING • PACKAGING 10%' });
@@ -524,35 +525,16 @@ export default function Edit() {
       setLatestStrip(dataUrl);
       try {
         sessionStorage.setItem('ps_latest_strip', dataUrl);
+        // Clean any stale auto-download flags so download will trigger cleanly after printing
+        sessionStorage.removeItem('ps_strip_autodownloaded');
+        sessionStorage.removeItem('ps_receipt_downloaded');
+        sessionStorage.removeItem('ps_print_just_completed');
       } catch {
         // ignore quota / private-mode failures
       }
 
-      // Save to the in-app gallery FIRST, before triggering any download or
-      // navigation. This prevents race conditions on mobile devices.
+      // Save to the in-app gallery before navigation
       const stored = await saveToGallery(dataUrl);
-
-      if (!skipDownload) {
-        try {
-          sessionStorage.setItem('ps_strip_autodownloaded', 'started');
-        } catch {
-          // ignore quota / private-mode failures
-        }
-        void executeDownload(dataUrl)
-          .then(() => {
-            try { sessionStorage.setItem('ps_strip_autodownloaded', 'done'); } catch { /* ignore */ }
-          })
-          .catch(() => {
-            try { sessionStorage.removeItem('ps_strip_autodownloaded'); } catch { /* ignore */ }
-          });
-      }
-
-      toast({
-        title: 'Strip saved!',
-        description: stored
-          ? 'Your photo strip is downloading and was added to your gallery.'
-          : 'The strip is downloading, but this device could not keep a gallery copy.',
-      });
 
       // Real-time package loading & timing calculation:
       // Preloads printer assets, verifies strip decode in GPU RAM, and warms Web Audio context
@@ -560,16 +542,21 @@ export default function Edit() {
         setPrintProgress(prog);
       });
 
+      // Cinematic transition after packages are loaded
+      setIsTransitioning(true);
+      await new Promise((r) => setTimeout(r, 380));
+
       // Navigate to printing dispenser screen - user can't go back
       setLocation('/printing', { replace: true });
     } catch (err) {
+      setIsTransitioning(false);
       // If the user dismissed the iOS share sheet, don't treat it as an error.
       if (err instanceof DOMException && err.name === 'AbortError') {
         // silently allow them to retry
       } else {
         toast({
-          title: 'Download failed',
-          description: 'We could not save the strip. Try again in a moment.',
+          title: 'Preparation failed',
+          description: 'We could not prepare the strip. Try again in a moment.',
           variant: 'destructive',
         });
       }
@@ -943,6 +930,24 @@ export default function Edit() {
       </main>
 
       <BottomNav />
+
+      {/* Cinematic Transition Overlay from Edit to Printing Dispenser */}
+      {isTransitioning && (
+        <div className="fixed inset-0 z-[10000] flex flex-col items-center justify-center bg-black/95 backdrop-blur-xl animate-in fade-in duration-300 pointer-events-auto select-none">
+          <div className="relative flex flex-col items-center text-center p-6 max-w-xs animate-in zoom-in-95 duration-300">
+            <div className="w-16 h-16 rounded-3xl bg-white/10 border border-white/15 flex items-center justify-center mb-5 shadow-2xl relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-tr from-[#f53d89]/30 to-transparent animate-pulse" />
+              <Printer className="w-8 h-8 text-[#f53d89] relative z-10" />
+            </div>
+            <h3 className="font-hero text-lg tracking-widest text-white uppercase mb-1">
+              DISPENSING TO PRINTER
+            </h3>
+            <p className="text-xs text-white/60 tracking-wider">
+              CONNECTING TO PHOTOBOOTH...
+            </p>
+          </div>
+        </div>
+      )}
       {showArtisanWarning && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           {/* Backdrop */}

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useLocation } from 'wouter';
 import { useAppContext } from '@/lib/store';
 import { playDispenserAudio } from '@/lib/photoboothAudio';
+import { IS_IOS, downloadImage } from '@/lib/image-utils';
 
 /**
  * Safely parse and retrieve strip dataUrl.
@@ -124,10 +125,26 @@ export default function Printing() {
     const haptic3 = setTimeout(() => triggerHaptic([15, 20, 15]), 2800);
     const hapticFinal = setTimeout(() => triggerHaptic([30, 40, 20]), 5220);
 
-    // Auto-advance to /receipt at 5.7s total
-    finishTimeoutRef.current = setTimeout(() => {
+    // Once the printing is done at 5.7s total, trigger download and advance to receipt
+    finishTimeoutRef.current = setTimeout(async () => {
       if (isCancelled) return;
       stopAudio();
+
+      try {
+        sessionStorage.setItem('ps_print_just_completed', 'true');
+      } catch {
+        // ignore
+      }
+
+      // On non-iOS devices (desktop/Android), trigger the automatic strip download exactly when printing finishes
+      if (stripUrl && !IS_IOS) {
+        try {
+          await downloadImage(stripUrl, `pinksnap-${Date.now()}.png`, { silent: true });
+        } catch {
+          // ignore
+        }
+      }
+
       setLocation('/receipt', { replace: true });
     }, 5700);
 
@@ -143,7 +160,7 @@ export default function Printing() {
       }
       stopAudio();
     };
-  }, [stripLoaded, setLocation]);
+  }, [stripLoaded, setLocation, stripUrl]);
 
   const stopAudio = () => {
     try {
@@ -156,22 +173,28 @@ export default function Printing() {
     }
   };
 
-  const handleInstantCollect = () => {
-    stopAudio();
-    if (finishTimeoutRef.current) clearTimeout(finishTimeoutRef.current);
-    setLocation('/receipt', { replace: true });
-  };
-
   return (
     <div
-      onClick={handleInstantCollect}
-      className="fixed inset-0 z-[9999] flex items-center justify-center select-none overflow-hidden cursor-pointer bg-cover bg-center"
+      className="fixed inset-0 z-[9999] flex items-center justify-center select-none overflow-hidden bg-cover bg-center"
       style={{
         backgroundImage: 'url(/photobooth-plaque-bg.jpg)',
         backgroundColor: '#d8d4d3',
       }}
     >
       <style>{`
+        @keyframes printerEntrance {
+          0% {
+            opacity: 0;
+            transform: scale(0.975);
+          }
+          100% {
+            opacity: 1;
+            transform: scale(1);
+          }
+        }
+        .printer-enter {
+          animation: printerEntrance 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
         /*
          * 3 Controlled Sneak Peeks + Full Rollout Animation (5.60s total)
          * Keeps the strip tucked inside during peeks so it NEVER appears outside prematurely!
@@ -238,7 +261,7 @@ export default function Printing() {
       `}</style>
 
       {/* Printer Only — fills mobile viewport, contained on desktop */}
-      <div className="relative h-[100dvh] w-auto max-w-[100vw] aspect-[736/1308] flex items-center justify-center overflow-hidden sm:rounded-2xl sm:shadow-[0_20px_50px_rgba(0,0,0,0.4)]">
+      <div className="printer-enter relative h-[100dvh] w-auto max-w-[100vw] aspect-[736/1308] flex items-center justify-center overflow-hidden sm:rounded-2xl sm:shadow-[0_20px_50px_rgba(0,0,0,0.4)]">
         {/* Layer 1 (z-0): Authentic Photobooth Machine Base with clean plaque & empty slot */}
         <img
           src="/photobooth-machine-base.png"
