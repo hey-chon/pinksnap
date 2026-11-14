@@ -22,7 +22,8 @@ import {
   getArtisanTemplate,
   renderArtisanStrip,
 } from '@/lib/customization';
-import { RefreshCw, Download, Share2, Check, X, Film } from 'lucide-react';
+import { RefreshCw, Download, Share2, Check, X, Film, Printer, Loader2 } from 'lucide-react';
+import { preloadPhotoboothPackages, type PackageLoadProgress } from '@/lib/photoboothPreload';
 import { useToast } from '@/hooks/use-toast.tsx';
 import { createGalleryPreview, createMemoryId, dataUrlToBlob, downloadImage } from '@/lib/image-utils';
 
@@ -232,6 +233,7 @@ export default function Edit() {
 
 
   const [isSaving, setIsSaving] = useState(false);
+  const [printProgress, setPrintProgress] = useState<PackageLoadProgress | null>(null);
   const [category, setCategory] = useState<TabMode>(() => (sessionStorage.getItem('ps_edit_category') as TabMode) || 'booth');
   const [artisanId, setArtisanId] = useState<ArtisanTemplateId>(() => (sessionStorage.getItem('ps_edit_artisan') as ArtisanTemplateId) || 'port-archive');
   const [showArtisanWarning, setShowArtisanWarning] = useState(false);
@@ -513,17 +515,21 @@ export default function Edit() {
   const handleSave = async (skipDownload = false) => {
     if (shots.length === 0) return;
     setIsSaving(true);
+    setPrintProgress({ percent: 10, label: 'PRINTING • PACKAGING 10%' });
 
     try {
       const dataUrl = await getOutputImage();
       if (!dataUrl) throw new Error('empty strip');
 
       setLatestStrip(dataUrl);
+      try {
+        sessionStorage.setItem('ps_latest_strip', dataUrl);
+      } catch {
+        // ignore quota / private-mode failures
+      }
 
       // Save to the in-app gallery FIRST, before triggering any download or
-      // navigation.  This prevents the race condition where the 'Save & Exit'
-      // navigates away before the async gallery-preview generation finishes
-      // (especially on slower iOS devices).
+      // navigation. This prevents race conditions on mobile devices.
       const stored = await saveToGallery(dataUrl);
 
       if (!skipDownload) {
@@ -548,7 +554,13 @@ export default function Edit() {
           : 'The strip is downloading, but this device could not keep a gallery copy.',
       });
 
-      // Navigate to printing loading screen - user can't go back
+      // Real-time package loading & timing calculation:
+      // Preloads printer assets, verifies strip decode in GPU RAM, and warms Web Audio context
+      await preloadPhotoboothPackages(dataUrl, (prog) => {
+        setPrintProgress(prog);
+      });
+
+      // Navigate to printing dispenser screen - user can't go back
       setLocation('/printing', { replace: true });
     } catch (err) {
       // If the user dismissed the iOS share sheet, don't treat it as an error.
@@ -563,6 +575,7 @@ export default function Edit() {
       }
     } finally {
       setIsSaving(false);
+      setPrintProgress(null);
     }
   };
 
@@ -902,9 +915,26 @@ export default function Edit() {
                 onClick={() => handleSave(false)}
                 disabled={isSaving}
                 data-testid="button-save"
-                className="py-4 px-5 bg-gradient-to-r from-[#f53d89] via-[#ff4d94] to-[#f53d89] text-white font-black text-xs sm:text-sm tracking-wider uppercase rounded-2xl flex items-center justify-center gap-2.5 shadow-[0_14px_30px_-8px_rgba(245,61,137,0.5)] hover:shadow-[0_18px_36px_-8px_rgba(245,61,137,0.65)] hover:scale-[1.01] active:scale-[0.98] transition-all disabled:opacity-50 cursor-pointer border border-white/20"
+                className="relative overflow-hidden py-4 px-5 bg-gradient-to-r from-[#f53d89] via-[#ff4d94] to-[#f53d89] text-white font-black text-xs sm:text-sm tracking-wider uppercase rounded-2xl flex items-center justify-center gap-2.5 shadow-[0_14px_30px_-8px_rgba(245,61,137,0.5)] hover:shadow-[0_18px_36px_-8px_rgba(245,61,137,0.65)] hover:scale-[1.01] active:scale-[0.98] transition-all disabled:opacity-85 cursor-pointer border border-white/20 select-none"
               >
-                <Download className="w-4 h-4" /> {isSaving ? 'PREPARING PRINT...' : 'PRINT & SAVE STRIP'}
+                {/* Real-time package loading progress fill */}
+                {isSaving && printProgress && (
+                  <div
+                    className="absolute inset-y-0 left-0 bg-white/25 transition-all duration-300 ease-out pointer-events-none"
+                    style={{ width: `${printProgress.percent}%` }}
+                  />
+                )}
+
+                {isSaving ? (
+                  <div className="relative z-10 flex items-center justify-center gap-2">
+                    <Loader2 className="w-4 h-4 animate-spin text-white" />
+                    <span>{printProgress ? printProgress.label : 'PRINTING...'}</span>
+                  </div>
+                ) : (
+                  <div className="relative z-10 flex items-center justify-center gap-2">
+                    <Printer className="w-4 h-4" /> PRINT STRIP
+                  </div>
+                )}
               </button>
             </div>
 
