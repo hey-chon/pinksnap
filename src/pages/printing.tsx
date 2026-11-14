@@ -5,22 +5,17 @@ import { useAppContext } from '@/lib/store';
 /**
  * Photobooth IRL Dispenser — Printing Page
  *
- * Uses the authentic photobooth dispensing machine asset (`Photobooth Printer _ Motion Graphic Idea`):
- * - Authentic industrial metallic machine casing & brushed metal plaque from root
- * - Signature centered PINKSNAP branding (PINK in dark titanium, SNAP in signature hot pink #f53d89)
- * - Authentic engraved "PHOTOS DELIVERED HERE" signage with down arrow (NO "IN 4 MINUTES")
- * - Real extruded metallic pill dispenser bezel with dark mechanical interior mouth
- * - Hardware-accelerated smooth photo strip feed emerging from behind the top bezel lip and hanging down
- * - Quick & smooth physical feed (~2.3s total) auto-navigating to /receipt
- * - Non-dismissible back-navigation lock preserved
+ * Minimal, authentic real-life photobooth machine:
+ * - Pure printer only: zero extraneous UI, HUDs, buttons, or badges
+ * - Background seamlessly matches the plaque's brushed metal silver tone
+ * - Fast, realistic motion graphic feed matching the reference file (~1.4s total)
+ * - Auto-navigates to /receipt once printed
+ * - Non-dismissible back navigation preserved
  */
 export default function Printing() {
   const [, setLocation] = useLocation();
   const { latestStrip, savedMemories } = useAppContext();
   const [printingStarted, setPrintingStarted] = useState(false);
-  const [isCompleted, setIsCompleted] = useState(false);
-  const [progress, setProgress] = useState(0);
-  const progressTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const finishTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Retrieve actual strip from store or fallback
@@ -78,44 +73,22 @@ export default function Printing() {
     }
   };
 
-  // Quick, smooth, optimized print animation loop (~2.4s total)
+  // Short, fast, smooth print animation matching the motion graphic (~1.4s total)
   useEffect(() => {
     const startTimer = setTimeout(() => {
       setPrintingStarted(true);
       triggerAudioTick();
       triggerHaptic();
-    }, 120);
+    }, 80);
 
-    const TOTAL_MS = 2200; // Quick and snappy mechanical feed
-    const STEP_MS = 35;
-    let elapsed = 0;
-
-    progressTimerRef.current = setInterval(() => {
-      elapsed += STEP_MS;
-      const pct = Math.min((elapsed / TOTAL_MS) * 100, 100);
-      setProgress(pct);
-
-      if (elapsed >= TOTAL_MS) {
-        if (progressTimerRef.current) {
-          clearInterval(progressTimerRef.current);
-          progressTimerRef.current = null;
-        }
-        setIsCompleted(true);
-        triggerHaptic();
-
-        // Settle then replace location with /receipt
-        finishTimeoutRef.current = setTimeout(() => {
-          setLocation('/receipt', { replace: true });
-        }, 380);
-      }
-    }, STEP_MS);
+    // Fast print duration: 1150ms feed + 250ms settle = ~1400ms total
+    finishTimeoutRef.current = setTimeout(() => {
+      triggerHaptic();
+      setLocation('/receipt', { replace: true });
+    }, 1400);
 
     return () => {
       clearTimeout(startTimer);
-      if (progressTimerRef.current) {
-        clearInterval(progressTimerRef.current);
-        progressTimerRef.current = null;
-      }
       if (finishTimeoutRef.current) {
         clearTimeout(finishTimeoutRef.current);
         finishTimeoutRef.current = null;
@@ -124,15 +97,22 @@ export default function Printing() {
   }, [setLocation]);
 
   const handleInstantCollect = () => {
-    if (progressTimerRef.current) clearInterval(progressTimerRef.current);
     if (finishTimeoutRef.current) clearTimeout(finishTimeoutRef.current);
     setLocation('/receipt', { replace: true });
   };
 
   return (
-    <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-[#18191b] select-none overflow-hidden p-0 sm:p-4">
-      {/* Container framing the realistic photobooth machine (736 x 1308 aspect ratio) */}
-      <div className="relative w-full h-[100dvh] sm:h-auto sm:max-h-[92vh] max-w-[460px] aspect-[736/1308] flex items-center justify-center overflow-hidden sm:rounded-2xl shadow-[0_25px_60px_rgba(0,0,0,0.85)]">
+    <div
+      onClick={handleInstantCollect}
+      className="fixed inset-0 z-[9999] flex items-center justify-center select-none overflow-hidden cursor-pointer"
+      style={{
+        background: `
+          radial-gradient(ellipse 100% 100% at 48% 38%, #d8d4d3 0%, #c5c0bf 45%, #aba6a5 85%, #9c9796 100%)
+        `,
+      }}
+    >
+      {/* Printer Only — framing the realistic photobooth machine (736 x 1308 aspect ratio) */}
+      <div className="relative w-full h-[100dvh] sm:h-auto sm:max-h-[92vh] max-w-[460px] aspect-[736/1308] flex items-center justify-center overflow-hidden sm:rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.4)]">
         {/* Layer 1 (z-0): Authentic Photobooth Machine Base with clean plaque & empty slot */}
         <img
           src="/photobooth-machine-base.png"
@@ -143,9 +123,7 @@ export default function Printing() {
         {/* Layer 2 (z-10): The Real Photo Strip emerging downwards from the slot slit */}
         {/* Slit origin: y = 418px / 1308px = 31.96% from the top */}
         <div
-          onClick={handleInstantCollect}
-          title="Tap to collect photo strip"
-          className="absolute z-10 will-change-transform transform-gpu cursor-pointer group"
+          className="absolute z-10 will-change-transform transform-gpu pointer-events-none"
           style={{
             top: '31.96%',
             left: '50%',
@@ -153,11 +131,11 @@ export default function Printing() {
             transform: printingStarted
               ? 'translate(-50%, 0%) translateZ(0)'
               : 'translate(-50%, -86%) translateZ(0)',
-            transition: 'transform 2.1s cubic-bezier(0.22, 1, 0.36, 1)',
+            transition: 'transform 1.15s cubic-bezier(0.22, 1, 0.36, 1)',
           }}
         >
           {/* Physical Photo Strip Card */}
-          <div className="relative bg-white rounded-[2px] p-1.5 shadow-[0_20px_45px_rgba(0,0,0,0.7),0_6px_14px_rgba(0,0,0,0.4)] border border-black/10 overflow-hidden transition-transform duration-200 group-hover:scale-[1.01]">
+          <div className="relative bg-white rounded-[2px] p-1.5 shadow-[0_20px_45px_rgba(0,0,0,0.7),0_6px_14px_rgba(0,0,0,0.4)] border border-black/10 overflow-hidden">
             {/* Top cavern shadow: simulates strip emerging from dark interior cavity */}
             <div className="pointer-events-none absolute inset-x-0 top-0 h-8 bg-gradient-to-b from-black/85 via-black/35 to-transparent z-20" />
 
@@ -185,13 +163,6 @@ export default function Printing() {
               </div>
             )}
           </div>
-
-          {/* Quick collect pill */}
-          <div className="text-center mt-3">
-            <span className="inline-block font-mono text-[9px] uppercase tracking-wider text-black/85 bg-white/90 backdrop-blur-md px-3 py-1 rounded-full shadow-md font-bold">
-              Tap to collect strip
-            </span>
-          </div>
         </div>
 
         {/* Layer 3 (z-20): Top machine face overlay (covers y = 0 to 418px) */}
@@ -205,44 +176,6 @@ export default function Printing() {
             alt="Photobooth Bezel Top"
             className="w-full h-full object-cover object-top select-none pointer-events-none block"
           />
-        </div>
-
-        {/* Status Overlay HUD at the Top */}
-        <div className="absolute top-4 inset-x-4 z-30 flex items-center justify-between pointer-events-none">
-          <div className="flex items-center gap-2 bg-black/45 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/20 shadow-lg">
-            <span
-              className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                isCompleted
-                  ? 'bg-emerald-400 shadow-[0_0_8px_#34d399]'
-                  : 'bg-emerald-400 shadow-[0_0_8px_#34d399] animate-pulse'
-              }`}
-            />
-            <span className="font-mono text-[10px] uppercase tracking-widest text-white/95 font-bold">
-              {isCompleted ? 'DISPENSED' : 'PRINTING IN REAL TIME'}
-            </span>
-          </div>
-
-          <div className="font-mono text-xs text-white/90 tracking-widest font-black bg-black/45 backdrop-blur-md px-2.5 py-1 rounded-full border border-white/15">
-            {Math.round(progress)}%
-          </div>
-        </div>
-
-        {/* Bottom Progress Bar & Skip Control */}
-        <div className="absolute bottom-4 inset-x-6 z-30 flex flex-col items-center">
-          <div className="w-full h-1.5 bg-black/40 rounded-full overflow-hidden border border-white/15 mb-2.5 shadow-inner">
-            <div
-              className="h-full bg-gradient-to-r from-[#f53d89] via-[#ff7eb3] to-[#f53d89] rounded-full transition-all duration-75 ease-out"
-              style={{ width: `${progress}%` }}
-            />
-          </div>
-
-          <button
-            onClick={handleInstantCollect}
-            className="text-white/85 hover:text-white font-mono text-[11px] uppercase tracking-widest font-bold transition-colors flex items-center gap-1.5 py-1 px-3 rounded-full bg-black/35 backdrop-blur-sm border border-white/10"
-          >
-            <span>{isCompleted ? 'View Receipt & Save' : 'Skip Animation'}</span>
-            <span>&rarr;</span>
-          </button>
         </div>
       </div>
     </div>
