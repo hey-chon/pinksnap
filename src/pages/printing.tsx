@@ -8,14 +8,14 @@ import { useAppContext } from '@/lib/store';
  * Minimal, authentic real-life photobooth machine:
  * - Pure printer only: zero extraneous UI, HUDs, buttons, or badges
  * - Background seamlessly matches the plaque's brushed metal silver tone
- * - Slender, elongated photo strip with 3 teaser "sneak peeks" before full print:
- *   1. 0.08s - 0.70s: Sneak Peek 1 (top edge peeks out) -> pause & hold at 0.70s - 1.15s
- *   2. 1.15s - 1.75s: Sneak Peek 2 (first photo emerges) -> pause & hold at 1.75s - 2.20s
- *   3. 2.20s - 2.80s: Sneak Peek 3 (second photo emerges) -> pause & hold at 2.80s - 3.25s
- *   4. 3.25s - 5.20s: Full Rollout (long strip dispenses continuously all the way down)
- *   5. 5.22s - 5.60s: Roller release click & physical settle
+ * - Slender, elongated photo strip with 3 controlled teaser "sneak peeks" before full print:
+ *   1. 0.08s - 0.70s: Sneak Peek 1 (just the top edge emerges, ~12%) -> pause & hold at 0.70s - 1.14s
+ *   2. 1.14s - 1.75s: Sneak Peek 2 (teases photo 1, ~25%) -> pause & hold at 1.75s - 2.19s
+ *   3. 2.19s - 2.80s: Sneak Peek 3 (teases photo 2, ~40%) -> pause & hold at 2.80s - 3.24s
+ *   4. 3.24s - 5.20s: Full Rollout (long strip dispenses continuously all the way down)
+ *   5. 5.20s - 5.40s: Roller release click & physical settle
  *   6. 5.70s: Seamless auto-advance to /receipt
- * - Real-time photobooth mechanical sound effect locked to each movement
+ * - Pre-decoded image and pre-buffered zero-latency audio engine locked in real-time
  * - Tapping anywhere immediately collects the strip and navigates
  * - Non-dismissible back navigation preserved
  */
@@ -23,8 +23,10 @@ export default function Printing() {
   const [, setLocation] = useLocation();
   const { latestStrip, savedMemories } = useAppContext();
   const [printingStarted, setPrintingStarted] = useState(false);
+  const [imageReady, setImageReady] = useState(false);
   const finishTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const audioStartedRef = useRef(false);
 
   // Retrieve actual strip from store or fallback
   const stripUrl =
@@ -43,6 +45,22 @@ export default function Printing() {
     return () => window.removeEventListener('popstate', blockBack);
   }, []);
 
+  // Pre-decode strip image to prevent any layout shifts or pop-in glitches
+  useEffect(() => {
+    if (!stripUrl) {
+      setImageReady(true);
+      return;
+    }
+    const img = new Image();
+    img.src = stripUrl;
+    if (img.complete) {
+      setImageReady(true);
+    } else {
+      img.onload = () => setImageReady(true);
+      img.onerror = () => setImageReady(true);
+    }
+  }, [stripUrl]);
+
   // Safe haptic vibration
   const triggerHaptic = (pattern: number[] = [18, 30, 18]) => {
     try {
@@ -54,48 +72,68 @@ export default function Printing() {
     }
   };
 
-  // Preload and start synchronized audio with zero latency
+  // Synchronized Audio & Animation Engine
   useEffect(() => {
+    if (!imageReady) return;
+
+    let isCancelled = false;
     const audio = new Audio('/photobooth-print.wav');
     audio.preload = 'auto';
     audio.volume = 0.9;
     audioRef.current = audio;
 
-    const startTimer = setTimeout(() => {
+    // Start function triggered on the EXACT frame audio begins emitting sound
+    const startAnimationAndAudio = () => {
+      if (audioStartedRef.current || isCancelled) return;
+      audioStartedRef.current = true;
       setPrintingStarted(true);
-      try {
-        const playPromise = audio.play();
-        if (playPromise !== undefined) {
-          playPromise.catch(() => {
-            // Autoplay delayed until interaction
-          });
-        }
-      } catch {
-        // Audio unavailable
-      }
       triggerHaptic([20]);
-    }, 60);
 
-    // Haptics synchronized with the 3 sneak peeks and final release
-    const haptic1 = setTimeout(() => triggerHaptic([15, 20, 15]), 60 + 700);
-    const haptic2 = setTimeout(() => triggerHaptic([15, 20, 15]), 60 + 1750);
-    const haptic3 = setTimeout(() => triggerHaptic([15, 20, 15]), 60 + 2800);
-    const hapticFinal = setTimeout(() => triggerHaptic([30, 40, 20]), 60 + 5220);
+      // Haptics locked to the 3 sneak peeks and final release
+      const haptic1 = setTimeout(() => triggerHaptic([15, 20, 15]), 700);
+      const haptic2 = setTimeout(() => triggerHaptic([15, 20, 15]), 1750);
+      const haptic3 = setTimeout(() => triggerHaptic([15, 20, 15]), 2800);
+      const hapticFinal = setTimeout(() => triggerHaptic([30, 40, 20]), 5220);
 
-    // Auto-advance to /receipt right after audio finishes (5.7s total)
-    finishTimeoutRef.current = setTimeout(() => {
-      if (audioRef.current) {
-        audioRef.current.pause();
+      // Auto-advance to /receipt at 5.7s total
+      finishTimeoutRef.current = setTimeout(() => {
+        if (audioRef.current) {
+          audioRef.current.pause();
+        }
+        setLocation('/receipt', { replace: true });
+      }, 5700);
+
+      cleanupTimers.push(haptic1, haptic2, haptic3, hapticFinal);
+    };
+
+    const cleanupTimers: ReturnType<typeof setTimeout>[] = [];
+
+    // Listen for the actual 'playing' event of the audio so motion and sound start on the EXACT same millisecond
+    audio.addEventListener('playing', () => {
+      startAnimationAndAudio();
+    });
+
+    // Fallback timer: if browser blocks autoplay, start animation anyway without hanging
+    const fallbackTimer = setTimeout(() => {
+      startAnimationAndAudio();
+    }, 200);
+
+    // Trigger audio play
+    try {
+      const playPromise = audio.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(() => {
+          // Autoplay restricted — fallback timer will start visual animation cleanly
+        });
       }
-      setLocation('/receipt', { replace: true });
-    }, 60 + 5650);
+    } catch {
+      // Audio not supported
+    }
 
     return () => {
-      clearTimeout(startTimer);
-      clearTimeout(haptic1);
-      clearTimeout(haptic2);
-      clearTimeout(haptic3);
-      clearTimeout(hapticFinal);
+      isCancelled = true;
+      clearTimeout(fallbackTimer);
+      cleanupTimers.forEach(clearTimeout);
       if (finishTimeoutRef.current) {
         clearTimeout(finishTimeoutRef.current);
         finishTimeoutRef.current = null;
@@ -105,7 +143,7 @@ export default function Printing() {
         audioRef.current = null;
       }
     };
-  }, [setLocation]);
+  }, [imageReady, setLocation]);
 
   const handleInstantCollect = () => {
     if (audioRef.current) {
@@ -127,55 +165,57 @@ export default function Printing() {
     >
       <style>{`
         /*
-         * 3 Sneak Peeks + Full Rollout Animation (5.60s total, synchronized with photobooth-print.wav)
-         * 0.08s - 0.70s: Sneak Peek 1 (top edge peeks out)
-         * 0.70s - 1.14s: Sneak Peek 1 hold / silence
-         * 1.14s - 1.75s: Sneak Peek 2 (photo 1 emerges)
-         * 1.75s - 2.19s: Sneak Peek 2 hold / silence
-         * 2.19s - 2.80s: Sneak Peek 3 (photo 2 emerges)
-         * 2.80s - 3.24s: Sneak Peek 3 hold / silence
-         * 3.24s - 5.20s: Full Rollout (long strip rolls down into full view)
-         * 5.20s - 5.35s: Release click & settle bounce
+         * 3 Controlled Sneak Peeks + Full Rollout Animation (5.60s total, synchronized with photobooth-print.wav)
+         * Keeps the strip tucked inside during peeks so it NEVER appears outside prematurely!
+         * 0.00s - 0.08s: Strip 100% inside slit (-100%)
+         * 0.08s - 0.70s: Sneak Peek 1 (top 12% emerges to -88%)
+         * 0.70s - 1.14s: Sneak Peek 1 hold / silence (holds at -88%)
+         * 1.14s - 1.75s: Sneak Peek 2 (top 25% emerges to -75%)
+         * 1.75s - 2.19s: Sneak Peek 2 hold / silence (holds at -75%)
+         * 2.19s - 2.80s: Sneak Peek 3 (top 40% emerges to -60%)
+         * 2.80s - 3.24s: Sneak Peek 3 hold / silence (holds at -60%)
+         * 3.24s - 5.20s: Full Rollout (long strip dispenses continuously down to 0%)
+         * 5.20s - 5.35s: Release click & subtle settle bounce
          * 5.35s - 5.60s: Fully settled
          */
         @keyframes photobooth3SneakPeeksFeed {
           0% {
-            transform: translate(-50%, -92%) translateZ(0);
+            transform: translate(-50%, -100%) translateZ(0);
             animation-timing-function: cubic-bezier(0.2, 0.8, 0.4, 1);
           }
           1.4% {
             /* 0.08s: Startup click */
-            transform: translate(-50%, -92%) translateZ(0);
+            transform: translate(-50%, -100%) translateZ(0);
             animation-timing-function: cubic-bezier(0.2, 0.8, 0.4, 1);
           }
           12.5% {
-            /* 0.70s: Sneak Peek 1 reached */
-            transform: translate(-50%, -78%) translateZ(0);
-            animation-timing-function: step-end;
+            /* 0.70s: Sneak Peek 1 reached (only 12% peeks out) */
+            transform: translate(-50%, -88%) translateZ(0);
+            animation-timing-function: linear;
           }
           20.4% {
             /* 1.14s: Sneak Peek 1 pause / frozen hold */
-            transform: translate(-50%, -78%) translateZ(0);
+            transform: translate(-50%, -88%) translateZ(0);
             animation-timing-function: cubic-bezier(0.2, 0.8, 0.4, 1);
           }
           31.2% {
-            /* 1.75s: Sneak Peek 2 reached */
-            transform: translate(-50%, -58%) translateZ(0);
-            animation-timing-function: step-end;
+            /* 1.75s: Sneak Peek 2 reached (only 25% peeks out) */
+            transform: translate(-50%, -75%) translateZ(0);
+            animation-timing-function: linear;
           }
           39.1% {
             /* 2.19s: Sneak Peek 2 pause / frozen hold */
-            transform: translate(-50%, -58%) translateZ(0);
+            transform: translate(-50%, -75%) translateZ(0);
             animation-timing-function: cubic-bezier(0.2, 0.8, 0.4, 1);
           }
           50.0% {
-            /* 2.80s: Sneak Peek 3 reached */
-            transform: translate(-50%, -36%) translateZ(0);
-            animation-timing-function: step-end;
+            /* 2.80s: Sneak Peek 3 reached (only 40% peeks out) */
+            transform: translate(-50%, -60%) translateZ(0);
+            animation-timing-function: linear;
           }
           57.9% {
             /* 3.24s: Sneak Peek 3 pause / frozen hold */
-            transform: translate(-50%, -36%) translateZ(0);
+            transform: translate(-50%, -60%) translateZ(0);
             animation-timing-function: cubic-bezier(0.18, 0.85, 0.3, 1);
           }
           92.8% {
@@ -199,8 +239,8 @@ export default function Printing() {
         }
       `}</style>
 
-      {/* Printer Only — fills mobile viewport, contained on desktop */}
-      <div className="relative w-full h-[100dvh] sm:h-[92vh] sm:max-w-[520px] sm:aspect-[736/1308] flex items-center justify-center overflow-hidden sm:rounded-2xl sm:shadow-[0_20px_50px_rgba(0,0,0,0.4)]">
+      {/* Printer Only — preserves exact machine aspect ratio on all mobile phones & desktops */}
+      <div className="relative h-[100dvh] max-h-[100dvh] max-w-[100vw] aspect-[736/1308] flex items-center justify-center overflow-hidden sm:rounded-2xl sm:shadow-[0_20px_50px_rgba(0,0,0,0.4)]">
         {/* Layer 1 (z-0): Authentic Photobooth Machine Base with clean plaque & empty slot */}
         <img
           src="/photobooth-machine-base.png"
@@ -208,7 +248,7 @@ export default function Printing() {
           className="absolute inset-0 w-full h-full object-cover object-top select-none pointer-events-none z-0"
         />
 
-        {/* Layer 2 (z-10): Photo Strip emerging downwards with 3 sneak peeks + full dispense */}
+        {/* Layer 2 (z-10): Photo Strip emerging downwards with 3 teaser sneak peeks + full rollout */}
         {/* Slit origin: y = 418px / 1308px = 31.96% from the top */}
         <div
           className="absolute z-10 will-change-transform transform-gpu pointer-events-none"
@@ -216,7 +256,7 @@ export default function Printing() {
             top: '31.96%',
             left: '50%',
             width: '42%',
-            transform: 'translate(-50%, -92%) translateZ(0)',
+            transform: 'translate(-50%, -100%) translateZ(0)',
             animation: printingStarted ? 'photobooth3SneakPeeksFeed 5.6s linear forwards' : 'none',
           }}
         >
@@ -252,7 +292,7 @@ export default function Printing() {
         </div>
 
         {/* Layer 3 (z-20): Top machine face overlay (covers y = 0 to 418px) */}
-        {/* Ensures the unprinted paper section remains hidden inside the machine behind the top bezel lip */}
+        {/* Ensures the unprinted paper section remains 100% hidden inside the machine behind the top bezel lip */}
         <div
           className="absolute top-0 left-0 w-full pointer-events-none select-none z-20 overflow-hidden"
           style={{ height: '31.96%' }}
