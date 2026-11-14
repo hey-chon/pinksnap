@@ -8,12 +8,14 @@ import { useAppContext } from '@/lib/store';
  * Minimal, authentic real-life photobooth machine:
  * - Pure printer only: zero extraneous UI, HUDs, buttons, or badges
  * - Background seamlessly matches the plaque's brushed metal silver tone
- * - Slender, elongated photo strip with authentic physical "sneak peek" feed action:
- *   1. Initial motor kick & sneak peek push (~0.8s)
- *   2. Sneak peek hold/teaser (~1.4s)
- *   3. Continuous smooth motor feed dispensing the long strip down (~3.3s)
- *   4. Gentle physical settle & auto-navigate to /receipt (~4.2s total)
- * - Realistic & premium photobooth printer SFX synchronized directly to the strip feed
+ * - Slender, elongated photo strip with real-time audio-synchronized motion:
+ *   1. 0.08s: Startup click -> paper begins to feed
+ *   2. 0.10s - 0.85s: Sneak peek motor whir & paper friction -> top of strip peeks out
+ *   3. 0.85s - 1.38s: Motor pause & silence -> strip freezes in sneak peek hold
+ *   4. 1.39s: Re-engage click -> continuous motorized feed downwards
+ *   5. 1.40s - 3.30s: Full motor glide -> long strip dispenses into full view
+ *   6. 3.32s: Final release click -> subtle physical settle bounce
+ *   7. 3.90s: Seamless auto-advance to /receipt
  * - Tapping anywhere immediately collects the strip and navigates
  * - Non-dismissible back navigation preserved
  */
@@ -52,57 +54,51 @@ export default function Printing() {
     }
   };
 
-  // Play realistic premium printer sound effect right with the printing of the strip
-  const startPrintAudio = () => {
-    try {
-      if (!audioRef.current) {
-        const audio = new Audio('/photobooth-print.wav');
-        audio.preload = 'auto';
-        audio.volume = 0.85;
-        audioRef.current = audio;
-      }
-      const playPromise = audioRef.current.play();
-      if (playPromise !== undefined) {
-        playPromise.catch(() => {
-          // Silent fallback if browser autoplay policy delays audio until gesture
-        });
-      }
-    } catch {
-      // Audio playback unavailable
-    }
-  };
-
-  // Timeline with sneak peek action, synchronized audio, and full dispense
+  // Preload and start synchronized audio with zero latency
   useEffect(() => {
-    // Start animation & SFX right on the print initiation
+    const audio = new Audio('/photobooth-print.wav');
+    audio.preload = 'auto';
+    audio.volume = 0.9;
+    audioRef.current = audio;
+
+    // Small delay on mount to ensure browser paint and audio buffer are ready
     const startTimer = setTimeout(() => {
       setPrintingStarted(true);
-      startPrintAudio();
+      try {
+        const playPromise = audio.play();
+        if (playPromise !== undefined) {
+          playPromise.catch(() => {
+            // If autoplay is blocked by browser, user can tap screen
+          });
+        }
+      } catch {
+        // Audio unavailable
+      }
       triggerHaptic();
-    }, 100);
+    }, 60);
 
-    // Sneak peek hold haptic
-    const sneakPeekTick = setTimeout(() => {
+    // Sneak peek hold haptic (synchronized with the 0.85s audio click)
+    const sneakPeekHaptic = setTimeout(() => {
       triggerHaptic();
-    }, 850);
+    }, 60 + 850);
 
-    // Final settle haptic when feed completes (~3.4s)
-    const settleTick = setTimeout(() => {
+    // Feed completion haptic (synchronized with the 3.32s release click)
+    const finishHaptic = setTimeout(() => {
       triggerHaptic();
-    }, 3400);
+    }, 60 + 3320);
 
-    // Full finish & auto navigate to receipt at 4.2s
+    // Auto-advance to /receipt right after audio tail finishes
     finishTimeoutRef.current = setTimeout(() => {
       if (audioRef.current) {
         audioRef.current.pause();
       }
       setLocation('/receipt', { replace: true });
-    }, 4200);
+    }, 60 + 3850);
 
     return () => {
       clearTimeout(startTimer);
-      clearTimeout(sneakPeekTick);
-      clearTimeout(settleTick);
+      clearTimeout(sneakPeekHaptic);
+      clearTimeout(finishHaptic);
       if (finishTimeoutRef.current) {
         clearTimeout(finishTimeoutRef.current);
         finishTimeoutRef.current = null;
@@ -133,35 +129,63 @@ export default function Printing() {
       }}
     >
       <style>{`
-        @keyframes photoboothSneakPeakFeed {
-          /* 0%: Tucked inside behind the top bezel lip */
+        /*
+         * Precise Real-Time Audio Synchronization for photobooth-print.wav (3.80s total)
+         * 0.00s - 0.08s (0% - 2%): Startup relay click, stationary in slit
+         * 0.08s - 0.85s (2% - 22.4%): Motor Feed 1 -> SNEAK PEEK slides down
+         * 0.85s - 1.38s (22.4% - 36.3%): SNEAK PEEK PAUSE -> holds frozen during silence
+         * 1.39s (36.6%): Motor clutch re-engage click
+         * 1.40s - 3.30s (36.8% - 86.8%): Motor Feed 2 -> continuous smooth full strip dispense
+         * 3.32s - 3.45s (87.4% - 90.8%): Roller release click -> gentle physical settle bounce
+         * 3.45s - 3.80s (90.8% - 100%): Resting in full view
+         */
+        @keyframes photoboothAudioSyncFeed {
           0% {
             transform: translate(-50%, -92%) translateZ(0);
+            animation-timing-function: cubic-bezier(0.2, 0.8, 0.4, 1);
           }
-          /* Sneak Peek push out: top of strip peeks out (~0.8s) */
-          20% {
+          2.1% {
+            /* 0.08s: Startup click */
+            transform: translate(-50%, -92%) translateZ(0);
+            animation-timing-function: cubic-bezier(0.2, 0.8, 0.4, 1);
+          }
+          22.4% {
+            /* 0.85s: Sneak peek peak reached */
             transform: translate(-50%, -68%) translateZ(0);
+            animation-timing-function: step-end;
           }
-          /* Sneak Peek hold / teaser pause (~1.4s) */
-          34% {
-            transform: translate(-50%, -66%) translateZ(0);
+          36.3% {
+            /* 1.38s: Frozen hold during the motor pause */
+            transform: translate(-50%, -68%) translateZ(0);
+            animation-timing-function: cubic-bezier(0.18, 0.85, 0.3, 1);
           }
-          /* Continuous motorized feed downwards */
-          82% {
+          36.8% {
+            /* 1.40s: Motor resumes */
+            transform: translate(-50%, -67.5%) translateZ(0);
+            animation-timing-function: cubic-bezier(0.18, 0.85, 0.3, 1);
+          }
+          86.8% {
+            /* 3.30s: Full strip emerges */
+            transform: translate(-50%, 0%) translateZ(0);
+            animation-timing-function: cubic-bezier(0.25, 1.4, 0.5, 1);
+          }
+          88.2% {
+            /* 3.35s: Micro settle bounce matching 3.32s release click */
+            transform: translate(-50%, 2.5px) translateZ(0);
+            animation-timing-function: ease-out;
+          }
+          92.0% {
+            /* 3.50s: Settled in place */
             transform: translate(-50%, 0%) translateZ(0);
           }
-          /* Subtle physical settle bounce */
-          90% {
-            transform: translate(-50%, 3px) translateZ(0);
-          }
-          /* Settled resting position */
           100% {
+            /* 3.80s: Audio ends */
             transform: translate(-50%, 0%) translateZ(0);
           }
         }
       `}</style>
 
-      {/* Printer Only — fills the entire mobile viewport, capped on desktop */}
+      {/* Printer Only — fills mobile viewport, contained on desktop */}
       <div className="relative w-full h-[100dvh] sm:h-[92vh] sm:max-w-[520px] sm:aspect-[736/1308] flex items-center justify-center overflow-hidden sm:rounded-2xl sm:shadow-[0_20px_50px_rgba(0,0,0,0.4)]">
         {/* Layer 1 (z-0): Authentic Photobooth Machine Base with clean plaque & empty slot */}
         <img
@@ -170,7 +194,7 @@ export default function Printing() {
           className="absolute inset-0 w-full h-full object-cover object-top select-none pointer-events-none z-0"
         />
 
-        {/* Layer 2 (z-10): Photo Strip emerging downwards with sneak-peek action */}
+        {/* Layer 2 (z-10): Photo Strip emerging downwards in lockstep with the audio waveform */}
         {/* Slit origin: y = 418px / 1308px = 31.96% from the top */}
         <div
           className="absolute z-10 will-change-transform transform-gpu pointer-events-none"
@@ -179,9 +203,7 @@ export default function Printing() {
             left: '50%',
             width: '42%',
             transform: 'translate(-50%, -92%) translateZ(0)',
-            animation: printingStarted
-              ? 'photoboothSneakPeakFeed 3.6s cubic-bezier(0.2, 0.85, 0.35, 1) forwards'
-              : 'none',
+            animation: printingStarted ? 'photoboothAudioSyncFeed 3.8s linear forwards' : 'none',
           }}
         >
           {/* Physical Photo Strip Card */}
