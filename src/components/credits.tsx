@@ -1,8 +1,6 @@
 import { useEffect, useRef } from 'react';
-import { Link } from 'wouter';
-import { ExternalLink, Facebook, Github, Instagram, Sparkles, Shield, FileText, Cookie, Crown, Zap } from 'lucide-react';
+import { ExternalLink, Facebook, Github, Instagram, Sparkles, Crown, Zap } from 'lucide-react';
 import { SiGooglegemini, SiLucide, SiReact, SiReplit, SiTailwindcss, SiTypescript, SiVite, SiSupabase } from 'react-icons/si';
-import { openCookieSettings } from '@/components/cookie-notice';
 import gsap from 'gsap';
 
 const loopTools = [
@@ -204,25 +202,6 @@ export default function Credits() {
           </div>
         </div>
 
-      </div>
-
-      {/* Policy links */}
-      <div className="flex flex-wrap items-center justify-center gap-3 text-xs font-bold text-foreground/60 pt-2">
-        <Link href="/privacy" className="inline-flex items-center gap-1.5 hover:text-primary transition-colors">
-          <Shield className="w-3.5 h-3.5 text-primary" /> Privacy Policy
-        </Link>
-        <span>•</span>
-        <Link href="/terms" className="inline-flex items-center gap-1.5 hover:text-primary transition-colors">
-          <FileText className="w-3.5 h-3.5 text-primary" /> Terms
-        </Link>
-        <span>•</span>
-        <button
-          type="button"
-          onClick={openCookieSettings}
-          className="inline-flex items-center gap-1.5 hover:text-primary transition-colors cursor-pointer"
-        >
-          <Cookie className="w-3.5 h-3.5 text-primary" /> Cookies
-        </button>
       </div>
     </section>
   );
