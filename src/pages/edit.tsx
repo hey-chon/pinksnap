@@ -466,7 +466,7 @@ export default function Edit() {
     ctx.fillStyle = activeFrame.dark ? 'rgba(253,247,250,.7)' : 'rgba(31,29,43,.5)';
     ctx.fillText(`${activeFrame.label.toUpperCase()}  ·  ${formatStripDate(sessionDate)}`, geometry.width / 2, baseline + 34);
 
-    return canvas.toDataURL('image/png', 1.0);
+    return canvas.toDataURL('image/jpeg', 0.94);
   };
 
   // ── Artisan strip canvas renderer ──────────────────────────────────────────

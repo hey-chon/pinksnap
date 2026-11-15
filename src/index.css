@@ -672,6 +672,7 @@ img { max-width: 100%; }
 
 /* Levitating overlay scrollbar for Profile — Desktop / Laptop only (>= 1024px) */
 .profile-levitating-scroll {
+  overflow-y: auto !important;
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
@@ -681,9 +682,14 @@ img { max-width: 100%; }
 
 @media (min-width: 1024px) {
   .profile-levitating-scroll {
-    overflow-y: overlay !important;
+    overflow-y: auto !important;
     scrollbar-width: thin;
     scrollbar-color: rgba(245, 61, 137, 0.45) transparent;
+  }
+  @supports (overflow-y: overlay) {
+    .profile-levitating-scroll {
+      overflow-y: overlay !important;
+    }
   }
   .profile-levitating-scroll::-webkit-scrollbar {
     display: block;

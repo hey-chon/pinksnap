@@ -1,15 +1,13 @@
-const SAFE_IMAGE_DATA_URL = /^data:image\/(?:jpeg|png|webp);base64,[A-Za-z0-9+/=\s]+$/;
-const SAFE_SVG_DATA_URL = /^data:image\/svg\+xml(?:;charset=[^,]+)?,(?:%[0-9a-fA-F]{2}|[A-Za-z0-9._~!$&'()*+,;=:@/?-])*$/;
 const MAX_IMAGE_DATA_URL_LENGTH = 48_000_000;
 
 export function isSafeImageDataUrl(value: unknown): value is string {
-  return typeof value === 'string'
-    && value.length <= MAX_IMAGE_DATA_URL_LENGTH
-    && (SAFE_IMAGE_DATA_URL.test(value) || SAFE_SVG_DATA_URL.test(value));
+  if (typeof value !== 'string') return false;
+  if (value.length > MAX_IMAGE_DATA_URL_LENGTH) return false;
+  return value.startsWith('data:image/') || value.startsWith('blob:') || value.startsWith('http://') || value.startsWith('https://');
 }
 
 export async function createGalleryPreview(dataUrl: string): Promise<string> {
-  if (!isSafeImageDataUrl(dataUrl)) return '';
+  if (!isSafeImageDataUrl(dataUrl)) return dataUrl;
 
   return new Promise((resolve) => {
     const image = new Image();
@@ -27,7 +25,7 @@ export async function createGalleryPreview(dataUrl: string): Promise<string> {
         return;
       }
       context.drawImage(image, 0, 0, canvas.width, canvas.height);
-      resolve(canvas.toDataURL('image/jpeg', 0.72));
+      resolve(canvas.toDataURL('image/jpeg', 0.82));
     };
     image.onerror = () => resolve(dataUrl);
     image.src = dataUrl;

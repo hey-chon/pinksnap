@@ -55,11 +55,15 @@ function getSafeStripUrl(latestStrip: string | null, savedMemories: Array<{ url:
  */
 export default function Printing() {
   const [, setLocation] = useLocation();
-  const { latestStrip, savedMemories } = useAppContext();
+  const { latestStrip, savedMemories, layout } = useAppContext();
   const [printingStarted, setPrintingStarted] = useState(false);
   const [stripLoaded, setStripLoaded] = useState(false);
   const finishTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const stopAudioRef = useRef<(() => void) | null>(null);
+
+  const currentLayout = layout || (typeof window !== 'undefined' ? sessionStorage.getItem('ps_layout') : null) || 'vertical-4';
+  const isWide = currentLayout === 'horizontal-3';
+  const isQuad = currentLayout === 'quad-4';
 
   // Retrieve validated strip URL
   const stripUrl = getSafeStripUrl(latestStrip, savedMemories);
@@ -276,7 +280,7 @@ export default function Printing() {
           style={{
             top: '31.96%',
             left: '50%',
-            width: '42%',
+            width: isWide ? '53%' : isQuad ? '46%' : '42%',
             transform: 'translate(-50%, -100%) translateZ(0)',
             animation: printingStarted ? 'photobooth3SneakPeeksFeed 5.6s ease-in-out forwards' : 'none',
           }}
@@ -296,6 +300,33 @@ export default function Printing() {
                 draggable={false}
                 className="w-full h-auto object-contain select-none block"
               />
+            ) : isWide ? (
+              /* Fallback for Wide Three Layout (3 horizontal shots) */
+              <div className="flex flex-col gap-1 py-1">
+                <div className="grid grid-cols-3 gap-1">
+                  <div className="w-full aspect-[4/3] bg-gradient-to-br from-pink-100 to-rose-200 rounded-[1px]" />
+                  <div className="w-full aspect-[4/3] bg-gradient-to-br from-purple-100 to-pink-200 rounded-[1px]" />
+                  <div className="w-full aspect-[4/3] bg-gradient-to-br from-amber-100 to-rose-200 rounded-[1px]" />
+                </div>
+                <div className="pt-1 text-center">
+                  <span className="font-hero text-[10px] text-[#1c1e22]">PINK</span>
+                  <span className="font-hero text-[10px] text-[#f53d89] ml-1">SNAP</span>
+                </div>
+              </div>
+            ) : isQuad ? (
+              /* Fallback for Quad Layout (4 shots grid) */
+              <div className="flex flex-col gap-1 py-1">
+                <div className="grid grid-cols-2 gap-1">
+                  <div className="w-full aspect-[4/3] bg-gradient-to-br from-pink-100 to-rose-200 rounded-[1px]" />
+                  <div className="w-full aspect-[4/3] bg-gradient-to-br from-purple-100 to-pink-200 rounded-[1px]" />
+                  <div className="w-full aspect-[4/3] bg-gradient-to-br from-amber-100 to-rose-200 rounded-[1px]" />
+                  <div className="w-full aspect-[4/3] bg-gradient-to-br from-sky-100 to-pink-200 rounded-[1px]" />
+                </div>
+                <div className="pt-1 text-center">
+                  <span className="font-hero text-[10px] text-[#1c1e22]">PINK</span>
+                  <span className="font-hero text-[10px] text-[#f53d89] ml-1">SNAP</span>
+                </div>
+              </div>
             ) : (
               /* Fallback preview strip mockup if session strip is null (NEVER renders broken '?') */
               <div className="flex flex-col gap-1.5 py-1">

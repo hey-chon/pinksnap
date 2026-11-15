@@ -398,6 +398,16 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   // Fetch memories from the cloud whenever the authenticated user changes
   useEffect(() => {
     if (!isAuthenticated || !user?.id) {
+      try {
+        const raw = localStorage.getItem('pinksnap-memories');
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setSavedMemories(parsed.slice(0, MAX_SAVED_MEMORIES));
+            return;
+          }
+        }
+      } catch {}
       setSavedMemories([]);
       lastFetchedUserId.current = null;
       return;
@@ -454,6 +464,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
     setSavedMemories(prev => [memoryToSave, ...prev.filter(m => m.id !== memory.id)].slice(0, MAX_SAVED_MEMORIES));
     setLatestStrip(memoryToSave.url);
+
+    // Save local backup in localStorage so memories persist across sessions
+    try {
+      const local = JSON.parse(localStorage.getItem('pinksnap-memories') || '[]');
+      const updated = [memoryToSave, ...local.filter((m: any) => m.id !== memoryToSave.id)].slice(0, MAX_SAVED_MEMORIES);
+      localStorage.setItem('pinksnap-memories', JSON.stringify(updated));
+    } catch {}
 
     // 2. Upload to Supabase cloud with zero-knowledge AES-256-GCM encryption if authenticated
     if (user?.id) {
