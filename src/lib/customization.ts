@@ -1439,5 +1439,5 @@ export async function renderArtisanStrip(
     template.paintFg(ctx, W, H, s, date);
   }
 
-  return canvas.toDataURL('image/png', 1.0);
+  return canvas.toDataURL('image/jpeg', 0.94);
 }
