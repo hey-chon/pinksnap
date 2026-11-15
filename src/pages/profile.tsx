@@ -1269,7 +1269,7 @@ export default function ProfilePage() {
 
       <TopNav backTo="/" title={isOwner ? "MY PROFILE" : `${(effectiveUser?.displayName || 'USER').toUpperCase()}'S WALL`} />
 
-      <main className="flex-1 overflow-y-auto scrollbar-hide pb-12 relative z-10">
+      <main className="flex-1 overflow-y-auto profile-levitating-scroll pb-12 relative z-10">
         {/* ── Modern Social Media Cover Banner ── */}
         <div className="relative h-36 sm:h-48 md:h-56 bg-gradient-to-tr from-pink-600 via-primary to-rose-400 overflow-hidden shadow-inner">
           {/* Decorative Pattern & Ambient Glow */}
