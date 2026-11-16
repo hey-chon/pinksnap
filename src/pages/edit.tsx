@@ -967,7 +967,7 @@ export default function Edit() {
               CHOOSE 3 BEST SHOTS :D
             </h3>
             <p className="text-xs text-foreground/60 mb-5 leading-relaxed max-w-[300px] mx-auto">
-              This layout displays 3 photos. Select the one you would like to <span className="font-bold text-red-500">skip</span>.
+              This layout displays 3 photos only. Select the one you would like to <span className="font-bold text-red-500">REMOVE</span>.
             </p>
 
             {/* Photo grid — 2×2 */}
