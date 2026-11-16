@@ -919,7 +919,7 @@ export default function Edit() {
                   </div>
                 ) : (
                   <div className="relative z-10 flex items-center justify-center gap-2">
-                    <Printer className="w-4 h-4" /> PRINT STRIP
+                    <Download className="w-4 h-4" /> PRINT STRIP
                   </div>
                 )}
               </button>
