@@ -1260,7 +1260,7 @@ export default function ProfilePage() {
                 onClick={(e) => handleDeleteMemory(selectedMemory.id, e)}
                 className="text-xs text-destructive/80 hover:text-destructive flex items-center gap-1.5 transition-colors py-1.5 px-3 rounded-lg hover:bg-white/5"
               >
-                <Trash2 className="w-3.5 h-3.5" /> Delete Strip
+                
               </button>
             </div>
           )}
