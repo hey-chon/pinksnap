@@ -1033,7 +1033,7 @@ export default function Edit() {
 
             {/* Note */}
             <p className="mt-3.5 text-[10.5px] text-foreground/45 leading-relaxed">
-              You can change which photo to skip anytime by switching templates.
+            This will effect for other "3-shots only" strips, no change once confirmed
             </p>
           </div>
         </div>
