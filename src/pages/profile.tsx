@@ -1197,7 +1197,7 @@ export default function ProfilePage() {
         >
           <div className="w-full max-w-4xl flex items-center justify-between text-white z-10 pt-2 sm:pt-4">
             <div className="flex items-center gap-2">
-              <span className="font-hero text-lg sm:text-xl tracking-wider text-primary">PINKSNAP</span>
+              <span className="font-hero text-lg sm:text-xl tracking-wider text-white">PINK<span className="font-hero text-primary">SNAP</span></span>
               <span className="text-white/40 text-xs">·</span>
               <span className="text-xs text-white/70 font-mono">
                 {new Date(selectedMemory.date).toLocaleDateString()}
