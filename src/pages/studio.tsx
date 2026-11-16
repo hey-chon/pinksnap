@@ -161,7 +161,7 @@ export default function Studio() {
       <main className="flex-1 overflow-y-auto lg:overflow-hidden flex flex-col items-center justify-start lg:justify-between px-1.5 sm:px-6 py-1 sm:py-2 studio-content-zoom">
         {/* Studio Heading */}
         <div className="studio-heading text-center mb-1 sm:mb-2 w-full max-w-3xl shrink-0">
-          <span className="booth-heading-kicker mb-0.5 sm:mb-1 hidden sm:inline-block">Step 2 of 3 · STUDIO</span>
+          <br></br>
           <h1 className="font-hero text-lg sm:text-3xl md:text-4xl text-foreground mt-0.5 mb-0.5">
             PINKSNAP <span className="text-primary">STUDIO</span>
           </h1>
