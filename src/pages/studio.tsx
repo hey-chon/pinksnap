@@ -197,7 +197,7 @@ export default function Studio() {
           {/* Strip Preview Sidebar */}
           <div className="studio-panel strip-sidebar w-full max-w-sm sm:max-w-md lg:w-44 xl:w-48 shrink-0 flex flex-col gap-1.5 sm:gap-2 p-2 sm:p-3 bg-white shadow-xl border border-white/60 rounded-xl sm:rounded-2xl rotate-0 lg:rotate-2 h-auto min-h-[80px] sm:min-h-[120px] lg:h-auto lg:min-h-0 lg:flex-none mt-2 lg:mt-0">
             <div className="flex justify-between items-center mb-1 shrink-0 px-0.5">
-              <span className="font-display text-sm sm:text-lg text-foreground/75 tracking-[.12em]">YOUR STRIP</span>
+              <span className="font-display text-sm sm:text-lg text-foreground/75 tracking-[.12em]">YOUR SHOTS</span>
               <div className="booth-led scale-75 origin-right shrink-0">
                 SHOT <b>{Math.min(shots.length + 1, maxShots)}</b> / {maxShots}
               </div>
