@@ -964,7 +964,7 @@ export default function Edit() {
 
             {/* Title */}
             <h3 className="text-base sm:text-lg font-black uppercase tracking-wider text-foreground mb-1">
-              3-SHOT STRIP SELECTION
+              CHOOSE 3 BEST SHOTS :D
             </h3>
             <p className="text-xs text-foreground/60 mb-5 leading-relaxed max-w-[300px] mx-auto">
               This layout displays 3 photos. Select the one you would like to <span className="font-bold text-red-500">skip</span>.
