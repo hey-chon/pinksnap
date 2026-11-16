@@ -510,9 +510,7 @@ export default function Receipt() {
 
         {/* Actions: under the ticket on phones, to the right on tablets/desktops */}
         <div className={`actions-panel w-[240px] shrink-0 flex flex-col justify-center gap-3 print:hidden ${revealed ? 'receipt-fade' : 'opacity-0'}`} style={{ maxWidth: '240px' }}>
-          <button type="button" onClick={handleSaveStrip} onFocus={(e) => e.currentTarget.blur()} className={actionBtn}>
-            <Download className="w-4 h-4 text-[#f53d89]" /> SAVE PHOTO STRIP
-          </button>
+        
           <button type="button" onClick={handleDownload} onFocus={(e) => e.currentTarget.blur()} className={actionBtn}>
             <Download className="w-4 h-4" /> SAVE RECEIPT
           </button>
