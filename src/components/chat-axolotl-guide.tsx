@@ -18,7 +18,7 @@ export function ChatAxolotlGuide() {
 
       const rect = containerRef.current.getBoundingClientRect();
       const centerX = rect.left + rect.width / 2;
-      const centerY = rect.top + rect.height * 0.28; // eye height on full body
+      const centerY = rect.top + rect.height * 0.18; // eye level with raised head
 
       const deltaX = (e.clientX - centerX) / (window.innerWidth || 1);
       const deltaY = (e.clientY - centerY) / (window.innerHeight || 1);
@@ -57,18 +57,20 @@ export function ChatAxolotlGuide() {
 
       {/* ── FULL BODY AXOLOTL HOLDING BIG PRESENTATION CARD ── */}
       <div className="relative w-full axolotl-chat-bob transform-gpu will-change-transform">
-        {/* Layer 1 (z-0): Full Body Axolotl in Happy Action */}
+        {/* Layer 1 (z-0): Full Body Axolotl with Head Raised High & Default Happy Arms Removed */}
         <div className="w-full drop-shadow-[0_18px_40px_rgba(208,67,111,0.26)]">
           <AxolotlSvg
             mood="happy"
+            hideArms={true}
+            headOffsetY={-55}
             lookOffset={lookOffset}
             className="w-full h-auto block"
           />
         </div>
 
-        {/* Layer 2 (z-20): The Big Cute Presentation Card Held in Front of Body */}
-        {/* Held like a giant prize check/presentation card across her torso, head above, feet below */}
-        <div className="absolute top-[56%] -translate-y-1/2 left-1/2 -translate-x-1/2 w-[92%] sm:w-[94%] z-20 pointer-events-none">
+        {/* Layer 2 (z-20): The Big Cute Presentation Card Held Below Her Raised Head */}
+        {/* Top of card starts right below her chin (top: 57%) so her entire head, face and smile are 100% visible! */}
+        <div className="absolute top-[57%] left-1/2 -translate-x-1/2 w-[92%] sm:w-[94%] z-20 pointer-events-none">
           <div className="relative rounded-[22px] sm:rounded-[26px] bg-white/98 dark:bg-zinc-900/98 backdrop-blur-xl border-2 border-pink-200/90 dark:border-pink-900/60 p-4 sm:p-5 shadow-[0_16px_36px_rgba(0,0,0,0.14),0_6px_16px_rgba(245,61,137,0.18)] flex flex-col gap-2.5">
             
             {/* Top Card Header */}

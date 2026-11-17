@@ -8,6 +8,8 @@ interface AxolotlSvgProps {
   isWagging?: boolean;
   isTickling?: boolean;
   isStatic?: boolean;
+  hideArms?: boolean;
+  headOffsetY?: number;
   lookOffset?: { x: number; y: number };
   className?: string;
   style?: React.CSSProperties;
@@ -23,6 +25,8 @@ export function AxolotlSvg({
   isWagging = false,
   isTickling = false,
   isStatic = false,
+  hideArms = false,
+  headOffsetY = 0,
   lookOffset = { x: 0, y: 0 },
   className = '',
   style,
@@ -52,7 +56,7 @@ export function AxolotlSvg({
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
-      viewBox="-8 0 456 510"
+      viewBox={headOffsetY < 0 ? `-8 ${headOffsetY - 10} 456 ${510 - headOffsetY + 10}` : "-8 0 456 510"}
       role="img"
       aria-label="PinkSnap axolotl mascot"
       data-mood={mood}
@@ -182,7 +186,7 @@ export function AxolotlSvg({
       </g>
 
       {/* Head & Gills Group */}
-      <g transform="translate(220 190) scale(1.12) translate(-220 -190)">
+      <g transform={`translate(220 ${190 + headOffsetY}) scale(1.12) translate(-220 -190)`}>
         {/* Gills */}
         <g id="gills" data-zone="gill">
           {/* Right Gills */}
@@ -305,27 +309,29 @@ export function AxolotlSvg({
       </g>
 
       {/* Arms */}
-      <g transform="translate(220 486) scale(.9) translate(-220 -486)">
-        {/* Left Arm */}
-        <g className="arm l" data-zone="arm" style={{ transformOrigin: '158px 296px' }} stroke="#d0436f" strokeWidth="5" strokeLinejoin="round" fill="#ffc2d4">
-          <ellipse cx="148" cy="324" rx="16" ry="34" transform="rotate(18 148 324)" />
-          <circle cx="128" cy="362" r="6" />
-          <circle cx="137" cy="368" r="6" />
-          <circle cx="148" cy="369" r="6" />
-          <circle cx="157" cy="365" r="6" />
-          <ellipse cx="142" cy="355" rx="19" ry="13" stroke="none" />
-        </g>
+      {!hideArms && (
+        <g transform="translate(220 486) scale(.9) translate(-220 -486)">
+          {/* Left Arm */}
+          <g className="arm l" data-zone="arm" style={{ transformOrigin: '158px 296px' }} stroke="#d0436f" strokeWidth="5" strokeLinejoin="round" fill="#ffc2d4">
+            <ellipse cx="148" cy="324" rx="16" ry="34" transform="rotate(18 148 324)" />
+            <circle cx="128" cy="362" r="6" />
+            <circle cx="137" cy="368" r="6" />
+            <circle cx="148" cy="369" r="6" />
+            <circle cx="157" cy="365" r="6" />
+            <ellipse cx="142" cy="355" rx="19" ry="13" stroke="none" />
+          </g>
 
-        {/* Right Arm */}
-        <g className="arm r" data-zone="arm" style={{ transformOrigin: '282px 296px' }} stroke="#d0436f" strokeWidth="5" strokeLinejoin="round" fill="#ffc2d4">
-          <ellipse cx="292" cy="324" rx="16" ry="34" transform="rotate(-18 292 324)" />
-          <circle cx="312" cy="362" r="6" />
-          <circle cx="303" cy="368" r="6" />
-          <circle cx="292" cy="369" r="6" />
-          <circle cx="283" cy="365" r="6" />
-          <ellipse cx="298" cy="355" rx="19" ry="13" stroke="none" />
+          {/* Right Arm */}
+          <g className="arm r" data-zone="arm" style={{ transformOrigin: '282px 296px' }} stroke="#d0436f" strokeWidth="5" strokeLinejoin="round" fill="#ffc2d4">
+            <ellipse cx="292" cy="324" rx="16" ry="34" transform="rotate(-18 292 324)" />
+            <circle cx="312" cy="362" r="6" />
+            <circle cx="303" cy="368" r="6" />
+            <circle cx="292" cy="369" r="6" />
+            <circle cx="283" cy="365" r="6" />
+            <ellipse cx="298" cy="355" rx="19" ry="13" stroke="none" />
+          </g>
         </g>
-      </g>
+      )}
 
       {/* Sleep Zzz */}
       <g className="v sleepy pointer-events-none" fontFamily="sans-serif" fontWeight="700" fill="#f53d89">
