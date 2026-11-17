@@ -1,5 +1,6 @@
 import React from 'react';
 import { RefreshCw, Zap, ZapOff, AlertCircle, Camera, Check } from 'lucide-react';
+import { AxolotlSvg } from './axolotl/axolotl-svg';
 
 interface CanonCameraProps {
   videoRef: React.RefObject<HTMLVideoElement | null>;
@@ -128,9 +129,15 @@ export function CanonCamera({
             </div>
           )}
 
-          {/* Countdown Overlay */}
+          {/* Countdown Overlay with Axolotl mascot cheering */}
           {countdown !== null && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/30 backdrop-blur-[1px] z-20 pointer-events-none">
+            <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/40 backdrop-blur-[2px] z-20 pointer-events-none">
+              <div className="w-16 h-16 sm:w-24 sm:h-24 mb-2 drop-shadow-[0_8px_20px_rgba(245,61,137,0.7)] animate-bounce">
+                <AxolotlSvg
+                  mood={countdown === 0 ? 'happy' : countdown === 1 ? 'wink' : 'surprised'}
+                  className="w-full h-auto"
+                />
+              </div>
               <span
                 ref={countdownRef}
                 className={`font-black text-white drop-shadow-[0_0_24px_rgba(245,61,137,0.95)] ${

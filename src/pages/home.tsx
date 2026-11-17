@@ -5,6 +5,7 @@ import { ArrowRight, Camera, Download, LayoutGrid, MessageCircle, Sparkles, Wand
 import Credits from '@/components/credits';
 import { useAuth } from '@/hooks/use-auth';
 import { ARTISAN_TEMPLATES, ArtisanTemplate } from '@/lib/customization';
+import { AxolotlShowcase } from '@/components/axolotl/axolotl-showcase';
 
 
 const STEPS = [
@@ -542,6 +543,9 @@ export default function Home() {
           </div>
 
         </section>
+
+        {/* ── Meet the PinkSnap Axolotl Mascot Showcase ── */}
+        <AxolotlShowcase />
 
         {/* ── ARTISAN STRIPS — Cinematic Showcase Loop ── */}
         <div ref={artisanSentinelRef} />

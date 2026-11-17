@@ -24,6 +24,7 @@ import Printing from '@/pages/printing';
 import Receipt from '@/pages/receipt';
 import { CookieNotice } from '@/components/cookie-notice';
 import { ProtectedRoute } from '@/components/auth/protected-route';
+import { AxolotlCompanion } from '@/components/axolotl/axolotl-companion';
 
 // ── Flow Guard ──────────────────────────────────────────────────────────────
 // Prevents direct URL shortcuts to flow pages by requiring users to start at /
@@ -238,6 +239,7 @@ function App() {
                 <Router />
               </WelcomeGate>
             </FlowGuard>
+            <AxolotlCompanion />
             <CookieNotice />
           </WouterRouter>
         </ToastProvider>

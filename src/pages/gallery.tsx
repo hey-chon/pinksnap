@@ -7,6 +7,7 @@ import { useToast } from '@/hooks/use-toast.tsx';
 import { downloadImage } from '@/lib/image-utils';
 import { useAuth } from '@/hooks/use-auth';
 import { ARTISAN_TEMPLATES, FRAME_OPTIONS, getArtisanTemplate, getFrameOption } from '@/lib/customization';
+import { AxolotlMascot } from '@/components/axolotl/axolotl-mascot';
 
 const getFrameLabel = (id: string) => {
   if (ARTISAN_TEMPLATES.some(t => t.id === id)) return 'ARTISAN';
@@ -184,16 +185,23 @@ export default function Gallery() {
               <p className="text-foreground/50 text-sm max-w-xs">Fetching your photo strips from the cloud...</p>
             </div>
           ) : savedMemories.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-20 text-center">
-              <div className="w-32 h-32 mb-6 drop-shadow-lg">
-                <img src="/meme_cat_transparent.jpg" alt="No prints yet cat" className="w-full h-full object-contain" />
+            <div className="flex flex-col items-center justify-center py-16 text-center">
+              <div className="mb-4">
+                <AxolotlMascot
+                  defaultMood="wink"
+                  speech="No prints yet! Poke my belly or start snapping!"
+                  showSpeech={true}
+                  interactive={true}
+                  soundEnabled={true}
+                  size="md"
+                />
               </div>
-              <h2 data-testid="gallery-empty-state" className="font-display text-[2.2rem] sm:text-5xl text-foreground mb-3">NO PRINTS YET</h2>
+              <h2 data-testid="gallery-empty-state" className="font-display text-[2.2rem] sm:text-5xl text-foreground mb-4">NO PRINTS YET</h2>
               <button
                 type="button"
                 onClick={handleStartSession}
                 data-testid="link-start-session"
-                className="px-4 py-4 bg-primary text-white font-black rounded-full shadow-lg shadow-primary/30 hover:scale-105 active:scale-95 transition-transform flex items-center gap-2"
+                className="px-6 py-4 bg-primary text-white font-black rounded-full shadow-lg shadow-primary/30 hover:scale-105 active:scale-95 transition-transform flex items-center gap-2 cursor-pointer"
               >
                 START SNAPPING <ArrowRight className="w-5 h-5" />
               </button>

@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useLocation } from 'wouter';
-import { Camera, Sparkles } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
+import { AxolotlMascot } from '@/components/axolotl/axolotl-mascot';
 
 export default function StudioLoading() {
   const [, setLocation] = useLocation();
@@ -88,43 +89,17 @@ export default function StudioLoading() {
 
       <main className="relative z-10 w-full max-w-sm text-center flex flex-col items-center justify-center">
 
-        {/* Logo icon with pulse ring */}
-        <div
-          className="reveal-pop relative mx-auto mb-8 w-[104px] h-[104px] flex items-center justify-center"
-          style={{ animation: 'loading-float 3.5s ease-in-out infinite' }}
-        >
-          {/* Outer pulse ring */}
-          <div
-            className="absolute -inset-4"
-            style={{
-              borderRadius: '30px',
-              border: '2px solid rgba(245,61,137,.15)',
-              animation: 'loading-pulse-ring 2s ease-in-out infinite',
-            }}
+        {/* Axolotl Mascot Warming Up */}
+        <div className="reveal-pop relative mx-auto mb-6 flex flex-col items-center justify-center">
+          <AxolotlMascot
+            defaultMood="happy"
+            speech="Warming up the photobooth... ✨"
+            showSpeech={true}
+            interactive={true}
+            soundEnabled={false}
+            trackPointer={true}
+            size="md"
           />
-          {/* Spinning dashed ring */}
-          <div
-            className="absolute -inset-3 animate-spin"
-            style={{
-              borderRadius: '28px',
-              border: '1.5px dashed rgba(245,61,137,.2)',
-              borderTopColor: 'rgba(245,61,137,.6)',
-              animationDuration: '2.8s',
-            }}
-          />
-          {/* Main icon card */}
-          <div
-            className="w-full h-full flex items-center justify-center"
-            style={{
-              borderRadius: '24px',
-              background: 'linear-gradient(145deg, #ffffff, #fff0f5)',
-              border: '1.5px solid rgba(245,61,137,.18)',
-              boxShadow: '0 12px 40px -8px rgba(245,61,137,.18), 0 4px 12px rgba(0,0,0,.03), inset 0 1px 0 rgba(255,255,255,1)',
-            }}
-          >
-            <Camera className="w-12 h-12 stroke-[1.8]" style={{ color: '#f53d89' }} />
-          </div>
-          <Sparkles className="absolute -top-1 -right-1 w-5 h-5" style={{ color: '#f53d89', filter: 'drop-shadow(0 0 4px rgba(245,61,137,.3))' }} />
         </div>
 
         {/* Wordmark */}
