@@ -1,49 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { AxolotlSvg, MascotMood } from '@/components/axolotl/axolotl-svg';
-import { playMascotSound } from '@/components/axolotl/axolotl-sfx';
+import { AxolotlSvg } from '@/components/axolotl/axolotl-svg';
+import { Sparkles, Heart } from 'lucide-react';
 
 export function ChatAxolotlGuide() {
-  const [mood, setMood] = useState<MascotMood>('idle');
-  const [isSquishing, setIsSquishing] = useState(false);
-  const [isWagging, setIsWagging] = useState(false);
-  const [isTickling, setIsTickling] = useState(false);
   const [lookOffset, setLookOffset] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
-
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const triggerHaptic = (pattern: number | number[]) => {
-    try {
-      if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
-        navigator.vibrate(pattern);
-      }
-    } catch {}
-  };
-
-  const playSound = (type: Parameters<typeof playMascotSound>[0]) => {
-    playMascotSound(type);
-  };
-
-  // Squish animation helper
-  const triggerSquish = () => {
-    setIsSquishing(false);
-    requestAnimationFrame(() => {
-      setIsSquishing(true);
-      setTimeout(() => setIsSquishing(false), 450);
-    });
-  };
-
-  // Periodic playful idle winks
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (mood === 'idle') {
-        setMood('wink');
-        setTimeout(() => setMood('idle'), 1300);
-      }
-    }, 7000);
-    return () => clearInterval(interval);
-  }, [mood]);
-
-  // Eye tracking: pupils follow cursor/finger everywhere on screen
+  // Eye tracking: pupils follow the user's cursor/touch across the screen
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
@@ -55,13 +18,14 @@ export function ChatAxolotlGuide() {
 
       const rect = containerRef.current.getBoundingClientRect();
       const centerX = rect.left + rect.width / 2;
-      const centerY = rect.top + rect.height * 0.42; // eyes height
+      const centerY = rect.top + rect.height * 0.28; // eye height on full body
 
       const deltaX = (e.clientX - centerX) / (window.innerWidth || 1);
       const deltaY = (e.clientY - centerY) / (window.innerHeight || 1);
 
-      const clampedX = Math.max(-18, Math.min(18, deltaX * 28));
-      const clampedY = Math.max(-12, Math.min(12, deltaY * 20));
+      // Smooth bounded pupil travel
+      const clampedX = Math.max(-18, Math.min(18, deltaX * 26));
+      const clampedY = Math.max(-12, Math.min(12, deltaY * 18));
 
       setLookOffset({
         x: Number(clampedX.toFixed(1)),
@@ -73,74 +37,125 @@ export function ChatAxolotlGuide() {
     return () => window.removeEventListener('pointermove', handlePointerMove);
   }, []);
 
-  // Interactive mascot body zone clicks
-  const handleZoneClick = (zone: string) => {
-    triggerSquish();
-    if (zone === 'belly') {
-      setMood('happy');
-      setIsTickling(false);
-      playSound('giggle');
-      triggerHaptic([10, 15]);
-      setTimeout(() => setMood('idle'), 2000);
-    } else if (zone === 'gill') {
-      setMood('surprised');
-      setIsTickling(true);
-      setTimeout(() => setIsTickling(false), 1400);
-      playSound('flutter');
-      triggerHaptic([15, 20]);
-      setTimeout(() => setMood('idle'), 2000);
-    } else if (zone === 'tail') {
-      setMood('love');
-      setIsWagging(true);
-      setTimeout(() => setIsWagging(false), 1600);
-      playSound('purr');
-      triggerHaptic([20, 25]);
-      setTimeout(() => setMood('idle'), 2000);
-    } else if (zone === 'arm') {
-      setMood('wink');
-      playSound('highfive');
-      triggerHaptic([20]);
-      setTimeout(() => setMood('idle'), 2000);
-    } else {
-      setMood('happy');
-      playSound('giggle');
-      triggerHaptic([15]);
-      setTimeout(() => setMood('idle'), 2000);
-    }
-  };
-
   return (
     <div
       ref={containerRef}
-      className="relative flex flex-col items-center justify-center select-none w-full"
+      className="relative flex flex-col items-center justify-center select-none w-full max-w-[360px] sm:max-w-[410px] xl:max-w-[450px] mx-auto"
     >
       <style>{`
         .axolotl-chat-bob {
-          animation: axolotlChatBobbing 3.8s ease-in-out infinite;
+          animation: axolotlFullBobbing 3.8s ease-in-out infinite;
         }
-        @keyframes axolotlChatBobbing {
+        @keyframes axolotlFullBobbing {
           0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-10px); }
+          50% { transform: translateY(-8px); }
         }
       `}</style>
 
-      {/* Radiant Pink Glow Aura in Background */}
-      <div className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[340px] sm:w-[420px] lg:w-[480px] h-[340px] sm:h-[420px] lg:h-[480px] bg-gradient-to-br from-primary/35 via-pink-400/25 to-transparent rounded-full blur-[95px] -z-10" />
+      {/* Radiant Soft Pink Glow Aura in Background */}
+      <div className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[340px] sm:w-[420px] lg:w-[480px] h-[340px] sm:h-[420px] lg:h-[480px] bg-gradient-to-br from-primary/30 via-pink-400/20 to-transparent rounded-full blur-[90px] -z-10" />
 
-      {/* ── BIG AXOLOTL MASCOT ONLY (Clean, No Chat Bubbles or Other Elements) ── */}
-      <div
-        className="w-[270px] sm:w-[330px] lg:w-[390px] xl:w-[440px] 2xl:w-[480px] axolotl-chat-bob transform-gpu will-change-transform drop-shadow-[0_20px_45px_rgba(208,67,111,0.32)]"
-        title="PinkSnap Axolotl Mascot"
-      >
-        <AxolotlSvg
-          mood={mood}
-          isSquishing={isSquishing}
-          isWagging={isWagging}
-          isTickling={isTickling}
-          lookOffset={lookOffset}
-          onZoneClick={handleZoneClick}
-          className="w-full h-auto cursor-pointer"
-        />
+      {/* ── FULL BODY AXOLOTL HOLDING BIG PRESENTATION CARD ── */}
+      <div className="relative w-full axolotl-chat-bob transform-gpu will-change-transform">
+        {/* Layer 1 (z-0): Full Body Axolotl in Happy Action */}
+        <div className="w-full drop-shadow-[0_18px_40px_rgba(208,67,111,0.26)]">
+          <AxolotlSvg
+            mood="happy"
+            lookOffset={lookOffset}
+            className="w-full h-auto block"
+          />
+        </div>
+
+        {/* Layer 2 (z-20): The Big Cute Presentation Card Held in Front of Body */}
+        {/* Held like a giant prize check/presentation card across her torso, head above, feet below */}
+        <div className="absolute top-[56%] -translate-y-1/2 left-1/2 -translate-x-1/2 w-[92%] sm:w-[94%] z-20 pointer-events-none">
+          <div className="relative rounded-[22px] sm:rounded-[26px] bg-white/98 dark:bg-zinc-900/98 backdrop-blur-xl border-2 border-pink-200/90 dark:border-pink-900/60 p-4 sm:p-5 shadow-[0_16px_36px_rgba(0,0,0,0.14),0_6px_16px_rgba(245,61,137,0.18)] flex flex-col gap-2.5">
+            
+            {/* Top Card Header */}
+            <div className="flex items-center justify-between border-b border-dashed border-pink-200 dark:border-pink-900/50 pb-2">
+              <div className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                <span className="font-mono text-[9px] sm:text-[9.5px] font-black uppercase tracking-[0.2em] text-foreground/60">
+                  COMMUNITY CHAT
+                </span>
+              </div>
+              <div className="flex items-center gap-1 text-primary">
+                <Sparkles className="w-3 h-3 text-primary" />
+                <span className="font-hero text-xs sm:text-sm tracking-wider">PINKSNAP</span>
+              </div>
+            </div>
+
+            {/* Note for Everyone */}
+            <div className="py-0.5">
+              <p className="font-sans text-[11.5px] sm:text-[12.5px] font-bold text-foreground/85 leading-relaxed tracking-normal">
+                Welcome to the community! Please remember to be polite, treat everyone with kindness, keep our chat wholesome, and never share private personal info. Let's make PinkSnap a sweet and safe space for all besties!
+              </p>
+            </div>
+
+            {/* Card Footer */}
+            <div className="pt-2 border-t border-dashed border-pink-200 dark:border-pink-900/50 flex items-center justify-between">
+              <span className="text-[9.5px] sm:text-[10px] font-black text-primary flex items-center gap-1">
+                <Heart className="w-2.5 h-2.5 fill-current" /> Safe & Friendly Space
+              </span>
+              <span className="font-mono text-[8.5px] sm:text-[9px] font-bold uppercase tracking-wider text-foreground/45">
+                ★ BESTIE CODE ★
+              </span>
+            </div>
+
+            {/* ── Layer 3: Left Hand Clutching Left End of the Card ── */}
+            <div
+              className="absolute left-[-10px] sm:left-[-13px] top-1/2 -translate-y-1/2 z-30 pointer-events-none w-[26px] sm:w-[32px]"
+              aria-hidden="true"
+            >
+              <svg viewBox="0 0 32 36" className="w-full h-auto drop-shadow-[0_4px_8px_rgba(208,67,111,0.38)]">
+                <g stroke="#d0436f" strokeWidth="2.5" strokeLinejoin="round" fill="#ffc2d4">
+                  {/* Palm coming from behind */}
+                  <path d="M4 8 C4 18 8 28 18 30 C24 31 28 26 26 18 C25 10 18 6 10 6 Z" />
+                  {/* 4 Little Clutched Axolotl Fingers gripping the front edge */}
+                  <circle cx="16" cy="10" r="4.2" />
+                  <circle cx="21" cy="14" r="4.2" />
+                  <circle cx="22" cy="20" r="4.2" />
+                  <circle cx="18" cy="25" r="4.2" />
+                  {/* Highlights */}
+                  <circle cx="16" cy="9" r="1.5" fill="#fff" stroke="none" opacity=".7" />
+                  <circle cx="21" cy="13" r="1.5" fill="#fff" stroke="none" opacity=".7" />
+                  <circle cx="22" cy="19" r="1.5" fill="#fff" stroke="none" opacity=".7" />
+                  <circle cx="18" cy="24" r="1.5" fill="#fff" stroke="none" opacity=".7" />
+                </g>
+              </svg>
+            </div>
+
+            {/* ── Layer 4: Right Hand Clutching Right End of the Card ── */}
+            <div
+              className="absolute right-[-10px] sm:right-[-13px] top-1/2 -translate-y-1/2 z-30 pointer-events-none w-[26px] sm:w-[32px]"
+              aria-hidden="true"
+            >
+              <svg viewBox="0 0 32 36" className="w-full h-auto drop-shadow-[0_4px_8px_rgba(208,67,111,0.38)]">
+                <g
+                  transform="translate(16 18) scale(-1 1) translate(-16 -18)"
+                  stroke="#d0436f"
+                  strokeWidth="2.5"
+                  strokeLinejoin="round"
+                  fill="#ffc2d4"
+                >
+                  {/* Palm coming from behind */}
+                  <path d="M4 8 C4 18 8 28 18 30 C24 31 28 26 26 18 C25 10 18 6 10 6 Z" />
+                  {/* 4 Little Clutched Axolotl Fingers gripping the front edge */}
+                  <circle cx="16" cy="10" r="4.2" />
+                  <circle cx="21" cy="14" r="4.2" />
+                  <circle cx="22" cy="20" r="4.2" />
+                  <circle cx="18" cy="25" r="4.2" />
+                  {/* Highlights */}
+                  <circle cx="16" cy="9" r="1.5" fill="#fff" stroke="none" opacity=".7" />
+                  <circle cx="21" cy="13" r="1.5" fill="#fff" stroke="none" opacity=".7" />
+                  <circle cx="22" cy="19" r="1.5" fill="#fff" stroke="none" opacity=".7" />
+                  <circle cx="18" cy="24" r="1.5" fill="#fff" stroke="none" opacity=".7" />
+                </g>
+              </svg>
+            </div>
+
+          </div>
+        </div>
       </div>
     </div>
   );
