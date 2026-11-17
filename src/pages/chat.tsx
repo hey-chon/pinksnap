@@ -11,16 +11,16 @@ export default function Chat() {
       <TopNav backTo="/" title="CHAT" />
 
       <main className="flex-1 overflow-y-auto px-3.5 py-5 sm:px-6 sm:py-7 flex flex-col items-center justify-start lg:justify-center">
-        <div className="w-full max-w-[1560px] mx-auto my-auto pb-10 flex flex-col lg:flex-row items-stretch lg:items-start justify-center gap-6 xl:gap-8">
+        <div className="w-full max-w-[1600px] mx-auto my-auto pb-8 flex flex-col lg:flex-row items-center lg:items-center justify-center gap-6 xl:gap-10">
           
-          {/* ── LEFT SIDE: Big Axolotl Community Chat Guardian (Desktop) ── */}
+          {/* ── LEFT SIDE: Big Axolotl (Desktop) ── */}
           <section
-            aria-label="PinkSnap Axolotl Community Guidelines"
-            className="w-full lg:w-[350px] xl:w-[410px] 2xl:w-[440px] shrink-0 flex flex-col items-center"
+            aria-label="PinkSnap Axolotl Mascot"
+            className="w-full lg:w-[380px] xl:w-[440px] 2xl:w-[480px] shrink-0 flex flex-col items-center justify-center"
           >
             <ChatAxolotlGuide />
 
-            <div className="mt-5 hidden lg:block text-center">
+            <div className="mt-4 hidden lg:block text-center">
               <Link
                 href="/"
                 className="inline-flex items-center gap-2 text-xs font-black uppercase tracking-wider text-foreground/50 hover:text-primary transition-colors"
