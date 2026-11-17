@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Sparkles } from 'lucide-react';
 
 interface AxolotlHoldingBadgeProps {
@@ -7,19 +7,57 @@ interface AxolotlHoldingBadgeProps {
 
 export function AxolotlHoldingBadge({ className = '' }: AxolotlHoldingBadgeProps) {
   const [isWinking, setIsWinking] = useState(false);
+  const [lookOffset, setLookOffset] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const handleMascotClick = () => {
     setIsWinking(true);
     setTimeout(() => setIsWinking(false), 1400);
   };
 
+  // Eyes follow the cursor/touch anywhere on screen
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReducedMotion) return;
+
+    const handlePointerMove = (e: PointerEvent) => {
+      if (!containerRef.current) return;
+
+      const rect = containerRef.current.getBoundingClientRect();
+      const centerX = rect.left + rect.width / 2;
+      const centerY = rect.top + 30; // focus on her eyes level
+
+      // Calculate directional vector towards cursor
+      const deltaX = (e.clientX - centerX) / (window.innerWidth || 1);
+      const deltaY = (e.clientY - centerY) / (window.innerHeight || 1);
+
+      // Smooth bounded pupil travel (matches mascot geometry)
+      const clampedX = Math.max(-16, Math.min(16, deltaX * 24));
+      const clampedY = Math.max(-11, Math.min(11, deltaY * 18));
+
+      setLookOffset({
+        x: Number(clampedX.toFixed(1)),
+        y: Number(clampedY.toFixed(1)),
+      });
+    };
+
+    window.addEventListener('pointermove', handlePointerMove, { passive: true });
+    return () => window.removeEventListener('pointermove', handlePointerMove);
+  }, []);
+
   return (
     <div
-      className={`home-hero-item relative inline-flex items-center justify-center select-none pt-9 sm:pt-11 ${className}`}
+      ref={containerRef}
+      className={`home-hero-item relative inline-flex items-center justify-center select-none pt-9 sm:pt-11 cursor-pointer group ${className}`}
       onClick={handleMascotClick}
       title="Axolotl: Your pocket photo booth!"
     >
       <style>{`
+        .pk-badge-look {
+          transition: transform 0.14s ease-out;
+        }
         .pk-badge-gill {
           animation: pk-sw 3.2s ease-in-out infinite;
         }
@@ -151,34 +189,42 @@ export function AxolotlHoldingBadge({ className = '' }: AxolotlHoldingBadgeProps
               opacity=".7"
             />
 
-            {/* Blush cheeks */}
-            <ellipse cx="124" cy="226" rx="21" ry="13" fill="#ff6f9d" opacity=".7" />
-            <ellipse cx="316" cy="226" rx="21" ry="13" fill="#ff6f9d" opacity=".7" />
+            {/* Eyes & Cheeks Tracking Layer */}
+            <g
+              className="pk-badge-look"
+              style={{
+                transform: `translate(${lookOffset.x}px, ${lookOffset.y}px)`,
+              }}
+            >
+              {/* Blush cheeks */}
+              <ellipse cx="124" cy="226" rx="21" ry="13" fill="#ff6f9d" opacity=".7" />
+              <ellipse cx="316" cy="226" rx="21" ry="13" fill="#ff6f9d" opacity=".7" />
 
-            {/* Left Eye */}
-            <g className="pk-badge-blink" style={{ transformOrigin: '165px 198px' }}>
-              <circle cx="165" cy="198" r="16" fill="#4a2018" />
-              <circle cx="171" cy="191" r="5.5" fill="#fff" />
-              <circle cx="159" cy="206" r="2.6" fill="#fff" />
-            </g>
-
-            {/* Right Eye (winking or normal blinking) */}
-            {isWinking ? (
-              <path
-                d="M256 184L289 196L256 208"
-                fill="none"
-                stroke="#4a2018"
-                strokeWidth="6"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            ) : (
-              <g className="pk-badge-blink" style={{ transformOrigin: '275px 198px' }}>
-                <circle cx="275" cy="198" r="16" fill="#4a2018" />
-                <circle cx="281" cy="191" r="5.5" fill="#fff" />
-                <circle cx="269" cy="206" r="2.6" fill="#fff" />
+              {/* Left Eye */}
+              <g className="pk-badge-blink" style={{ transformOrigin: '165px 198px' }}>
+                <circle cx="165" cy="198" r="16" fill="#4a2018" />
+                <circle cx="171" cy="191" r="5.5" fill="#fff" />
+                <circle cx="159" cy="206" r="2.6" fill="#fff" />
               </g>
-            )}
+
+              {/* Right Eye (winking or normal blinking) */}
+              {isWinking ? (
+                <path
+                  d="M256 184L289 196L256 208"
+                  fill="none"
+                  stroke="#4a2018"
+                  strokeWidth="6"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              ) : (
+                <g className="pk-badge-blink" style={{ transformOrigin: '275px 198px' }}>
+                  <circle cx="275" cy="198" r="16" fill="#4a2018" />
+                  <circle cx="281" cy="191" r="5.5" fill="#fff" />
+                  <circle cx="269" cy="206" r="2.6" fill="#fff" />
+                </g>
+              )}
+            </g>
 
             {/* Cute Cat / W Mouth */}
             <path
