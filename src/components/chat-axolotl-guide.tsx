@@ -68,15 +68,15 @@ export function ChatAxolotlGuide() {
           />
         </div>
 
-        {/* Layer 2 (z-20): The Big Cute Presentation Card Held Below Her Raised Head */}
-        {/* Top of card starts right below her chin (top: 57%) so her entire head, face and smile are 100% visible! */}
-        <div className="absolute top-[57%] left-1/2 -translate-x-1/2 w-[92%] sm:w-[94%] z-20 pointer-events-none">
-          <div className="relative rounded-[22px] sm:rounded-[26px] bg-white/98 dark:bg-zinc-900/98 backdrop-blur-xl border-2 border-pink-200/90 dark:border-pink-900/60 p-4 sm:p-5 shadow-[0_16px_36px_rgba(0,0,0,0.14),0_6px_16px_rgba(245,61,137,0.18)] flex flex-col gap-2.5">
+        {/* Layer 2 (z-20): The Big Cute Presentation Card Held Right Below Her Chin */}
+        {/* Positioned at top-[46.5%] so her head is 100% visible above, and legs/feet are 100% visible below! */}
+        <div className="absolute top-[46.5%] left-1/2 -translate-x-1/2 w-[92%] sm:w-[94%] z-20 pointer-events-none">
+          <div className="relative rounded-[22px] sm:rounded-[26px] bg-white/98 dark:bg-zinc-900/98 backdrop-blur-xl border-2 border-pink-200/90 dark:border-pink-900/60 p-3.5 sm:p-4 shadow-[0_16px_36px_rgba(0,0,0,0.13),0_6px_16px_rgba(245,61,137,0.18)] flex flex-col gap-2">
             
             {/* Top Card Header */}
-            <div className="flex items-center justify-between border-b border-dashed border-pink-200 dark:border-pink-900/50 pb-2">
+            <div className="flex items-center justify-between border-b border-dashed border-pink-200 dark:border-pink-900/50 pb-1.5">
               <div className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
                 <span className="font-mono text-[9px] sm:text-[9.5px] font-black uppercase tracking-[0.2em] text-foreground/60">
                   COMMUNITY CHAT
                 </span>
@@ -89,17 +89,17 @@ export function ChatAxolotlGuide() {
 
             {/* Note for Everyone */}
             <div className="py-0.5">
-              <p className="font-sans text-[11.5px] sm:text-[12.5px] font-bold text-foreground/85 leading-relaxed tracking-normal">
+              <p className="font-sans text-[11px] sm:text-[11.8px] font-bold text-foreground/85 leading-relaxed tracking-normal">
                 Welcome to the community! Please remember to be polite, treat everyone with kindness, keep our chat wholesome, and never share private personal info. Let's make PinkSnap a sweet and safe space for all besties!
               </p>
             </div>
 
             {/* Card Footer */}
-            <div className="pt-2 border-t border-dashed border-pink-200 dark:border-pink-900/50 flex items-center justify-between">
-              <span className="text-[9.5px] sm:text-[10px] font-black text-primary flex items-center gap-1">
+            <div className="pt-1.5 border-t border-dashed border-pink-200 dark:border-pink-900/50 flex items-center justify-between">
+              <span className="text-[9px] sm:text-[9.5px] font-black text-primary flex items-center gap-1">
                 <Heart className="w-2.5 h-2.5 fill-current" /> Safe & Friendly Space
               </span>
-              <span className="font-mono text-[8.5px] sm:text-[9px] font-bold uppercase tracking-wider text-foreground/45">
+              <span className="font-mono text-[8px] sm:text-[8.5px] font-bold uppercase tracking-wider text-foreground/45">
                 ★ BESTIE CODE ★
               </span>
             </div>
