@@ -20,7 +20,9 @@ export default function Chat() {
           >
             <ChatAxolotlGuide />
 
-           
+            <div className="mt-4 hidden lg:block text-center">
+              
+            </div>
           </section>
 
           {/* ── RIGHT SIDE: Community Chat & PinkSnap Users Directory ── */}
