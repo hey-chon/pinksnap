@@ -20,14 +20,7 @@ export default function Chat() {
           >
             <ChatAxolotlGuide />
 
-            <div className="mt-4 hidden lg:block text-center">
-              <Link
-                href="/"
-                className="inline-flex items-center gap-2 text-xs font-black uppercase tracking-wider text-foreground/50 hover:text-primary transition-colors"
-              >
-                <ArrowLeft className="w-3.5 h-3.5" /> Back to Homepage
-              </Link>
-            </div>
+           
           </section>
 
           {/* ── RIGHT SIDE: Community Chat & PinkSnap Users Directory ── */}
