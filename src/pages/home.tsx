@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { Link, useLocation } from 'wouter';
 import { TopNav } from '@/components/layout';
-import { ArrowRight, MessageCircle, Sparkles } from 'lucide-react';
+import { ArrowRight, Camera, MessageCircle, Sparkles } from 'lucide-react';
 import Credits from '@/components/credits';
 import { useAuth } from '@/hooks/use-auth';
 import { ARTISAN_TEMPLATES, ArtisanTemplate } from '@/lib/customization';
