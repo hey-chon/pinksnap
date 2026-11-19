@@ -140,7 +140,6 @@ export default function Home() {
   const { isAuthenticated } = useAuth();
   const mainRef = useRef<HTMLElement>(null);
   const floatingStripRef = useRef<HTMLDivElement>(null);
-  const [activeStep, setActiveStep] = useState(0);
 
   // Lazy-mount the heavy artisan showcase only when user scrolls near it
   const artisanSentinelRef = useRef<HTMLDivElement>(null);
