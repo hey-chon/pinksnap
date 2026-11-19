@@ -9,6 +9,7 @@ interface AxolotlSvgProps {
   isTickling?: boolean;
   isStatic?: boolean;
   hideArms?: boolean;
+  armPose?: 'default' | 'pointing-right';
   headOffsetY?: number;
   lookOffset?: { x: number; y: number };
   className?: string;
@@ -26,6 +27,7 @@ export function AxolotlSvg({
   isTickling = false,
   isStatic = false,
   hideArms = false,
+  armPose = 'default',
   headOffsetY = 0,
   lookOffset = { x: 0, y: 0 },
   className = '',
@@ -60,6 +62,7 @@ export function AxolotlSvg({
       role="img"
       aria-label="PinkSnap axolotl mascot"
       data-mood={mood}
+      data-arm-pose={armPose}
       onClick={handleClick}
       onPointerDown={handlePointerDown}
       onPointerMove={onZonePointerMove}
@@ -108,6 +111,19 @@ export function AxolotlSvg({
         [data-mood=surprised] .arm.l { transform: rotate(55deg); }
         [data-mood=surprised] .arm.r { transform: rotate(-55deg); }
         [data-mood=wink] .arm.r { animation: pk-wave .7s ease-in-out infinite; }
+        
+        [data-arm-pose="pointing-right"] .arm.r {
+          transform: rotate(-92deg) !important;
+          animation: pk-point-r 3.6s ease-in-out infinite !important;
+        }
+        [data-arm-pose="pointing-right"] .arm.l {
+          transform: rotate(20deg) !important;
+          animation: none !important;
+        }
+        @keyframes pk-point-r {
+          0%, 100% { transform: rotate(-90deg) translate(0, 0); }
+          50% { transform: rotate(-96deg) translate(5px, -2px); }
+        }
         
         @keyframes pk-sw { 0%, 100% { transform: rotate(-4deg); } 50% { transform: rotate(5deg); } }
         @keyframes pk-sw2 { 0%, 100% { transform: rotate(4deg); } 50% { transform: rotate(-5deg); } }
