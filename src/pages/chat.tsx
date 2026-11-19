@@ -1,5 +1,5 @@
 import { Link } from 'wouter';
-import { ArrowLeft, Users } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { TopNav, BottomNav } from '@/components/layout';
 import CommunityChat from '@/components/community-chat';
 import ChatUsersDirectory from '@/components/chat-users-directory';
@@ -19,10 +19,6 @@ export default function Chat() {
             className="w-full lg:w-[380px] xl:w-[440px] 2xl:w-[480px] shrink-0 flex flex-col items-center justify-center"
           >
             <ChatAxolotlGuide />
-
-            <div className="mt-4 hidden lg:block text-center">
-              
-            </div>
           </section>
 
           {/* ── RIGHT SIDE: Community Chat & PinkSnap Users Directory ── */}
