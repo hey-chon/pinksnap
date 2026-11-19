@@ -1,65 +1,12 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { Link, useLocation } from 'wouter';
 import { TopNav } from '@/components/layout';
-import { ArrowRight, Camera, Download, LayoutGrid, MessageCircle, Sparkles, Wand2 } from 'lucide-react';
+import { ArrowRight, MessageCircle, Sparkles } from 'lucide-react';
 import Credits from '@/components/credits';
 import { useAuth } from '@/hooks/use-auth';
 import { ARTISAN_TEMPLATES, ArtisanTemplate } from '@/lib/customization';
 import { AxolotlHoldingBadge } from '@/components/axolotl/axolotl-holding-badge';
-
-
-const STEPS = [
-  {
-    num: 1,
-    label: 'SIGN IN',
-    img: '/ss-auth.jpg',
-    imgAlt: 'PinkSnap sign-in page — create an account or log in',
-    icon: <Camera className="w-5 h-5" />,
-    desc: 'Create a free account or sign in, then allow camera access when your browser asks. Your photos are never uploaded — everything stays private on your device! 🔒',
-    tags: [
-      { text: '✓ 100% Private', cls: 'bg-green-50 text-green-700 border-green-100' },
-      { text: 'Free Account', cls: 'bg-primary/8 text-primary border-primary/15' },
-    ],
-  },
-  {
-    num: 2,
-    label: 'WARMING UP',
-    img: '/ss-setup.jpg',
-    imgAlt: 'PinkSnap loading screen — warming up the booth',
-    icon: <LayoutGrid className="w-5 h-5" />,
-    desc: 'PinkSnap warms up the booth and loads your chosen layout and frame theme. Pick from Classic Strip, Quad Grid, Wide Duo, and more — each with its own vibe!',
-    tags: [
-      { text: '6+ Layouts', cls: 'bg-purple-50 text-purple-700 border-purple-100' },
-      { text: 'Themed Frames', cls: 'bg-primary/8 text-primary border-primary/15' },
-      { text: 'Filters', cls: 'bg-amber-50 text-amber-700 border-amber-100' },
-    ],
-  },
-  {
-    num: 3,
-    label: 'STRIKE A POSE',
-    img: '/ss-studio.jpg',
-    imgAlt: 'PinkSnap studio — live camera booth ready to snap',
-    icon: <Wand2 className="w-5 h-5" />,
-    desc: 'You\'re in the booth! Hit the button and watch the countdown. PinkSnap auto-captures 3–4 photos. Strike a pose, be silly, have fun! 📸',
-    tags: [
-      { text: '3s Countdown', cls: 'bg-blue-50 text-blue-700 border-blue-100' },
-      { text: 'Auto Capture', cls: 'bg-primary/8 text-primary border-primary/15' },
-    ],
-  },
-  {
-    num: 4,
-    label: 'SAVE & SHARE',
-    img: '/ss-gallery.jpg',
-    imgAlt: 'PinkSnap gallery — your photo strip archive',
-    icon: <Download className="w-5 h-5" />,
-    desc: 'Edit your strip, apply filters, adjust the frame — then download it to your device or save it to your PinkSnap gallery. Your memories, your way! 🎞️',
-    tags: [
-      { text: '↓ Download', cls: 'bg-green-50 text-green-700 border-green-100' },
-      { text: 'Edit Strip', cls: 'bg-primary/8 text-primary border-primary/15' },
-      { text: 'Gallery', cls: 'bg-pink-50 text-pink-700 border-pink-100' },
-    ],
-  },
-];
+import { HomePurposeSection } from '@/components/home-purpose-section';
 
 function ArtisanShowcaseCard({
   template,
