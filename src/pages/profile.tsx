@@ -1271,24 +1271,26 @@ export default function ProfilePage() {
       <TopNav backTo="/" title={isOwner ? "MY PROFILE" : `${(effectiveUser?.displayName || 'USER').toUpperCase()}'S WALL`} />
 
       <main className="flex-1 overflow-y-auto profile-levitating-scroll pb-12 relative z-10">
-        {/* ── Modern Social Media Cover Banner ── */}
-        <div className="relative h-36 sm:h-48 md:h-56 bg-gradient-to-tr from-pink-600 via-primary to-rose-400 overflow-hidden shadow-inner">
-          {/* Decorative Pattern & Ambient Glow */}
-          <div
-            className="absolute inset-0 opacity-20"
-            style={{
-              backgroundImage: 'radial-gradient(circle at 25px 25px, white 2%, transparent 0%), radial-gradient(circle at 75px 75px, white 2%, transparent 0%)',
-              backgroundSize: '100px 100px',
-            }}
-          />
-          <div className="absolute top-0 right-0 w-80 h-80 bg-white/15 rounded-full blur-3xl pointer-events-none" />
-          <div className="absolute bottom-0 left-0 w-64 h-64 bg-pink-900/30 rounded-full blur-2xl pointer-events-none" />
+        {/* ── Modern Social Media Cover Banner (Adjusted taller downward) ── */}
+        <div className="relative h-44 sm:h-56 md:h-64 bg-gradient-to-tr from-pink-600 via-primary to-rose-400 shadow-inner">
+          {/* Decorative Pattern & Ambient Glow (bounded in overflow-hidden layer) */}
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            <div
+              className="absolute inset-0 opacity-20"
+              style={{
+                backgroundImage: 'radial-gradient(circle at 25px 25px, white 2%, transparent 0%), radial-gradient(circle at 75px 75px, white 2%, transparent 0%)',
+                backgroundSize: '100px 100px',
+              }}
+            />
+            <div className="absolute top-0 right-0 w-80 h-80 bg-white/15 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute bottom-0 left-0 w-64 h-64 bg-pink-900/30 rounded-full blur-2xl pointer-events-none" />
+          </div>
           
-          {/* Playing Axolotl Mascot exploring and running around inside the banner */}
+          {/* Playing Axolotl Mascot exploring, attempting jumps, and climbing stairs */}
           <ProfilePlayingAxolotl />
 
           {/* Big PINKSNAP Brand text with subtle soft white glow */}
-          <div className="absolute inset-0 flex items-center justify-center pb-6 sm:pb-8 select-none pointer-events-none">
+          <div className="absolute inset-0 flex items-center justify-center pb-8 sm:pb-12 select-none pointer-events-none">
             <div className="relative inline-block">
               <div className="font-display text-4xl sm:text-6xl md:text-7xl font-black tracking-wider flex items-center px-3 py-1 drop-shadow-[0_0_12px_rgba(255,255,255,0.65)]">
                 <span className="text-white">PINK</span>
