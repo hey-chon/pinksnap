@@ -99,9 +99,7 @@ export function ChatAxolotlGuide() {
               <span className="text-[9px] sm:text-[9.5px] font-black text-primary flex items-center gap-1">
                 <Heart className="w-2.5 h-2.5 fill-current" /> Safe & Friendly Space
               </span>
-              <span className="font-mono text-[8px] sm:text-[8.5px] font-bold uppercase tracking-wider text-foreground/45">
-                ★ BESTIE CODE ★
-              </span>
+             
             </div>
 
             {/* ── Layer 3: Left Hand Clutching Left End of the Card ── */}
