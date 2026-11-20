@@ -220,16 +220,20 @@ export function AxolotlSvg({
         </g>
 
         {/* Feet */}
-        <path d="M184 416L158 450" stroke="#d0436f" strokeWidth="40" strokeLinecap="round" fill="none" />
-        <ellipse cx="150" cy="460" rx="27" ry="15" transform="rotate(-10 150 460)" fill="#d0436f" stroke="#d0436f" strokeWidth="10" />
-        <path d="M256 416L282 450" stroke="#d0436f" strokeWidth="40" strokeLinecap="round" fill="none" />
-        <ellipse cx="290" cy="460" rx="27" ry="15" transform="rotate(10 290 460)" fill="#d0436f" stroke="#d0436f" strokeWidth="10" />
-        <path d="M184 416L158 450" stroke="#ffc2d4" strokeWidth="30" strokeLinecap="round" fill="none" />
-        <ellipse cx="150" cy="460" rx="27" ry="15" transform="rotate(-10 150 460)" fill="#ffc2d4" />
-        <path d="M256 416L282 450" stroke="#ffc2d4" strokeWidth="30" strokeLinecap="round" fill="none" />
-        <ellipse cx="290" cy="460" rx="27" ry="15" transform="rotate(10 290 460)" fill="#ffc2d4" />
-        <path d="M130 457l6 8M139 453l6 9" stroke="#d0436f" strokeWidth="3.5" strokeLinecap="round" fill="none" />
-        <path d="M310 457l-6 8M301 453l-6 9" stroke="#d0436f" strokeWidth="3.5" strokeLinecap="round" fill="none" />
+        <g className="foot l" style={{ transformOrigin: '170px 420px' }}>
+          <path d="M184 416L158 450" stroke="#d0436f" strokeWidth="40" strokeLinecap="round" fill="none" />
+          <ellipse cx="150" cy="460" rx="27" ry="15" transform="rotate(-10 150 460)" fill="#d0436f" stroke="#d0436f" strokeWidth="10" />
+          <path d="M184 416L158 450" stroke="#ffc2d4" strokeWidth="30" strokeLinecap="round" fill="none" />
+          <ellipse cx="150" cy="460" rx="27" ry="15" transform="rotate(-10 150 460)" fill="#ffc2d4" />
+          <path d="M130 457l6 8M139 453l6 9" stroke="#d0436f" strokeWidth="3.5" strokeLinecap="round" fill="none" />
+        </g>
+        <g className="foot r" style={{ transformOrigin: '270px 420px' }}>
+          <path d="M256 416L282 450" stroke="#d0436f" strokeWidth="40" strokeLinecap="round" fill="none" />
+          <ellipse cx="290" cy="460" rx="27" ry="15" transform="rotate(10 290 460)" fill="#d0436f" stroke="#d0436f" strokeWidth="10" />
+          <path d="M256 416L282 450" stroke="#ffc2d4" strokeWidth="30" strokeLinecap="round" fill="none" />
+          <ellipse cx="290" cy="460" rx="27" ry="15" transform="rotate(10 290 460)" fill="#ffc2d4" />
+          <path d="M310 457l-6 8M301 453l-6 9" stroke="#d0436f" strokeWidth="3.5" strokeLinecap="round" fill="none" />
+        </g>
 
         {/* Belly */}
         <g data-zone="belly" stroke="#d0436f" strokeWidth="5" strokeLinejoin="round">
