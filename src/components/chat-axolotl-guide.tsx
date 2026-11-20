@@ -94,13 +94,8 @@ export function ChatAxolotlGuide() {
               </p>
             </div>
 
-            {/* Card Footer */}
-            <div className="pt-1.5 border-t border-dashed border-pink-200 dark:border-pink-900/50 flex items-center justify-between">
-              <span className="text-[9px] sm:text-[9.5px] font-black text-primary flex items-center gap-1">
-                <Heart className="w-2.5 h-2.5 fill-current" /> Safe & Friendly Space
-              </span>
-             
-            </div>
+            
+      
 
             {/* ── Layer 3: Left Hand Clutching Left End of the Card ── */}
             <div
