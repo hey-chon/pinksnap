@@ -7,297 +7,244 @@ type AxolotlAction = 'idle' | 'running' | 'jumping' | 'curious' | 'celebrating';
 interface Particle {
   id: number;
   x: number;
-  y: number;
   icon: 'heart' | 'sparkle';
-  color: string;
 }
 
 export function ProfilePlayingAxolotl() {
-  // Coordinates in percentage of parent banner
-  const [pos, setPos] = useState({ x: 20, y: 38 });
+  // Horizontal position along the bottom line (percentage of banner width)
+  const [posX, setPosX] = useState(18);
   const [facing, setFacing] = useState<'left' | 'right'>('right');
-  const [action, setAction] = useState<AxolotlAction>('running');
+  const [action, setAction] = useState<AxolotlAction>('idle');
   const [mood, setMood] = useState<MascotMood>('happy');
   const [isWagging, setIsWagging] = useState(true);
-  const [isSquishing, setIsSquishing] = useState(false);
   const [lookOffset, setLookOffset] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
   const [particles, setParticles] = useState<Particle[]>([]);
-  const [transitionDuration, setTransitionDuration] = useState(2.2);
+  const [transitionDuration, setTransitionDuration] = useState(2.4);
 
-  const containerRef = useRef<HTMLDivElement>(null);
   const nextMoveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const curiousStepTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const isInteractingRef = useRef(false);
+  const lookStepTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Spawn cute particle bursts on jump or tap
+  // Spawn small cute ambient particles when she hops or celebrates
   const spawnParticles = useCallback((count = 2) => {
     const newItems: Particle[] = Array.from({ length: count }).map((_, i) => ({
       id: Date.now() + Math.random() + i,
-      x: (Math.random() - 0.5) * 36,
-      y: -15 - Math.random() * 25,
-      icon: Math.random() > 0.4 ? 'heart' : 'sparkle',
-      color: Math.random() > 0.5 ? '#f43f5e' : '#ec4899',
+      x: (Math.random() - 0.5) * 30,
+      icon: Math.random() > 0.5 ? 'heart' : 'sparkle',
     }));
 
-    setParticles((prev) => [...prev.slice(-6), ...newItems]);
+    setParticles((prev) => [...prev.slice(-4), ...newItems]);
     setTimeout(() => {
       setParticles((prev) => prev.filter((p) => !newItems.some((n) => n.id === p.id)));
-    }, 1100);
+    }, 950);
   }, []);
 
-  // Main autonomous exploration loop
+  // Main autonomous patrol/exploration along the bottom line
   const scheduleNextAction = useCallback(() => {
-    if (isInteractingRef.current) return;
+    // Pick a new horizontal position along the bottom line (bounded safe zone: 8% to 84%)
+    const minX = 8;
+    const maxX = 84;
+    const targetX = Math.round(minX + Math.random() * (maxX - minX));
 
-    // Pick a random target position inside the banner safe bounds
-    // x: 6% to 84% (responsive across mobile to desktop)
-    // y: 15% to 54% (above the bottom card overlap, playing around the glowing text)
-    const newX = Math.round(6 + Math.random() * 78);
-    const newY = Math.round(18 + Math.random() * 36);
+    setPosX((currentX) => {
+      const distance = Math.abs(targetX - currentX);
 
-    // Compute distance to set natural travel duration
-    setPos((current) => {
-      const dx = newX - current.x;
-      const dy = newY - current.y;
-      const dist = Math.hypot(dx, dy);
-
-      // Axolotl faces the direction she is heading
-      const newFacing = dx < 0 ? 'left' : 'right';
+      // Face direction of movement
+      const newFacing = targetX < currentX ? 'left' : 'right';
       setFacing(newFacing);
 
-      // Duration: scale with distance (1.2s to 2.8s)
-      const duration = Math.max(1.2, Math.min(2.8, dist * 0.045));
+      // Calculate natural walking/running speed based on distance (1.6s to 3.6s)
+      const duration = Math.max(1.6, Math.min(3.6, distance * 0.055));
       setTransitionDuration(duration);
 
-      // Decide what action she performs during this move
+      // Random action choice for this movement leg
       const roll = Math.random();
 
       if (roll < 0.35) {
-        // ACTION 1: Playful Jump Scamper (runs, then leaps in the air)
+        // ACTION 1: Running with a playful mid-run leap
         setAction('running');
         setMood('happy');
         setIsWagging(true);
 
-        const midPointDelay = (duration * 1000) * 0.45;
+        const jumpDelay = (duration * 1000) * 0.45;
         setTimeout(() => {
-          if (!isInteractingRef.current) {
-            setAction('jumping');
-            setMood('surprised');
-            spawnParticles(2);
-            setTimeout(() => {
-              setAction('running');
-              setMood('happy');
-            }, 600);
-          }
-        }, midPointDelay);
+          setAction('jumping');
+          setMood('surprised');
+          spawnParticles(2);
 
-      } else if (roll < 0.65) {
-        // ACTION 2: Fast Scamper (eager running with tail wagging)
+          setTimeout(() => {
+            setAction('running');
+            setMood('happy');
+          }, 580);
+        }, jumpDelay);
+
+      } else if (roll < 0.70) {
+        // ACTION 2: Energetic scamper along the floor
         setAction('running');
         setMood('happy');
         setIsWagging(true);
 
-      } else if (roll < 0.85) {
-        // ACTION 3: Curious Exploring (walks, stops, looks left and right)
+      } else {
+        // ACTION 3: Gentle curious stroll
         setAction('running');
         setMood('wink');
         setIsWagging(false);
-
-      } else {
-        // ACTION 4: Happy celebration hop
-        setAction('celebrating');
-        setMood('love');
-        setIsWagging(true);
-        spawnParticles(3);
       }
 
-      // After arrival at destination, pause & perform idle/curious behaviors
+      // When she arrives at her destination along the bottom line:
       if (nextMoveTimerRef.current) clearTimeout(nextMoveTimerRef.current);
       nextMoveTimerRef.current = setTimeout(() => {
-        if (isInteractingRef.current) return;
+        const arrivalRoll = Math.random();
 
-        // Arrived at destination: stop and look around
-        const idleRoll = Math.random();
-        if (idleRoll < 0.5) {
-          // Curious look around
+        if (arrivalRoll < 0.45) {
+          // Look around curiously (glance left then right)
           setAction('curious');
           setMood('idle');
           setIsWagging(false);
 
-          // Eyes glance left
-          setLookOffset({ x: -14, y: 2 });
-          curiousStepTimerRef.current = setTimeout(() => {
-            // Eyes glance right
-            setLookOffset({ x: 14, y: 2 });
+          setLookOffset({ x: -14, y: 0 });
+          lookStepTimerRef.current = setTimeout(() => {
+            setLookOffset({ x: 14, y: 0 });
             setTimeout(() => {
               setLookOffset({ x: 0, y: 0 });
-            }, 700);
-          }, 800);
+            }, 650);
+          }, 700);
 
-        } else if (idleRoll < 0.8) {
-          // Happy idle bobbing
+        } else if (arrivalRoll < 0.75) {
+          // Cute standing hop on the spot
+          setAction('jumping');
+          setMood('love');
+          setIsWagging(true);
+          spawnParticles(2);
+
+          setTimeout(() => {
+            setAction('idle');
+            setMood('happy');
+          }, 600);
+
+        } else {
+          // Happy idle resting on the ground
           setAction('idle');
           setMood('happy');
           setIsWagging(true);
           setLookOffset({ x: 0, y: 0 });
-        } else {
-          // Cute wink
-          setAction('idle');
-          setMood('wink');
-          setIsWagging(false);
-          setLookOffset({ x: 0, y: 0 });
         }
 
-        // Rest for a moment (1.5s to 3.5s) before exploring again
-        const pauseTime = 1600 + Math.random() * 2200;
+        // Rest for a while (1.8s to 3.8s) before exploring to the next spot
+        const restDuration = 1800 + Math.random() * 2000;
         nextMoveTimerRef.current = setTimeout(() => {
           scheduleNextAction();
-        }, pauseTime);
+        }, restDuration);
 
       }, duration * 1000);
 
-      return { x: newX, y: newY };
+      return targetX;
     });
   }, [spawnParticles]);
 
-  // Start autonomous loop on mount
+  // Start autonomous exploration on mount
   useEffect(() => {
-    // Initial start after gentle initial delay
-    const initialTimer = setTimeout(() => {
+    const startTimer = setTimeout(() => {
       scheduleNextAction();
-    }, 1200);
+    }, 800);
 
     return () => {
-      clearTimeout(initialTimer);
+      clearTimeout(startTimer);
       if (nextMoveTimerRef.current) clearTimeout(nextMoveTimerRef.current);
-      if (curiousStepTimerRef.current) clearTimeout(curiousStepTimerRef.current);
+      if (lookStepTimerRef.current) clearTimeout(lookStepTimerRef.current);
     };
   }, [scheduleNextAction]);
 
-  // Interactive tap / click: playful reaction!
-  const handleAxolotlClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    isInteractingRef.current = true;
-    if (nextMoveTimerRef.current) clearTimeout(nextMoveTimerRef.current);
-    if (curiousStepTimerRef.current) clearTimeout(curiousStepTimerRef.current);
-
-    // High playful jump & squish!
-    setAction('jumping');
-    setMood('love');
-    setIsSquishing(true);
-    setIsWagging(true);
-    spawnParticles(4);
-
-    setTimeout(() => {
-      setIsSquishing(false);
-      setAction('celebrating');
-      setTimeout(() => {
-        isInteractingRef.current = false;
-        scheduleNextAction();
-      }, 700);
-    }, 600);
-  };
-
   return (
     <div
-      ref={containerRef}
-      className="absolute inset-0 pointer-events-none select-none z-10 overflow-hidden"
-      aria-label="Playing PinkSnap Axolotl Mascot"
+      className="absolute inset-x-0 bottom-0 top-0 pointer-events-none select-none z-10 overflow-hidden"
+      aria-hidden="true"
     >
       <style>{`
-        /* Smooth, lively play animations for Axolotl */
-        @keyframes axolotlScamperBob {
+        /* Realistic grounded animations: feet firmly anchored to the bottom line */
+        @keyframes axolotlFloorScamper {
           0%, 100% { transform: translateY(0) rotate(0deg); }
-          25% { transform: translateY(-3px) rotate(2.5deg); }
+          25% { transform: translateY(-2px) rotate(2deg); }
           50% { transform: translateY(0) rotate(0deg); }
-          75% { transform: translateY(-3px) rotate(-2.5deg); }
+          75% { transform: translateY(-2px) rotate(-2deg); }
         }
-        @keyframes axolotlLeapArc {
+        @keyframes axolotlFloorLeap {
           0% { transform: translateY(0) scale(1.05, 0.95); }
-          35% { transform: translateY(-28px) scale(0.94, 1.08) rotate(-4deg); }
-          70% { transform: translateY(-8px) scale(1.02, 0.98); }
+          35% { transform: translateY(-24px) scale(0.95, 1.06) rotate(-3deg); }
+          70% { transform: translateY(-3px) scale(1.03, 0.97); }
           100% { transform: translateY(0) scale(1, 1); }
         }
-        @keyframes axolotlCelebrateHop {
-          0%, 100% { transform: translateY(0) scale(1); }
-          30% { transform: translateY(-16px) scale(1.06, 0.95); }
-          60% { transform: translateY(-6px) scale(0.98, 1.02); }
+        @keyframes axolotlFloorIdle {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-1.5px); }
         }
-        @keyframes particleFlyUp {
-          0% { opacity: 0; transform: translate(0, 0) scale(0.4); }
-          30% { opacity: 1; transform: translate(var(--px), -16px) scale(1.1); }
-          100% { opacity: 0; transform: translate(calc(var(--px) * 1.5), -38px) scale(0.6); }
+        @keyframes particleBurstFly {
+          0% { opacity: 0; transform: translate(0, 0) scale(0.5); }
+          30% { opacity: 1; transform: translate(var(--px), -14px) scale(1); }
+          100% { opacity: 0; transform: translate(calc(var(--px) * 1.4), -32px) scale(0.6); }
         }
-        .axolotl-action-running {
-          animation: axolotlScamperBob 0.38s ease-in-out infinite;
+        .axolotl-floor-running {
+          animation: axolotlFloorScamper 0.36s ease-in-out infinite;
         }
-        .axolotl-action-jumping {
-          animation: axolotlLeapArc 0.6s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+        .axolotl-floor-jumping {
+          animation: axolotlFloorLeap 0.58s cubic-bezier(0.25, 1, 0.5, 1) forwards;
         }
-        .axolotl-action-celebrating {
-          animation: axolotlCelebrateHop 0.5s ease-in-out infinite alternate;
+        .axolotl-floor-idle {
+          animation: axolotlFloorIdle 2.6s ease-in-out infinite;
         }
-        .axolotl-action-curious {
-          animation: axolotlScamperBob 2.2s ease-in-out infinite;
-        }
-        .axolotl-particle {
-          animation: particleFlyUp 1s ease-out forwards;
+        .axolotl-ambient-particle {
+          animation: particleBurstFly 0.9s ease-out forwards;
         }
       `}</style>
 
-      {/* Floating Animated Axolotl Entity */}
+      {/* 
+        Grounded Axolotl along the bottom line of the pink rectangle.
+        `bottom-14 sm:bottom-16` firmly aligns her feet right on the bottom baseline 
+        where the pink banner meets the profile card.
+      */}
       <div
-        className="absolute will-change-transform pointer-events-auto cursor-pointer transition-all ease-out"
+        className="absolute bottom-14 sm:bottom-16 will-change-transform transition-all ease-in-out pointer-events-none select-none"
         style={{
-          left: `${pos.x}%`,
-          top: `${pos.y}%`,
-          transitionDuration: action === 'running' ? `${transitionDuration}s` : '0.4s',
-          transitionProperty: 'left, top',
-          transform: 'translate(-50%, -50%)',
+          left: `${posX}%`,
+          transitionDuration: action === 'running' ? `${transitionDuration}s` : '0.35s',
+          transitionProperty: 'left',
+          transform: 'translateX(-50%)',
         }}
-        onClick={handleAxolotlClick}
-        title="PinkSnap Axolotl playing! Tap to play with her ✨"
       >
-        {/* Direction Flip & Action Wrapper */}
+        {/* Facing Flip Wrapper (flips horizontally without affecting coordinates) */}
         <div
-          className={`relative transition-transform duration-300 ease-out ${
+          className={`relative ${
             action === 'running'
-              ? 'axolotl-action-running'
+              ? 'axolotl-floor-running'
               : action === 'jumping'
-              ? 'axolotl-action-jumping'
-              : action === 'celebrating'
-              ? 'axolotl-action-celebrating'
-              : action === 'curious'
-              ? 'axolotl-action-curious'
-              : ''
+              ? 'axolotl-floor-jumping'
+              : 'axolotl-floor-idle'
           }`}
           style={{
             transform: facing === 'left' ? 'scaleX(-1)' : 'scaleX(1)',
           }}
         >
-          {/* Subtle Pink Ground Shadow that scales with jump */}
+          {/* Ground Contact Shadow (anchored directly under feet on the floor) */}
           <div
-            className={`absolute -bottom-1 left-1/2 -translate-x-1/2 w-10 sm:w-12 h-2 rounded-full bg-pink-950/25 blur-[3px] transition-all duration-300 ${
-              action === 'jumping' ? 'scale-50 opacity-20' : 'scale-100 opacity-60'
+            className={`absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-9 sm:w-11 md:w-12 h-1.5 rounded-full bg-pink-950/30 blur-[2px] transition-all duration-300 ${
+              action === 'jumping' ? 'scale-50 opacity-20' : 'scale-100 opacity-65'
             }`}
           />
 
-          {/* Genuine Axolotl Mascot SVG Asset (Exact proportions and authentic look preserved) */}
-          <div className="w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 drop-shadow-[0_4px_10px_rgba(208,67,111,0.35)]">
+          {/* Genuine Axolotl Mascot SVG Asset (100% original design & proportions) */}
+          <div className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 drop-shadow-[0_4px_8px_rgba(208,67,111,0.3)]">
             <AxolotlSvg
               mood={mood}
               isWagging={isWagging}
-              isSquishing={isSquishing}
               lookOffset={lookOffset}
-              className="w-full h-full block pointer-events-none"
+              className="w-full h-full block"
             />
           </div>
 
-          {/* Burst Particles (Hearts / Sparkles) */}
+          {/* Ambient Particles on Hopping */}
           {particles.map((p) => (
             <div
               key={p.id}
-              className="absolute top-0 left-1/2 axolotl-particle pointer-events-none z-30"
+              className="absolute -top-1 left-1/2 axolotl-ambient-particle pointer-events-none z-20"
               style={
                 {
                   '--px': `${p.x}px`,
@@ -305,17 +252,12 @@ export function ProfilePlayingAxolotl() {
               }
             >
               {p.icon === 'heart' ? (
-                <Heart className="w-3.5 h-3.5 fill-pink-500 text-pink-500 drop-shadow-[0_0_4px_rgba(255,255,255,0.8)]" />
+                <Heart className="w-3 h-3 fill-pink-400 text-pink-400 drop-shadow-[0_0_4px_rgba(255,255,255,0.7)]" />
               ) : (
-                <Sparkles className="w-3.5 h-3.5 text-amber-300 drop-shadow-[0_0_4px_rgba(255,255,255,0.8)]" />
+                <Sparkles className="w-3 h-3 text-amber-200 drop-shadow-[0_0_4px_rgba(255,255,255,0.7)]" />
               )}
             </div>
           ))}
-
-          {/* Playful tiny badge hint on hover */}
-          <div className="absolute -top-6 left-1/2 -translate-x-1/2 opacity-0 hover:opacity-100 transition-opacity bg-black/60 backdrop-blur-xs text-[9px] font-black text-pink-200 px-1.5 py-0.5 rounded-full pointer-events-none whitespace-nowrap">
-            PLAYING ✨
-          </div>
         </div>
       </div>
     </div>
