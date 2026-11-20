@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useParams } from 'wouter';
 import { TopNav, BottomNav } from '@/components/layout';
-import { ProfilePlayingAxolotl } from '@/components/profile-playing-axolotl';
 import { useAuth } from '@/hooks/use-auth';
 import { useAppContext } from '@/lib/store';
 import { useToast } from '@/hooks/use-toast.tsx';
@@ -1271,23 +1270,22 @@ export default function ProfilePage() {
       <TopNav backTo="/" title={isOwner ? "MY PROFILE" : `${(effectiveUser?.displayName || 'USER').toUpperCase()}'S WALL`} />
 
       <main className="flex-1 overflow-y-auto profile-levitating-scroll pb-12 relative z-10">
-        {/* ── Modern Social Media Cover Banner (Adjusted taller downward) ── */}
-        <div className="relative h-44 sm:h-56 md:h-64 bg-gradient-to-tr from-pink-600 via-primary to-rose-400 shadow-inner">
-          {/* Decorative Pattern & Ambient Glow (bounded in overflow-hidden layer) */}
-          <div className="absolute inset-0 overflow-hidden pointer-events-none">
-            <div
-              className="absolute inset-0 opacity-20"
-              style={{
-                backgroundImage: 'radial-gradient(circle at 25px 25px, white 2%, transparent 0%), radial-gradient(circle at 75px 75px, white 2%, transparent 0%)',
-                backgroundSize: '100px 100px',
-              }}
-            />
-            <div className="absolute top-0 right-0 w-80 h-80 bg-white/15 rounded-full blur-3xl pointer-events-none" />
-            <div className="absolute bottom-0 left-0 w-64 h-64 bg-pink-900/30 rounded-full blur-2xl pointer-events-none" />
-          </div>
+        {/* ── Modern Social Media Cover Banner ── */}
+        <div className="relative h-36 sm:h-48 md:h-56 bg-gradient-to-tr from-pink-600 via-primary to-rose-400 overflow-hidden shadow-inner">
+          {/* Decorative Pattern & Ambient Glow */}
+          <div
+            className="absolute inset-0 opacity-20"
+            style={{
+              backgroundImage: 'radial-gradient(circle at 25px 25px, white 2%, transparent 0%), radial-gradient(circle at 75px 75px, white 2%, transparent 0%)',
+              backgroundSize: '100px 100px',
+            }}
+          />
+          <div className="absolute top-0 right-0 w-80 h-80 bg-white/15 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute bottom-0 left-0 w-64 h-64 bg-pink-900/30 rounded-full blur-2xl pointer-events-none" />
+          
 
           {/* Big PINKSNAP Brand text with subtle soft white glow */}
-          <div className="absolute inset-0 flex items-center justify-center pb-8 sm:pb-12 select-none pointer-events-none">
+          <div className="absolute inset-0 flex items-center justify-center pb-6 sm:pb-8 select-none pointer-events-none">
             <div className="relative inline-block">
               <div className="font-display text-4xl sm:text-6xl md:text-7xl font-black tracking-wider flex items-center px-3 py-1 drop-shadow-[0_0_12px_rgba(255,255,255,0.65)]">
                 <span className="text-white">PINK</span>
@@ -1302,10 +1300,7 @@ export default function ProfilePage() {
         </div>
 
         {/* ── Main Profile Container ── */}
-        <div className="max-w-3xl mx-auto px-3.5 sm:px-6 relative">
-          {/* Playing Axolotl Mascot & Stairs attached directly to the Profile Container */}
-          <ProfilePlayingAxolotl />
-
+        <div className="max-w-3xl mx-auto px-3.5 sm:px-6">
           {/* ── Social Profile Card (Completely Solves Mobile Overlap) ── */}
           <div className={`relative -mt-14 sm:-mt-16 mb-5 rounded-3xl p-4 sm:p-7 backdrop-blur-sm ${isProfileAdmin ? 'bg-[#0e0f13]/[0.97] border border-orange-900/40 shadow-[0_12px_45px_-12px_rgba(255,100,0,0.12)]' : 'bg-white/95 border border-pink-100/90 shadow-[0_12px_45px_-12px_rgba(245,61,137,0.18)]'}`}>
             {/* Cute Scrapbook Washi Tape Sticker on Card */}
