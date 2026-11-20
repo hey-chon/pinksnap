@@ -658,7 +658,7 @@ export default function Edit() {
 
       <TopNav onBack={() => window.location.reload()} />
 
-      <main className="relative z-10 flex-1 overflow-y-auto xl:overflow-hidden flex flex-col items-center px-4 pt-3 pb-6 sm:px-6 sm:pt-4 sm:pb-6">
+      <main className="relative z-10 flex-1 overflow-y-auto xl:overflow-hidden flex flex-col items-center px-4 pt-3 pb-12 sm:px-6 sm:pt-4 sm:pb-16 md:pb-20">
         {/* Booth Header */}
         <div className="text-center mb-4 sm:mb-5 w-full max-w-4xl">
           <h1 className="font-hero text-[2.2rem] leading-[0.96] sm:text-4xl md:text-5xl mb-2 text-foreground">
@@ -669,11 +669,11 @@ export default function Edit() {
           </p>
         </div>
 
-        <div className="flex flex-col xl:flex-row gap-6 sm:gap-8 xl:gap-10 w-full max-w-[1540px] items-center xl:items-start justify-center pb-6">
+        <div className="flex flex-col xl:flex-row gap-6 sm:gap-8 xl:gap-10 w-full max-w-[1540px] items-center xl:items-start justify-center pb-10 sm:pb-14 mb-4 sm:mb-6">
 
           {/* ── LEFT: Preview Container (Lightbox easel housing) ── */}
           <div 
-            className="w-full flex justify-center shrink-0 xl:w-auto xl:sticky xl:top-2"
+            className="w-full flex justify-center shrink-0 xl:w-auto xl:sticky xl:top-2 mb-4 xl:mb-6"
             onContextMenu={(e) => e.preventDefault()}
           >
             <div className="relative p-5 sm:p-6 rounded-[32px] bg-white/80 dark:bg-zinc-900/80 backdrop-blur-2xl border border-black/10 dark:border-white/10 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.18)] flex flex-col items-center">
