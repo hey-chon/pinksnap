@@ -925,6 +925,9 @@ export default function Edit() {
               </button>
             </div>
 
+            {/* Bottom breathing room */}
+            <div className="h-8 sm:h-10 shrink-0" />
+
           </div>
         </div>
       </main>
