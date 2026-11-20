@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useParams } from 'wouter';
 import { TopNav, BottomNav } from '@/components/layout';
+import { ProfilePlayingAxolotl } from '@/components/profile-playing-axolotl';
 import { useAuth } from '@/hooks/use-auth';
 import { useAppContext } from '@/lib/store';
 import { useToast } from '@/hooks/use-toast.tsx';
@@ -1283,6 +1284,8 @@ export default function ProfilePage() {
           <div className="absolute top-0 right-0 w-80 h-80 bg-white/15 rounded-full blur-3xl pointer-events-none" />
           <div className="absolute bottom-0 left-0 w-64 h-64 bg-pink-900/30 rounded-full blur-2xl pointer-events-none" />
           
+          {/* Playing Axolotl Mascot exploring and running around inside the banner */}
+          <ProfilePlayingAxolotl />
 
           {/* Big PINKSNAP Brand text with subtle soft white glow */}
           <div className="absolute inset-0 flex items-center justify-center pb-6 sm:pb-8 select-none pointer-events-none">
