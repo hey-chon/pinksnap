@@ -1,569 +1,507 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { AxolotlSvg, MascotMood } from '@/components/axolotl/axolotl-svg';
+import { AxolotlSideSvg } from '@/components/axolotl/axolotl-side-svg';
 import { Sparkles, Heart } from 'lucide-react';
 
-type StoryState =
-  | 'WALK_LEFT_GROUND'      // Walking along left pink banner surface toward the card
-  | 'INSPECT_WALL'          // Stopped at card wall, looking up
-  | 'ATTEMPT_JUMP_FAIL'     // Tries to jump onto the card, falls short!
-  | 'DISCOVER_STAIRS'       // Spots the staircase, gets happy
-  | 'CLIMB_STAIRS'          // Hopping up the stairs step-by-step
-  | 'WALK_ACROSS_CARD'      // Walking across the top of the profile card
-  | 'DESCEND_STAIRS'        // Hopping down the right stairs
-  | 'WALK_RIGHT_GROUND'     // Walking along right pink banner surface
-  | 'CELEBRATE_RIGHT'       // Happy celebration hops on the right
-  | 'RETURN_WALK_RIGHT'     // Walking back to the right stairs facing left
-  | 'RETURN_CLIMB_STAIRS'   // Climbing up the right stairs facing left
-  | 'RETURN_WALK_CARD'      // Walking across the card from right to left
-  | 'RETURN_DESCEND_STAIRS' // Descending the left stairs
-  | 'RETURN_CELEBRATE_LEFT';// Back to starting point, celebration hops
+type JourneyState =
+  | 'APPROACH_WALL'       // Walks from left pink floor toward container wall
+  | 'ATTEMPT_JUMP'        // Tries to jump over the container, falls short!
+  | 'DISCOVER_STAIRS'     // Spots the stairs attached to the wall, happy!
+  | 'CLIMB_STAIRS'        // Climbs up the left stairs attached to container
+  | 'CROSS_CONTAINER'     // Walks happily across top of profile container
+  | 'DESCEND_STAIRS'      // Climbs down the right stairs attached to container
+  | 'STROLL_RIGHT_FLOOR'  // Strolls on right pink floor
+  | 'CELEBRATE_RIGHT'     // Celebrates on right floor
+  | 'RETURN_APPROACH'     // Walks back to right stairs facing left (<--)
+  | 'RETURN_CLIMB'        // Climbs up right stairs facing left
+  | 'RETURN_CROSS'        // Walks across container from right to left
+  | 'RETURN_DESCEND'      // Climbs down left stairs
+  | 'RETURN_CELEBRATE';   // Back to left floor, loops!
 
 export function ProfilePlayingAxolotl() {
-  const [storyState, setStoryState] = useState<StoryState>('WALK_LEFT_GROUND');
-  const [posX, setPosX] = useState(6);
-  const [bottomY, setBottomY] = useState(0); // 0 = pink banner floor, 64px = top of card
-  const [facing, setFacing] = useState<'left' | 'right'>('right');
-  const [isWalking, setIsWalking] = useState(true);
-  const [mood, setMood] = useState<MascotMood>('happy');
-  const [isWagging, setIsWagging] = useState(true);
-  const [lookOffset, setLookOffset] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+  const [state, setState] = useState<JourneyState>('APPROACH_WALL');
+  const [posX, setPosX] = useState(-140); // px relative to left edge of container (0 = container left wall)
+  const [isPercentX, setIsPercentX] = useState(false);
+  const [percentX, setPercentX] = useState(0); // for container crossing (0% to 100%)
+  const [elevY, setElevY] = useState(0); // 0 = pink banner floor, 60 = top of container
   const [jumpOffset, setJumpOffset] = useState(0);
-  const [showSweatDrop, setShowSweatDrop] = useState(false);
+  const [facing, setFacing] = useState<'left' | 'right'>('right');
+  const [action, setAction] = useState<'idle' | 'walking' | 'climbing' | 'surprised'>('walking');
+  const [mood, setMood] = useState<'happy' | 'wink' | 'surprised' | 'love'>('happy');
+  const [duration, setDuration] = useState(3.5);
+
+  const [showQuestion, setShowQuestion] = useState(false);
+  const [showSweat, setShowSweat] = useState(false);
   const [showHearts, setShowHearts] = useState(false);
-  const [walkDuration, setWalkDuration] = useState(4.5);
 
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Clear timers on unmount
   useEffect(() => {
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
     };
   }, []);
 
-  // Story state machine loop
   useEffect(() => {
-    const runState = () => {
-      switch (storyState) {
-        // ── 1. Walk from far left on the pink banner floor toward the card wall ──
-        case 'WALK_LEFT_GROUND': {
+    const run = () => {
+      switch (state) {
+        // ── 1. Approach the container wall from the left pink floor ──
+        case 'APPROACH_WALL': {
           setFacing('right');
-          setIsWalking(true);
+          setAction('walking');
           setMood('happy');
-          setBottomY(0);
+          setElevY(0);
           setJumpOffset(0);
-          setShowSweatDrop(false);
+          setIsPercentX(false);
+          setShowQuestion(false);
+          setShowSweat(false);
           setShowHearts(false);
-          setLookOffset({ x: 8, y: 0 });
-          setWalkDuration(4.2);
-          setPosX(20); // approaches the left wall of the card
+          setDuration(3.6);
+          setPosX(-40); // arrives right at the base of the left stairs/wall
 
           timerRef.current = setTimeout(() => {
-            setStoryState('INSPECT_WALL');
-          }, 4300);
+            setState('ATTEMPT_JUMP');
+          }, 3700);
           break;
         }
 
-        // ── 2. Stop and inspect the tall card wall ──
-        case 'INSPECT_WALL': {
-          setIsWalking(false);
+        // ── 2. Tries to jump over the container wall, but it's too high! ──
+        case 'ATTEMPT_JUMP': {
+          setAction('idle');
           setMood('surprised');
-          setLookOffset({ x: 14, y: -18 }); // looks way up at the tall container
-          setIsWagging(false);
 
-          timerRef.current = setTimeout(() => {
-            setStoryState('ATTEMPT_JUMP_FAIL');
-          }, 1400);
-          break;
-        }
-
-        // ── 3. Try to jump onto the container, but it's too high! ──
-        case 'ATTEMPT_JUMP_FAIL': {
-          // Wind up crouch
+          // Crouch anticipation
           setJumpOffset(-4);
-          setMood('surprised');
-
           setTimeout(() => {
-            // LEAP UP!
-            setJumpOffset(44); // leaps up 44px
+            // Leap up!
+            setJumpOffset(38);
             setTimeout(() => {
-              // Bonk / drop back down to floor!
+              // Bonk/fall back down!
               setJumpOffset(0);
-              setShowSweatDrop(true);
-              setLookOffset({ x: 0, y: 8 });
+              setShowSweat(true);
+              setShowQuestion(true);
 
               timerRef.current = setTimeout(() => {
-                setStoryState('DISCOVER_STAIRS');
+                setShowSweat(false);
+                setShowQuestion(false);
+                setState('DISCOVER_STAIRS');
               }, 1200);
-            }, 420);
-          }, 250);
+            }, 360);
+          }, 200);
           break;
         }
 
-        // ── 4. Notice the staircase! ──
+        // ── 3. Discovers the stairs attached directly to the container wall! ──
         case 'DISCOVER_STAIRS': {
-          setShowSweatDrop(false);
           setShowHearts(true);
           setMood('love');
-          setIsWagging(true);
-          setLookOffset({ x: 10, y: 0 });
 
           timerRef.current = setTimeout(() => {
             setShowHearts(false);
-            setStoryState('CLIMB_STAIRS');
-          }, 1100);
+            setState('CLIMB_STAIRS');
+          }, 900);
           break;
         }
 
-        // ── 5. Hop up the staircase step-by-step ──
+        // ── 4. Climbs up the left stairs attached directly to the container ──
         case 'CLIMB_STAIRS': {
           setFacing('right');
-          setIsWalking(false);
+          setAction('climbing');
           setMood('happy');
 
           // Step 1
-          setPosX(22.5);
-          setBottomY(16);
-          setJumpOffset(8);
-          setTimeout(() => setJumpOffset(0), 180);
+          setPosX(-36);
+          setElevY(15);
 
           // Step 2
           setTimeout(() => {
-            setPosX(24);
-            setBottomY(32);
-            setJumpOffset(8);
-            setTimeout(() => setJumpOffset(0), 180);
-          }, 400);
+            setPosX(-24);
+            setElevY(30);
+          }, 380);
 
           // Step 3
           setTimeout(() => {
-            setPosX(25.5);
-            setBottomY(48);
-            setJumpOffset(8);
-            setTimeout(() => setJumpOffset(0), 180);
-          }, 800);
+            setPosX(-12);
+            setElevY(45);
+          }, 760);
 
-          // Step 4: Onto the top landing of the card!
+          // Top landing onto container top rim (0px = container left wall!)
           setTimeout(() => {
-            setPosX(27);
-            setBottomY(62);
-            setJumpOffset(8);
-            setTimeout(() => setJumpOffset(0), 180);
+            setPosX(6);
+            setElevY(60);
+            setAction('idle');
 
             timerRef.current = setTimeout(() => {
-              setStoryState('WALK_ACROSS_CARD');
+              setState('CROSS_CONTAINER');
             }, 350);
-          }, 1200);
+          }, 1140);
           break;
         }
 
-        // ── 6. Walk across the top of the profile card ──
-        case 'WALK_ACROSS_CARD': {
+        // ── 5. Walks happily across the top of the profile container ──
+        case 'CROSS_CONTAINER': {
           setFacing('right');
-          setIsWalking(true);
+          setAction('walking');
           setMood('happy');
-          setBottomY(62);
-          setLookOffset({ x: 0, y: 0 });
-          setWalkDuration(5.5);
-          setPosX(73); // walks to the right edge of the card
+          setElevY(60);
+          setIsPercentX(true);
+          setPercentX(2);
+          setDuration(6.2);
+
+          // Walk from 2% to 98% across the container top
+          setTimeout(() => {
+            setPercentX(98);
+          }, 50);
 
           // Mid-walk little joyful hop
           setTimeout(() => {
-            setJumpOffset(16);
+            setJumpOffset(15);
             setMood('love');
             setTimeout(() => {
               setJumpOffset(0);
               setMood('happy');
-            }, 380);
-          }, 2400);
+            }, 350);
+          }, 2800);
 
           timerRef.current = setTimeout(() => {
-            setStoryState('DESCEND_STAIRS');
-          }, 5600);
+            setState('DESCEND_STAIRS');
+          }, 6300);
           break;
         }
 
-        // ── 7. Hop down the right staircase ──
+        // ── 6. Climbs down the right stairs attached directly to the container ──
         case 'DESCEND_STAIRS': {
+          setIsPercentX(false);
           setFacing('right');
-          setIsWalking(false);
+          setAction('climbing');
           setMood('happy');
 
-          // Step 3
-          setPosX(74.5);
-          setBottomY(48);
-          setJumpOffset(4);
-          setTimeout(() => setJumpOffset(0), 180);
+          // Step 3 on right stairs
+          setPosX(0); // relative to right wall container offset handled below
+          setElevY(45);
 
           // Step 2
           setTimeout(() => {
-            setPosX(76);
-            setBottomY(32);
-            setJumpOffset(4);
-            setTimeout(() => setJumpOffset(0), 180);
-          }, 400);
+            setElevY(30);
+          }, 380);
 
           // Step 1
           setTimeout(() => {
-            setPosX(77.5);
-            setBottomY(16);
-            setJumpOffset(4);
-            setTimeout(() => setJumpOffset(0), 180);
-          }, 800);
+            setElevY(15);
+          }, 760);
 
-          // Lands on the right pink banner floor!
+          // Onto the right pink floor!
           setTimeout(() => {
-            setPosX(79);
-            setBottomY(0);
-            setJumpOffset(4);
-            setTimeout(() => setJumpOffset(0), 180);
+            setElevY(0);
+            setAction('idle');
 
             timerRef.current = setTimeout(() => {
-              setStoryState('WALK_RIGHT_GROUND');
+              setState('STROLL_RIGHT_FLOOR');
             }, 350);
-          }, 1200);
+          }, 1140);
           break;
         }
 
-        // ── 8. Walk along the right pink banner floor ──
-        case 'WALK_RIGHT_GROUND': {
+        // ── 7. Stroll along the right pink floor ──
+        case 'STROLL_RIGHT_FLOOR': {
           setFacing('right');
-          setIsWalking(true);
+          setAction('walking');
           setMood('happy');
-          setBottomY(0);
-          setWalkDuration(3.2);
-          setPosX(92); // walks to far right
+          setElevY(0);
+          setDuration(3.2);
+          setPosX(150); // walks out onto right floor
 
           timerRef.current = setTimeout(() => {
-            setStoryState('CELEBRATE_RIGHT');
+            setState('CELEBRATE_RIGHT');
           }, 3300);
           break;
         }
 
-        // ── 9. Happy celebration on the right ──
+        // ── 8. Celebrate on the right floor ──
         case 'CELEBRATE_RIGHT': {
-          setIsWalking(false);
+          setAction('idle');
           setMood('love');
           setShowHearts(true);
 
-          // Double happy hop
-          setJumpOffset(18);
+          setJumpOffset(16);
           setTimeout(() => {
             setJumpOffset(0);
             setTimeout(() => {
-              setJumpOffset(18);
+              setJumpOffset(16);
               setTimeout(() => {
                 setJumpOffset(0);
-              }, 250);
+              }, 200);
             }, 180);
-          }, 250);
+          }, 200);
 
           timerRef.current = setTimeout(() => {
             setShowHearts(false);
-            setStoryState('RETURN_WALK_RIGHT');
+            setState('RETURN_APPROACH');
           }, 2000);
           break;
         }
 
-        // ── 10. Turn around and walk back toward the right stairs facing LEFT ──
-        case 'RETURN_WALK_RIGHT': {
-          setFacing('left'); // Now facing left (<--)
-          setIsWalking(true);
+        // ── 9. Turn around facing left (<--) and return to right stairs ──
+        case 'RETURN_APPROACH': {
+          setFacing('left'); // Now faces left (<--)
+          setAction('walking');
           setMood('happy');
-          setBottomY(0);
-          setWalkDuration(3.2);
-          setPosX(79); // approaches right stairs
+          setElevY(0);
+          setDuration(3.2);
+          setPosX(40); // approaches right stairs
 
           timerRef.current = setTimeout(() => {
-            setStoryState('RETURN_CLIMB_STAIRS');
+            setState('RETURN_CLIMB');
           }, 3300);
           break;
         }
 
-        // ── 11. Climb up the right stairs facing left ──
-        case 'RETURN_CLIMB_STAIRS': {
+        // ── 10. Climb up right stairs facing left ──
+        case 'RETURN_CLIMB': {
           setFacing('left');
-          setIsWalking(false);
+          setAction('climbing');
           setMood('happy');
 
-          setPosX(77.5);
-          setBottomY(16);
-          setJumpOffset(8);
-          setTimeout(() => setJumpOffset(0), 180);
-
+          setElevY(15);
+          setTimeout(() => setElevY(30), 380);
+          setTimeout(() => setElevY(45), 760);
           setTimeout(() => {
-            setPosX(76);
-            setBottomY(32);
-            setJumpOffset(8);
-            setTimeout(() => setJumpOffset(0), 180);
-          }, 400);
-
-          setTimeout(() => {
-            setPosX(74.5);
-            setBottomY(48);
-            setJumpOffset(8);
-            setTimeout(() => setJumpOffset(0), 180);
-          }, 800);
-
-          setTimeout(() => {
-            setPosX(73);
-            setBottomY(62);
-            setJumpOffset(8);
-            setTimeout(() => setJumpOffset(0), 180);
+            setElevY(60);
+            setAction('idle');
 
             timerRef.current = setTimeout(() => {
-              setStoryState('RETURN_WALK_CARD');
+              setState('RETURN_CROSS');
             }, 350);
-          }, 1200);
+          }, 1140);
           break;
         }
 
-        // ── 12. Walk across the card from right to left ──
-        case 'RETURN_WALK_CARD': {
+        // ── 11. Walk across container from right to left ──
+        case 'RETURN_CROSS': {
           setFacing('left');
-          setIsWalking(true);
+          setAction('walking');
           setMood('wink');
-          setBottomY(62);
-          setWalkDuration(5.5);
-          setPosX(27); // walks back to left stairs
+          setElevY(60);
+          setIsPercentX(true);
+          setPercentX(98);
+          setDuration(6.2);
 
-          // Mid-walk little hop
           setTimeout(() => {
-            setJumpOffset(16);
+            setPercentX(2);
+          }, 50);
+
+          setTimeout(() => {
+            setJumpOffset(15);
             setMood('happy');
-            setTimeout(() => {
-              setJumpOffset(0);
-            }, 380);
-          }, 2400);
+            setTimeout(() => setJumpOffset(0), 350);
+          }, 2800);
 
           timerRef.current = setTimeout(() => {
-            setStoryState('RETURN_DESCEND_STAIRS');
-          }, 5600);
+            setState('RETURN_DESCEND');
+          }, 6300);
           break;
         }
 
-        // ── 13. Descend the left stairs ──
-        case 'RETURN_DESCEND_STAIRS': {
+        // ── 12. Descend left stairs ──
+        case 'RETURN_DESCEND': {
+          setIsPercentX(false);
           setFacing('left');
-          setIsWalking(false);
+          setAction('climbing');
           setMood('happy');
 
-          setPosX(25.5);
-          setBottomY(48);
-          setJumpOffset(4);
-          setTimeout(() => setJumpOffset(0), 180);
-
+          setPosX(-12);
+          setElevY(45);
+          setTimeout(() => { setPosX(-24); setElevY(30); }, 380);
+          setTimeout(() => { setPosX(-36); setElevY(15); }, 760);
           setTimeout(() => {
-            setPosX(24);
-            setBottomY(32);
-            setJumpOffset(4);
-            setTimeout(() => setJumpOffset(0), 180);
-          }, 400);
-
-          setTimeout(() => {
-            setPosX(22.5);
-            setBottomY(16);
-            setJumpOffset(4);
-            setTimeout(() => setJumpOffset(0), 180);
-          }, 800);
-
-          setTimeout(() => {
-            setPosX(20);
-            setBottomY(0);
-            setJumpOffset(4);
-            setTimeout(() => setJumpOffset(0), 180);
+            setPosX(-48);
+            setElevY(0);
+            setAction('idle');
 
             timerRef.current = setTimeout(() => {
-              setStoryState('RETURN_CELEBRATE_LEFT');
+              setState('RETURN_CELEBRATE');
             }, 350);
-          }, 1200);
+          }, 1140);
           break;
         }
 
-        // ── 14. Walk to starting point on left and celebrate! ──
-        case 'RETURN_CELEBRATE_LEFT': {
+        // ── 13. Back on left floor, celebrate and loop! ──
+        case 'RETURN_CELEBRATE': {
           setFacing('left');
-          setIsWalking(true);
+          setAction('walking');
           setMood('love');
-          setBottomY(0);
-          setWalkDuration(3.2);
-          setPosX(6); // walks to far left starting point
+          setDuration(3.0);
+          setPosX(-140);
 
           timerRef.current = setTimeout(() => {
-            setIsWalking(false);
+            setAction('idle');
             setShowHearts(true);
             setTimeout(() => {
               setShowHearts(false);
-              setStoryState('WALK_LEFT_GROUND'); // Loops back to start!
-            }, 2200);
-          }, 3300);
+              setState('APPROACH_WALL'); // Seamless loop back to start!
+            }, 2000);
+          }, 3100);
           break;
         }
       }
     };
 
-    runState();
-  }, [storyState]);
+    run();
+  }, [state]);
+
+  // Is she currently on the right side of the container?
+  const isOnRightSide =
+    state === 'DESCEND_STAIRS' ||
+    state === 'STROLL_RIGHT_FLOOR' ||
+    state === 'CELEBRATE_RIGHT' ||
+    state === 'RETURN_APPROACH' ||
+    state === 'RETURN_CLIMB';
 
   return (
     <div
-      className="absolute inset-0 pointer-events-none select-none z-20"
+      className="absolute inset-x-0 -top-14 sm:-top-16 pointer-events-none select-none z-30"
       aria-hidden="true"
     >
       <style>{`
-        /* Side-view body walking bob (cadence on the ground) */
-        @keyframes axolotlSideWalkBob {
-          0%, 100% { transform: translateY(0) rotate(0deg); }
-          25% { transform: translateY(-3px) rotate(-2.5deg); }
-          50% { transform: translateY(0) rotate(0deg); }
-          75% { transform: translateY(-3px) rotate(2.5deg); }
+        @keyframes sideWalkingBob {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-3px); }
         }
-
-        /* Step shadow pulse */
-        @keyframes stepShadowPulsing {
-          0%, 50%, 100% { transform: scale(1); opacity: 0.7; }
-          25%, 75% { transform: scale(0.85); opacity: 0.45; }
+        @keyframes climbingStepBob {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-2px); }
         }
-
-        .axolotl-walk-bob {
-          animation: axolotlSideWalkBob 0.5s ease-in-out infinite;
+        .walk-bobbing {
+          animation: sideWalkingBob 0.44s ease-in-out infinite;
         }
-        .axolotl-shadow-pulse {
-          animation: stepShadowPulsing 0.5s ease-in-out infinite;
+        .climb-bobbing {
+          animation: climbingStepBob 0.4s ease-in-out infinite;
         }
-
-        /* Cute sweat-drop pop */
-        @keyframes sweatPop {
+        @keyframes questionPopCue {
           0% { transform: translateY(0) scale(0.4); opacity: 0; }
-          30% { transform: translateY(-8px) scale(1.1); opacity: 1; }
-          70% { transform: translateY(-12px) scale(1); opacity: 1; }
+          30% { transform: translateY(-10px) scale(1.15); opacity: 1; }
+          80% { transform: translateY(-14px) scale(1); opacity: 1; }
           100% { transform: translateY(-18px) scale(0.6); opacity: 0; }
         }
-        .sweat-drop-anim {
-          animation: sweatPop 0.9s ease-out forwards;
+        .cue-anim {
+          animation: questionPopCue 1.2s ease-out forwards;
         }
-
-        /* Cute heart floats */
-        @keyframes heartFloatUp {
+        @keyframes heartPopFloat {
           0% { transform: translateY(0) scale(0.5); opacity: 0; }
-          25% { transform: translateY(-10px) scale(1); opacity: 1; }
+          30% { transform: translateY(-12px) scale(1.1); opacity: 1; }
           100% { transform: translateY(-26px) scale(0.6); opacity: 0; }
         }
-        .heart-float-anim {
-          animation: heartFloatUp 0.9s ease-out forwards;
+        .heart-anim {
+          animation: heartPopFloat 0.9s ease-out forwards;
         }
       `}</style>
 
       {/* 
-        ── 1. LEFT STAIRCASE ──
-        Anchored on the pink banner's bottom surface, right against the left wall of the profile card.
-        4 cute pastel steps bridging the height up to the top of the container!
+        ── 1. LEFT STAIRS: ATTACHED DIRECTLY TO THE LEFT WALL OF THE CONTAINER (0px GAP!) ──
+        Base rests on the pink banner floor; top step rests flush on container's top-left corner.
       */}
       <div
-        className="hidden md:flex absolute bottom-0 left-[21.5%] w-16 h-16 pointer-events-none select-none z-10"
-        title="Axolotl's Little Stairs"
+        className="hidden md:flex absolute top-0 -left-12 w-12 h-16 pointer-events-none select-none z-20"
+        title="Stairs attached directly to container"
       >
-        {/* Step 1 */}
-        <div className="absolute bottom-0 left-0 w-16 h-4 rounded-xs bg-gradient-to-r from-pink-300 via-rose-200 to-pink-300 border-t border-white/70 shadow-xs" />
+        {/* Step 1 (Bottom floor) */}
+        <div className="absolute bottom-0 left-0 w-12 h-4 rounded-l-xs bg-gradient-to-r from-pink-300 via-rose-200 to-pink-300 border-t border-l border-white/70 shadow-xs" />
         {/* Step 2 */}
-        <div className="absolute bottom-4 left-4 w-12 h-4 rounded-xs bg-gradient-to-r from-pink-300 via-rose-200 to-pink-300 border-t border-white/70 shadow-xs" />
+        <div className="absolute bottom-4 left-3 w-9 h-4 rounded-l-xs bg-gradient-to-r from-pink-300 via-rose-200 to-pink-300 border-t border-l border-white/70 shadow-xs" />
         {/* Step 3 */}
-        <div className="absolute bottom-8 left-8 w-8 h-4 rounded-xs bg-gradient-to-r from-pink-300 via-rose-200 to-pink-300 border-t border-white/70 shadow-xs" />
-        {/* Step 4 / Top landing */}
-        <div className="absolute bottom-12 left-12 w-4 h-4 rounded-xs bg-gradient-to-r from-pink-300 via-rose-200 to-pink-300 border-t border-white/70 shadow-xs" />
-        {/* Little decorative star sticker */}
-        <Sparkles className="w-3 h-3 text-amber-200 absolute -top-1 right-0 drop-shadow-[0_0_4px_rgba(255,255,255,0.8)]" />
+        <div className="absolute bottom-8 left-6 w-6 h-4 rounded-l-xs bg-gradient-to-r from-pink-300 via-rose-200 to-pink-300 border-t border-l border-white/70 shadow-xs" />
+        {/* Step 4 / Top landing (Flush against container left edge!) */}
+        <div className="absolute bottom-12 left-9 w-3 h-4 bg-gradient-to-r from-pink-300 via-rose-200 to-pink-300 border-t border-white/70 shadow-xs" />
+        <Sparkles className="w-3.5 h-3.5 text-amber-300 absolute -top-1.5 right-0 drop-shadow-[0_0_4px_rgba(255,255,255,0.8)]" />
       </div>
 
       {/* 
-        ── 2. RIGHT STAIRCASE ──
-        Anchored on the pink banner's bottom surface, right against the right wall of the profile card.
+        ── 2. RIGHT STAIRS: ATTACHED DIRECTLY TO THE RIGHT WALL OF THE CONTAINER (0px GAP!) ──
+        Base rests on the pink banner floor; top step rests flush on container's top-right corner.
       */}
       <div
-        className="hidden md:flex absolute bottom-0 right-[21.5%] w-16 h-16 pointer-events-none select-none z-10 scale-x-[-1]"
-        title="Axolotl's Little Stairs"
+        className="hidden md:flex absolute top-0 -right-12 w-12 h-16 pointer-events-none select-none z-20 scale-x-[-1]"
+        title="Stairs attached directly to container"
       >
-        {/* Step 1 */}
-        <div className="absolute bottom-0 left-0 w-16 h-4 rounded-xs bg-gradient-to-r from-pink-300 via-rose-200 to-pink-300 border-t border-white/70 shadow-xs" />
+        {/* Step 1 (Bottom floor) */}
+        <div className="absolute bottom-0 left-0 w-12 h-4 rounded-l-xs bg-gradient-to-r from-pink-300 via-rose-200 to-pink-300 border-t border-l border-white/70 shadow-xs" />
         {/* Step 2 */}
-        <div className="absolute bottom-4 left-4 w-12 h-4 rounded-xs bg-gradient-to-r from-pink-300 via-rose-200 to-pink-300 border-t border-white/70 shadow-xs" />
+        <div className="absolute bottom-4 left-3 w-9 h-4 rounded-l-xs bg-gradient-to-r from-pink-300 via-rose-200 to-pink-300 border-t border-l border-white/70 shadow-xs" />
         {/* Step 3 */}
-        <div className="absolute bottom-8 left-8 w-8 h-4 rounded-xs bg-gradient-to-r from-pink-300 via-rose-200 to-pink-300 border-t border-white/70 shadow-xs" />
-        {/* Step 4 / Top landing */}
-        <div className="absolute bottom-12 left-12 w-4 h-4 rounded-xs bg-gradient-to-r from-pink-300 via-rose-200 to-pink-300 border-t border-white/70 shadow-xs" />
-        <Sparkles className="w-3 h-3 text-amber-200 absolute -top-1 right-0 drop-shadow-[0_0_4px_rgba(255,255,255,0.8)]" />
+        <div className="absolute bottom-8 left-6 w-6 h-4 rounded-l-xs bg-gradient-to-r from-pink-300 via-rose-200 to-pink-300 border-t border-l border-white/70 shadow-xs" />
+        {/* Step 4 / Top landing (Flush against container right edge!) */}
+        <div className="absolute bottom-12 left-9 w-3 h-4 bg-gradient-to-r from-pink-300 via-rose-200 to-pink-300 border-t border-white/70 shadow-xs" />
+        <Sparkles className="w-3.5 h-3.5 text-amber-300 absolute -top-1.5 right-0 drop-shadow-[0_0_4px_rgba(255,255,255,0.8)]" />
       </div>
 
       {/* 
-        ── 3. THE PLAYING AXOLOTL (Side-View Walking & Climbing) ──
-        Positioned along the bottom line (bottomY: 0 on pink floor, 62 on card).
-        Moves with natural horizontal speed.
+        ── 3. THE PLAYING AXOLOTL (True Side View Profile) ──
+        Walks along the floor, climbs stairs, and crosses the container.
       */}
       <div
-        className="absolute will-change-transform pointer-events-none select-none z-30 transition-all ease-linear"
+        className="absolute will-change-transform pointer-events-none select-none z-40 transition-all ease-linear"
         style={{
-          left: `${posX}%`,
-          bottom: `${bottomY}px`,
-          transitionProperty: isWalking ? 'left, bottom' : 'bottom',
-          transitionDuration: isWalking ? `${walkDuration}s` : '0.2s',
+          left: isPercentX
+            ? `${percentX}%`
+            : isOnRightSide
+            ? `calc(100% + ${posX}px)`
+            : `${posX}px`,
+          top: `${-elevY + 48}px`, // 48px is level with pink floor, -12px is level with container top
+          transitionProperty: action === 'walking' ? 'left, top' : 'left, top',
+          transitionDuration: action === 'walking' ? `${duration}s` : '0.35s',
           transform: 'translateX(-50%)',
         }}
       >
-        {/* Jump vertical arc offset */}
+        {/* Jump vertical arc */}
         <div
           className="transition-transform duration-200 ease-out"
           style={{
             transform: `translateY(-${jumpOffset}px)`,
           }}
         >
-          {/* 
-            Facing Direction Wrapper:
-            - Walking RIGHT (-->): scaleX(-1) so head leads right, tail trails on left
-            - Walking LEFT  (<--): scaleX(1)  so head leads left, tail trails on right
-          */}
+          {/* Motion container */}
           <div
-            style={{
-              transform: facing === 'right' ? 'scaleX(-1)' : 'scaleX(1)',
-              transformOrigin: 'center bottom',
-            }}
+            className={`relative ${
+              action === 'walking' ? 'walk-bobbing' : action === 'climbing' ? 'climb-bobbing' : ''
+            }`}
           >
-            {/* Action Motion Container */}
-            <div className={`relative ${isWalking ? 'axolotl-walk-bob' : ''}`}>
-              
-              {/* Ground Contact Shadow */}
-              <div
-                className={`absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-9 sm:w-11 md:w-12 h-1.5 rounded-full bg-pink-950/35 blur-[1.5px] ${
-                  isWalking ? 'axolotl-shadow-pulse' : ''
-                } ${jumpOffset > 10 ? 'scale-50 opacity-20' : 'scale-100 opacity-65'}`}
+            {/* Ground Contact Shadow */}
+            <div
+              className={`absolute -bottom-1 left-1/2 -translate-x-1/2 w-10 sm:w-12 h-1.5 rounded-full bg-pink-950/35 blur-[1.5px] ${
+                jumpOffset > 10 ? 'scale-50 opacity-20' : 'scale-100 opacity-65'
+              }`}
+            />
+
+            {/* Genuine Side-View SVG Asset */}
+            <div className="w-14 h-14 sm:w-16 sm:h-16 drop-shadow-[0_4px_8px_rgba(208,67,111,0.32)]">
+              <AxolotlSideSvg
+                action={action}
+                mood={mood}
+                facing={facing}
+                className="w-full h-full block"
               />
-
-              {/* Genuine Axolotl Mascot SVG Asset with Active Walk Cycle */}
-              <div className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 drop-shadow-[0_4px_8px_rgba(208,67,111,0.32)]">
-                <AxolotlSvg
-                  mood={mood}
-                  isWagging={isWagging}
-                  walkCycle={isWalking}
-                  lookOffset={lookOffset}
-                  className="w-full h-full block"
-                />
-              </div>
-
-              {/* Cute Failed Jump Sweat-drop */}
-              {showSweatDrop && (
-                <div className="absolute -top-3 right-0 sweat-drop-anim pointer-events-none z-40 text-blue-400 font-black text-sm">
-                  💦
-                </div>
-              )}
-
-              {/* Cute Hearts Burst on Discovery or Celebration */}
-              {showHearts && (
-                <div className="absolute -top-2 left-1/2 -translate-x-1/2 heart-float-anim pointer-events-none z-40 flex items-center gap-1">
-                  <Heart className="w-3.5 h-3.5 fill-pink-400 text-pink-400 drop-shadow-[0_0_4px_rgba(255,255,255,0.8)]" />
-                  <Sparkles className="w-3 h-3 text-amber-200 drop-shadow-[0_0_4px_rgba(255,255,255,0.8)]" />
-                </div>
-              )}
-
             </div>
+
+            {/* Question Mark Cue on failed jump */}
+            {showQuestion && (
+              <div className="absolute -top-7 left-1/2 -translate-x-1/2 cue-anim pointer-events-none z-50 text-sky-500 font-hero text-2xl drop-shadow-[0_2px_4px_rgba(255,255,255,0.9)]">
+                ?
+              </div>
+            )}
+
+            {/* Sweat Drop on failed jump */}
+            {showSweat && (
+              <div className="absolute -top-3 right-0 pointer-events-none z-50 text-blue-400 font-black text-sm">
+                💦
+              </div>
+            )}
+
+            {/* Hearts on Discovery & Celebration */}
+            {showHearts && (
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2 heart-anim pointer-events-none z-50 flex items-center gap-1">
+                <Heart className="w-3.5 h-3.5 fill-pink-400 text-pink-400 drop-shadow-[0_0_4px_rgba(255,255,255,0.8)]" />
+                <Sparkles className="w-3 h-3 text-amber-300 drop-shadow-[0_0_4px_rgba(255,255,255,0.8)]" />
+              </div>
+            )}
           </div>
         </div>
       </div>
