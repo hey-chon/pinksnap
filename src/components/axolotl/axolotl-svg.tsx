@@ -10,6 +10,7 @@ interface AxolotlSvgProps {
   isStatic?: boolean;
   hideArms?: boolean;
   armPose?: 'default' | 'pointing-right';
+  walkCycle?: boolean;
   headOffsetY?: number;
   lookOffset?: { x: number; y: number };
   className?: string;
@@ -28,6 +29,7 @@ export function AxolotlSvg({
   isStatic = false,
   hideArms = false,
   armPose = 'default',
+  walkCycle = false,
   headOffsetY = 0,
   lookOffset = { x: 0, y: 0 },
   className = '',
@@ -63,6 +65,7 @@ export function AxolotlSvg({
       aria-label="PinkSnap axolotl mascot"
       data-mood={mood}
       data-arm-pose={armPose}
+      data-walk-cycle={walkCycle ? "true" : undefined}
       onClick={handleClick}
       onPointerDown={handlePointerDown}
       onPointerMove={onZonePointerMove}
@@ -123,6 +126,41 @@ export function AxolotlSvg({
         @keyframes pk-point-r {
           0%, 100% { transform: rotate(-90deg) translate(0, 0); }
           50% { transform: rotate(-96deg) translate(5px, -2px); }
+        }
+
+        /* ── Side-view natural walking gait (Image 2 style) ── */
+        [data-walk-cycle="true"] .arm.l {
+          animation: pk-arm-walk-l 0.5s ease-in-out infinite alternate !important;
+          transform-origin: 158px 296px !important;
+        }
+        [data-walk-cycle="true"] .arm.r {
+          animation: pk-arm-walk-r 0.5s ease-in-out infinite alternate !important;
+          transform-origin: 282px 296px !important;
+        }
+        @keyframes pk-arm-walk-l {
+          0% { transform: rotate(-24deg); }
+          100% { transform: rotate(32deg); }
+        }
+        @keyframes pk-arm-walk-r {
+          0% { transform: rotate(32deg); }
+          100% { transform: rotate(-24deg); }
+        }
+
+        [data-walk-cycle="true"] .foot.l {
+          animation: pk-foot-walk-l 0.5s ease-in-out infinite alternate !important;
+          transform-origin: 170px 420px !important;
+        }
+        [data-walk-cycle="true"] .foot.r {
+          animation: pk-foot-walk-r 0.5s ease-in-out infinite alternate !important;
+          transform-origin: 270px 420px !important;
+        }
+        @keyframes pk-foot-walk-l {
+          0% { transform: rotate(-16deg) translateY(-4px); }
+          100% { transform: rotate(18deg) translateY(1px); }
+        }
+        @keyframes pk-foot-walk-r {
+          0% { transform: rotate(18deg) translateY(1px); }
+          100% { transform: rotate(-16deg) translateY(-4px); }
         }
         
         @keyframes pk-sw { 0%, 100% { transform: rotate(-4deg); } 50% { transform: rotate(5deg); } }
