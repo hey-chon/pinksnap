@@ -699,7 +699,7 @@ export default function Edit() {
 
       <TopNav onBack={() => window.location.reload()} />
 
-      <main className="relative z-10 flex-1 min-h-0 overflow-y-auto scrollbar-hide flex flex-col items-center px-4 pt-3 pb-8 sm:px-6 sm:pt-4 sm:pb-10">
+      <main className="relative z-10 flex-1 min-h-0 overflow-hidden flex flex-col items-center px-4 pt-3 pb-8 sm:px-6 sm:pt-4 sm:pb-10">
         {/* Booth Header */}
         <div className="text-center mb-4 sm:mb-5 w-full max-w-4xl shrink-0">
           <h1 className="font-hero text-[2.2rem] leading-[0.96] sm:text-4xl md:text-5xl mb-2 text-foreground">
@@ -760,7 +760,7 @@ export default function Edit() {
           </div>
 
           {/* ── RIGHT: Physical Photobooth Console ── */}
-          <div className="flex-1 w-full bg-white/85 dark:bg-zinc-900/85 backdrop-blur-2xl rounded-[32px] border border-black/10 dark:border-white/10 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.12)] p-5 sm:p-7 flex flex-col overflow-y-auto max-h-[calc(100dvh-155px)] scrollbar-hide">
+          <div className="flex-1 w-full bg-white/85 dark:bg-zinc-900/85 backdrop-blur-2xl rounded-[32px] border border-black/10 dark:border-white/10 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.12)] p-5 sm:p-7 flex flex-col overflow-y-auto max-h-[calc(100dvh-155px)] custom-scrollbar">
 
             {/* Collection Tabs: Classic vs Artisan — moved right to top */}
             <div className="mb-6">
