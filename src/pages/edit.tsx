@@ -287,6 +287,17 @@ export default function Edit() {
   useEffect(() => sessionStorage.setItem('ps_edit_excluded', excludedShotIndex.toString()), [excludedShotIndex]);
   useEffect(() => sessionStorage.setItem('ps_edit_picked', hasPickedExclusion.toString()), [hasPickedExclusion]);
 
+  const handleSelectArtisan = useCallback((id: ArtisanTemplateId, slotsCount: number) => {
+    if (layout !== 'horizontal-3' && slotsCount === 3 && !hasPickedExclusion) {
+      setShowArtisanWarning(true);
+    }
+    setArtisanId(id);
+  }, [layout, hasPickedExclusion]);
+
+  const handleSelectFrame = useCallback((frameId: FrameType) => {
+    setFrame(frameId);
+  }, [setFrame]);
+
   useEffect(() => {
     // Prevent accidental back navigation from escaping /edit to /studio
     window.history.pushState(null, '', window.location.href);
@@ -797,12 +808,7 @@ export default function Edit() {
                       key={tpl.id}
                       template={tpl}
                       isSelected={artisanId === tpl.id}
-                      onClick={() => {
-                        if (layout !== 'horizontal-3' && tpl.slots.length === 3 && !hasPickedExclusion) {
-                          setShowArtisanWarning(true);
-                        }
-                        setArtisanId(tpl.id);
-                      }}
+                      onClick={() => handleSelectArtisan(tpl.id, tpl.slots.length)}
                     />
                   ))}
                 </div>
@@ -860,7 +866,7 @@ export default function Edit() {
                       option={option}
                       layout={layout}
                       isSelected={frame === option.id}
-                      onClick={() => setFrame(option.id)}
+                      onClick={() => handleSelectFrame(option.id)}
                     />
                   ))}
                 </div>
