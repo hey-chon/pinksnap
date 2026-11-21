@@ -347,12 +347,6 @@ export default function Edit() {
         template.paintBg(ctx, targetWidth, targetHeight, scale, sessionDate);
       }
       if (isCancelled) return;
-      if (template.paintFgAsync) {
-        await template.paintFgAsync(ctx, targetWidth, targetHeight, scale, sessionDate);
-      } else {
-        template.paintFg(ctx, targetWidth, targetHeight, scale, sessionDate);
-      }
-      if (isCancelled) return;
 
       // 2. Load and composite photos
       const loadPhoto = (src: string): Promise<HTMLImageElement | null> =>
@@ -388,7 +382,7 @@ export default function Edit() {
       template.slots.forEach((slot, i) => {
         const rawImg = images[i];
         if (!rawImg) return;
-        const photo = filterImageForCanvas(rawImg, filter);
+        const photo = getCachedFilteredPhoto(rawImg, filter);
 
         const sx = slot.x * scale, sy = slot.y * scale;
         const sw = slot.w * scale, sh = slot.h * scale;
