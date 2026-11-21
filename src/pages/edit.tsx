@@ -58,7 +58,20 @@ const formatStripDate = (value: number) =>
 
 type TabMode = FrameCategory | 'artisan';
 
-function ArtisanThumbnailCard({
+const _artisanThumbCache = new Map<string, string>();
+const _photoFilterCache = new Map<string, HTMLCanvasElement>();
+
+function getCachedFilteredPhoto(img: HTMLImageElement, filter: FilterType): HTMLCanvasElement {
+  const key = `${img.src.slice(-64)}_${filter}`;
+  if (_photoFilterCache.has(key)) {
+    return _photoFilterCache.get(key)!;
+  }
+  const filtered = filterImageForCanvas(img, filter);
+  _photoFilterCache.set(key, filtered);
+  return filtered;
+}
+
+const ArtisanThumbnailCard = React.memo(function ArtisanThumbnailCard({
   template,
   isSelected,
   onClick,
@@ -67,12 +80,19 @@ function ArtisanThumbnailCard({
   isSelected: boolean;
   onClick: () => void;
 }) {
+  const [thumbSrc, setThumbSrc] = useState<string | null>(() => _artisanThumbCache.get(template.id) || null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
+    if (thumbSrc) return;
+    if (_artisanThumbCache.has(template.id)) {
+      setThumbSrc(_artisanThumbCache.get(template.id)!);
+      return;
+    }
+
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const dpr = Math.max(3, typeof window !== 'undefined' ? (window.devicePixelRatio || 2) * 1.5 : 3);
+    const dpr = 2;
     const targetHeight = 150;
     const renderScale = (targetHeight * dpr) / template.nh;
     const targetWidth = Math.round(template.nw * (targetHeight / template.nh));
@@ -84,7 +104,7 @@ function ArtisanThumbnailCard({
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
     ctx.imageSmoothingEnabled = true;
-    ctx.imageSmoothingQuality = 'high';
+    ctx.imageSmoothingQuality = 'medium';
     const now = Date.now();
 
     let cancelled = false;
@@ -102,10 +122,18 @@ function ArtisanThumbnailCard({
       } else {
         template.paintFg(ctx, renderW, renderH, renderScale, now);
       }
+      if (cancelled) return;
+      try {
+        const url = canvas.toDataURL('image/webp', 0.85);
+        _artisanThumbCache.set(template.id, url);
+        setThumbSrc(url);
+      } catch {
+        // Fallback to canvas
+      }
     };
     render();
     return () => { cancelled = true; };
-  }, [template]);
+  }, [template, thumbSrc]);
 
   return (
     <button
@@ -120,7 +148,15 @@ function ArtisanThumbnailCard({
     >
       <div className="w-full flex items-center justify-center py-2 min-h-[148px]">
         <div className="rounded-[4px] overflow-hidden shadow-sm bg-black/[0.04] p-1 border border-black/10 flex items-center justify-center">
-          <canvas ref={canvasRef} className="block pointer-events-none w-auto max-h-[140px] object-contain rounded-[2px]" />
+          {thumbSrc ? (
+            <img
+              src={thumbSrc}
+              alt={template.label}
+              className="block pointer-events-none w-auto max-h-[140px] object-contain rounded-[2px]"
+            />
+          ) : (
+            <canvas ref={canvasRef} className="block pointer-events-none w-auto max-h-[140px] object-contain rounded-[2px]" />
+          )}
         </div>
       </div>
       <div className="mt-1 text-center w-full px-1 pb-1">
@@ -138,7 +174,7 @@ function ArtisanThumbnailCard({
       )}
     </button>
   );
-}
+});
 
 function FrameThumbnailCard({
   option,

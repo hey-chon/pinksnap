@@ -62,23 +62,12 @@ export async function preloadPhotoboothPackages(
   const baseMachinePromise = preloadAndDecodeImage('/photobooth-machine-base.png');
   const plaqueBgPromise = preloadAndDecodeImage('/photobooth-plaque-bg.jpg');
 
-  // Smooth intermediate progress tick
-  await new Promise((r) => setTimeout(r, 120));
   onProgress?.({ percent: 65, label: 'PRINTING • CALIBRATING 65%' });
 
   // Await all package assets
   await Promise.all([stripPromise, baseMachinePromise, plaqueBgPromise]);
 
-  onProgress?.({ percent: 88, label: 'PRINTING • FINALIZING 88%' });
-
-  // Ensure minimum smooth display duration (at least 650ms) so user perceives the real-time package preparation
-  const elapsed = performance.now() - startTime;
-  if (elapsed < 650) {
-    await new Promise((r) => setTimeout(r, 650 - elapsed));
-  }
-
   onProgress?.({ percent: 100, label: 'PRINTING • READY 100%' });
-  await new Promise((r) => setTimeout(r, 100));
 
   const totalDuration = Math.round(performance.now() - startTime);
   return { durationMs: totalDuration };
