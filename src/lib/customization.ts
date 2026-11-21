@@ -1250,18 +1250,18 @@ export const ARTISAN_TEMPLATES: ArtisanTemplate[] = [
     id: 'wave-navy',
     label: 'Wave Navy',
     note: 'Music player · dark blue · 4 shots',
-    nw: 358, nh: 1165,
+    nw: 358, nh: 1204,
     slots: [
       { x: 37, y: 44,  w: 283, h: 212, r: 12 },
-      { x: 37, y: 272, w: 283, h: 215, r: 12 },
-      { x: 37, y: 501, w: 283, h: 197, r: 12 },
-      { x: 37, y: 712, w: 283, h: 189, r: 12 },
+      { x: 37, y: 272, w: 283, h: 212, r: 12 },
+      { x: 37, y: 500, w: 283, h: 212, r: 12 },
+      { x: 37, y: 728, w: 283, h: 212, r: 12 },
     ],
-    ...makeImageTemplate('/templates/A9hsW.jpg?v=2', [
+    ...makeImageTemplate('/templates/A9hsW.jpg?v=3', [
       { x: 37, y: 44,  w: 283, h: 212, r: 12 },
-      { x: 37, y: 272, w: 283, h: 215, r: 12 },
-      { x: 37, y: 501, w: 283, h: 197, r: 12 },
-      { x: 37, y: 712, w: 283, h: 189, r: 12 },
+      { x: 37, y: 272, w: 283, h: 212, r: 12 },
+      { x: 37, y: 500, w: 283, h: 212, r: 12 },
+      { x: 37, y: 728, w: 283, h: 212, r: 12 },
     ], 45),
     // Skip foreground overlay — photos cover placeholders directly, no chroma-key needed
     paintFg() {},
@@ -1271,29 +1271,29 @@ export const ARTISAN_TEMPLATES: ArtisanTemplate[] = [
     id: 'wave-pink',
     label: 'Wave Pink',
     note: 'Music player · pastel pink · 4 shots',
-    nw: 359, nh: 1178,
+    nw: 359, nh: 1217,
     slots: [
       { x: 40, y: 45,  w: 282, h: 213, r: 14 },
-      { x: 40, y: 276, w: 282, h: 215, r: 14 },
-      { x: 40, y: 506, w: 282, h: 198, r: 14 },
-      { x: 40, y: 720, w: 282, h: 189, r: 14 },
+      { x: 40, y: 275, w: 282, h: 213, r: 14 },
+      { x: 40, y: 505, w: 282, h: 213, r: 14 },
+      { x: 40, y: 735, w: 282, h: 213, r: 14 },
     ],
-    ...makeImageTemplate('/templates/r3PiC.jpg?v=3', [
+    ...makeImageTemplate('/templates/r3PiC.jpg?v=4', [
       { x: 40, y: 45,  w: 282, h: 213, r: 14 },
-      { x: 40, y: 276, w: 282, h: 215, r: 14 },
-      { x: 40, y: 506, w: 282, h: 198, r: 14 },
-      { x: 40, y: 720, w: 282, h: 189, r: 14 },
+      { x: 40, y: 275, w: 282, h: 213, r: 14 },
+      { x: 40, y: 505, w: 282, h: 213, r: 14 },
+      { x: 40, y: 735, w: 282, h: 213, r: 14 },
     ], 45),
     async paintBgAsync(ctx, w, h, s) {
       try {
-        const img = await loadImg('/templates/r3PiC.jpg?v=3');
+        const img = await loadImg('/templates/r3PiC.jpg?v=4');
         ctx.drawImage(img, 0, 0, w, h);
         ctx.fillStyle = '#ffffff';
         const slots = [
           { x: 40, y: 45,  w: 282, h: 213, r: 14 },
-          { x: 40, y: 276, w: 282, h: 215, r: 14 },
-          { x: 40, y: 506, w: 282, h: 198, r: 14 },
-          { x: 40, y: 720, w: 282, h: 189, r: 14 },
+          { x: 40, y: 275, w: 282, h: 213, r: 14 },
+          { x: 40, y: 505, w: 282, h: 213, r: 14 },
+          { x: 40, y: 735, w: 282, h: 213, r: 14 },
         ];
         slots.forEach(slot => {
           ctx.beginPath();
