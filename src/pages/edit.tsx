@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
+import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { useLocation } from 'wouter';
 import { TopNav, BottomNav } from '@/components/layout';
 import { useAppContext } from '@/lib/store';
