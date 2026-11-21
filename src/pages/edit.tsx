@@ -257,7 +257,7 @@ const FrameThumbnailCard = React.memo(function FrameThumbnailCard({
       )}
     </button>
   );
-}
+});
 
 export default function Edit() {
   const [, setLocation] = useLocation();
