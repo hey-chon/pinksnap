@@ -227,7 +227,7 @@ export default function Home() {
           aria-hidden="true"
         >
           <div className="bg-white p-3 rounded-lg shadow-xl border border-pink-100/80 flex flex-col gap-2.5 w-28 md:w-32 opacity-85">
-            {[1, 2, 3].map((i) => (
+            {[1, 2, 3, 4].map((i) => (
               <div key={i} className="w-full h-20 bg-pink-50/70 rounded flex items-center justify-center border border-pink-100/60">
                 <Camera className="w-5 h-5 text-pink-300/80" />
               </div>
@@ -386,18 +386,13 @@ export default function Home() {
             </button>
           </div>
 
-          <button
-            type="button"
-            onClick={() => {
-              const el = document.getElementById('creator-section');
-              if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }}
-            className="home-hero-item scroll-cue mt-5 sm:mt-6 inline-flex flex-col items-center gap-1 text-center text-foreground/45 hover:text-primary transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-full px-2.5 py-1.5"
-            aria-label="Scroll to learn more"
+          <div
+            className="home-hero-item scroll-cue mt-5 sm:mt-6 inline-flex flex-col items-center gap-1 text-center text-foreground/45 select-none pointer-events-none px-2.5 py-1.5"
+            aria-hidden="true"
           >
             <span className="h-5 border-l-[1.5px] border-current opacity-40" />
             <span className="text-[8.5px] sm:text-[9.5px] font-black tracking-[.18em] uppercase">SCROLL TO EXPLORE</span>
-          </button>
+          </div>
         </div>
 
         {/* ── PINKSNAP AXOLOTL — The Purpose Section ── */}
