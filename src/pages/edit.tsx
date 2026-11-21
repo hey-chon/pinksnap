@@ -176,7 +176,7 @@ const ArtisanThumbnailCard = React.memo(function ArtisanThumbnailCard({
   );
 });
 
-function FrameThumbnailCard({
+const FrameThumbnailCard = React.memo(function FrameThumbnailCard({
   option,
   layout,
   isSelected,
