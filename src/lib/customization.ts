@@ -842,6 +842,8 @@ function addRoundedRectPath(
   ctx.closePath();
 }
 
+const _fgCanvasCache = new Map<string, HTMLCanvasElement>();
+
 function makeImageTemplate(
   src: string,
   templateSlots: ArtisanSlot[],
@@ -867,9 +869,14 @@ function makeImageTemplate(
     // and keeps all text/decorations visible since we draw the whole image on top.
     async paintFgAsync(ctx, w, h, s) {
       try {
-        const img = await loadImg(src);
         const cw = Math.round(w), ch = Math.round(h);
-        
+        const cacheKey = `${src}_${cw}_${ch}_${tolerance}_${s.toFixed(2)}`;
+        if (_fgCanvasCache.has(cacheKey)) {
+          ctx.drawImage(_fgCanvasCache.get(cacheKey)!, 0, 0);
+          return;
+        }
+
+        const img = await loadImg(src);
         const off = document.createElement('canvas');
         off.width = cw; off.height = ch;
         const offCtx = off.getContext('2d', { willReadFrequently: true });
@@ -941,6 +948,7 @@ function makeImageTemplate(
         });
 
         offCtx.putImageData(imgData, 0, 0);
+        _fgCanvasCache.set(cacheKey, off);
         ctx.drawImage(off, 0, 0);
       } catch (err) {
         console.error('paintFgAsync error:', err);
