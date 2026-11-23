@@ -178,25 +178,7 @@ export function HomePurposeSection() {
               </p>
             </div>
 
-            {/* Bottom Signature & Pillars */}
-            <div className="pt-4 mt-2 border-t border-black/10 dark:border-white/10 flex flex-wrap items-center justify-between gap-3">
-              <div className="flex items-center gap-1.5 text-xs font-black text-primary uppercase tracking-wider">
-                <Heart className="w-3.5 h-3.5 fill-current" />
-                <span>Crafted for memory keepers everywhere</span>
-              </div>
 
-              <div className="flex flex-wrap items-center gap-2 text-[10px] font-mono font-bold text-foreground/50">
-                <span className="px-2.5 py-1 rounded-lg bg-foreground/[0.04] border border-foreground/5">
-                  ✓ 100% Client-Side
-                </span>
-                <span className="px-2.5 py-1 rounded-lg bg-foreground/[0.04] border border-foreground/5">
-                  ✓ Free Forever
-                </span>
-                <span className="px-2.5 py-1 rounded-lg bg-foreground/[0.04] border border-foreground/5">
-                  ✓ Private Memories
-                </span>
-              </div>
-            </div>
 
           </div>
         </div>
