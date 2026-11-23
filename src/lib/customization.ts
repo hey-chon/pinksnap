@@ -1184,38 +1184,6 @@ export const ARTISAN_TEMPLATES: ArtisanTemplate[] = [
     paintFg() {},
     async paintFgAsync() {},
   },
-  {
-    id: 'on-this-clean-black',
-    label: 'Clean Black',
-    note: 'Minimal film strip · 4 shots',
-    nw: 404,
-    nh: 1143,
-    slots: [
-      { x: 42, y: 38,  w: 320, h: 240, r: 0 },
-      { x: 42, y: 309, w: 320, h: 240, r: 0 },
-      { x: 42, y: 580, w: 320, h: 240, r: 0 },
-      { x: 42, y: 851, w: 320, h: 240, r: 0 },
-    ],
-    ...makeImageTemplate('/templates/on-this-clean-black.jpg', [
-      { x: 42, y: 38,  w: 320, h: 240, r: 0 },
-      { x: 42, y: 309, w: 320, h: 240, r: 0 },
-      { x: 42, y: 580, w: 320, h: 240, r: 0 },
-      { x: 42, y: 851, w: 320, h: 240, r: 0 },
-    ], 45),
-    paintBg(ctx, w, h) { ctx.fillStyle = '#050505'; ctx.fillRect(0, 0, w, h); },
-    async paintBgAsync(ctx, w, h) {
-      try {
-        const img = await loadImg('/templates/on-this-clean-black.jpg');
-        ctx.drawImage(img, 0, 0, w, h);
-      } catch {
-        ctx.fillStyle = '#050505';
-        ctx.fillRect(0, 0, w, h);
-      }
-    },
-    // Instant zero-lag render: photos cover the placeholders directly
-    paintFg() {},
-    async paintFgAsync() {},
-  },
   // LINE 1
   {
     id: 'the-1975',
@@ -1309,38 +1277,6 @@ export const ARTISAN_TEMPLATES: ArtisanTemplate[] = [
     async paintFgAsync() {},
   },
   {
-    id: 'on-this-clean-black',
-    label: 'Clean Black',
-    note: 'Minimal film strip · 4 shots',
-    nw: 404,
-    nh: 1143,
-    slots: [
-      { x: 42, y: 38,  w: 320, h: 240, r: 0 },
-      { x: 42, y: 309, w: 320, h: 240, r: 0 },
-      { x: 42, y: 580, w: 320, h: 240, r: 0 },
-      { x: 42, y: 851, w: 320, h: 240, r: 0 },
-    ],
-    ...makeImageTemplate('/templates/on-this-clean-black.jpg', [
-      { x: 42, y: 38,  w: 320, h: 240, r: 0 },
-      { x: 42, y: 309, w: 320, h: 240, r: 0 },
-      { x: 42, y: 580, w: 320, h: 240, r: 0 },
-      { x: 42, y: 851, w: 320, h: 240, r: 0 },
-    ], 45),
-    paintBg(ctx, w, h) { ctx.fillStyle = '#050505'; ctx.fillRect(0, 0, w, h); },
-    async paintBgAsync(ctx, w, h) {
-      try {
-        const img = await loadImg('/templates/on-this-clean-black.jpg');
-        ctx.drawImage(img, 0, 0, w, h);
-      } catch {
-        ctx.fillStyle = '#050505';
-        ctx.fillRect(0, 0, w, h);
-      }
-    },
-    // Instant zero-lag render: photos cover the placeholders directly
-    paintFg() {},
-    async paintFgAsync() {},
-  },
-  {
     id: 'wave-pink',
     label: 'Wave Pink',
     note: 'Music player · pastel pink · 4 shots',
@@ -1379,38 +1315,6 @@ export const ARTISAN_TEMPLATES: ArtisanTemplate[] = [
       }
     },
     // Skip foreground overlay — photos cover placeholders directly, no chroma-key needed
-    paintFg() {},
-    async paintFgAsync() {},
-  },
-  {
-    id: 'on-this-clean-black',
-    label: 'Clean Black',
-    note: 'Minimal film strip · 4 shots',
-    nw: 404,
-    nh: 1143,
-    slots: [
-      { x: 42, y: 38,  w: 320, h: 240, r: 0 },
-      { x: 42, y: 309, w: 320, h: 240, r: 0 },
-      { x: 42, y: 580, w: 320, h: 240, r: 0 },
-      { x: 42, y: 851, w: 320, h: 240, r: 0 },
-    ],
-    ...makeImageTemplate('/templates/on-this-clean-black.jpg', [
-      { x: 42, y: 38,  w: 320, h: 240, r: 0 },
-      { x: 42, y: 309, w: 320, h: 240, r: 0 },
-      { x: 42, y: 580, w: 320, h: 240, r: 0 },
-      { x: 42, y: 851, w: 320, h: 240, r: 0 },
-    ], 45),
-    paintBg(ctx, w, h) { ctx.fillStyle = '#050505'; ctx.fillRect(0, 0, w, h); },
-    async paintBgAsync(ctx, w, h) {
-      try {
-        const img = await loadImg('/templates/on-this-clean-black.jpg');
-        ctx.drawImage(img, 0, 0, w, h);
-      } catch {
-        ctx.fillStyle = '#050505';
-        ctx.fillRect(0, 0, w, h);
-      }
-    },
-    // Instant zero-lag render: photos cover the placeholders directly
     paintFg() {},
     async paintFgAsync() {},
   },
