@@ -23,7 +23,7 @@ import {
   renderArtisanStrip,
 } from '@/lib/customization';
 import { RefreshCw, Download, Share2, Check, X, Film, Printer, Loader2 } from 'lucide-react';
-import { preloadPhotoboothPackages, type PackageLoadProgress } from '@/lib/photoboothPreload';
+import { preloadPhotoboothPackages, preloadAllArtisanTemplates, type PackageLoadProgress } from '@/lib/photoboothPreload';
 import { useToast } from '@/hooks/use-toast.tsx';
 import { createGalleryPreview, createMemoryId, dataUrlToBlob, downloadImage } from '@/lib/image-utils';
 
@@ -297,6 +297,11 @@ export default function Edit() {
   const handleSelectFrame = useCallback((frameId: FrameType) => {
     setFrame(frameId);
   }, [setFrame]);
+
+  useEffect(() => {
+    // Warm cache: preload and hardware-decode all artisan templates in GPU RAM for zero-lag strip selection
+    preloadAllArtisanTemplates();
+  }, []);
 
   useEffect(() => {
     // Prevent accidental back navigation from escaping /edit to /studio
