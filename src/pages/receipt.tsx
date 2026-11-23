@@ -141,8 +141,9 @@ export default function Receipt() {
     autoDownloadStarted.current = true;
 
     // Detect if the user just completed printing
+    let justPrinted = false;
     try {
-      const justPrinted = sessionStorage.getItem('ps_print_just_completed') === 'true';
+      justPrinted = sessionStorage.getItem('ps_print_just_completed') === 'true';
       if (justPrinted && IS_IOS) {
         setShowIosSaveModal(true);
       }
@@ -160,7 +161,8 @@ export default function Receipt() {
     } catch {
       already = '';
     }
-    if (already === latestMemory.id || already === 'started' || already === 'done') return;
+    // Prevent duplicate download if already saved or if printing dispenser just downloaded it
+    if (justPrinted || already === latestMemory.id || already === 'started' || already === 'done' || already === 'true') return;
 
     const timer = window.setTimeout(async () => {
       try {

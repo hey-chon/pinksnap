@@ -143,6 +143,7 @@ export default function Printing() {
       // On non-iOS devices (desktop/Android), trigger the automatic strip download exactly when printing finishes
       if (stripUrl && !IS_IOS) {
         try {
+          sessionStorage.setItem('ps_strip_autodownloaded', 'done');
           await downloadImage(stripUrl, `pinksnap-${Date.now()}.png`, { silent: true });
         } catch {
           // ignore
