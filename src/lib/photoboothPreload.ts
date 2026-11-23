@@ -73,3 +73,28 @@ export async function preloadPhotoboothPackages(
   return { durationMs: totalDuration };
 }
 
+export const ARTISAN_TEMPLATE_IMAGES: string[] = [
+  '/templates/image.jpg',
+  '/templates/the-1975.jpg',
+  '/templates/retro-tv.jpg',
+  '/templates/love-stamp.jpg',
+  '/templates/A9hsW.jpg?v=3',
+  '/templates/r3PiC.jpg?v=4',
+  '/templates/IMG_2605.JPG',
+  '/templates/on-this-clean-black.jpg',
+  '/templates/director-cut.jpg',
+  '/templates/newspaper.jpg',
+];
+
+/**
+ * Preload and hardware-decode all artisan template assets so selecting
+ * strips in edit/customization mode is instantaneous with 0 lag.
+ */
+export function preloadAllArtisanTemplates(): void {
+  if (typeof window === 'undefined') return;
+  ARTISAN_TEMPLATE_IMAGES.forEach((src) => {
+    preloadAndDecodeImage(src);
+  });
+}
+
+
