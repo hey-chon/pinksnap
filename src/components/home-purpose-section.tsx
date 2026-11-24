@@ -124,7 +124,7 @@ export function HomePurposeSection() {
           <div className="mt-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/70 dark:bg-zinc-800/70 backdrop-blur-md border border-pink-200/80 dark:border-pink-900/40 shadow-xs">
             <Heart className="w-3 h-3 text-primary fill-current" />
             <span className="text-[10px] font-black uppercase tracking-[0.2em] text-foreground/75">
-              OFFICIAL MASCOT
+              JERA THE AXOLOTL
             </span>
           </div>
         </div>
