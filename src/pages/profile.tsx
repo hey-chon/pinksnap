@@ -1886,41 +1886,41 @@ export default function ProfilePage() {
         </div>
       </main>
 
-      {/* ── Zero-Knowledge Vault Modal (Elegant & Spacious) ── */}
+      {/* ── Zero-Knowledge Vault Modal (Elegant & Compact) ── */}
       {showVaultModal && (
         <div
-          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-md sm:backdrop-blur-lg flex items-center justify-center p-4 sm:p-6 md:p-8 animate-in fade-in duration-200"
+          className="fixed inset-0 z-50 bg-black/50 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-200"
           onClick={() => setShowVaultModal(false)}
         >
           <div
-            className="relative bg-white/95 dark:bg-zinc-900/95 backdrop-blur-2xl rounded-3xl sm:rounded-[32px] p-7 sm:p-9 md:p-11 max-w-md sm:max-w-lg md:max-w-xl lg:max-w-2xl w-full shadow-[0_30px_90px_-20px_rgba(0,0,0,0.35)] border border-black/10 dark:border-white/10 animate-in zoom-in-95 duration-200"
+            className="relative bg-white/95 dark:bg-zinc-900/95 backdrop-blur-2xl rounded-2xl sm:rounded-3xl p-6 sm:p-7 max-w-[440px] sm:max-w-[460px] w-full shadow-[0_20px_60px_-15px_rgba(0,0,0,0.25)] border border-black/10 dark:border-white/10 animate-in zoom-in-95 duration-200"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between pb-4 sm:pb-5 mb-5 sm:mb-6 border-b border-black/[0.06] dark:border-white/[0.08]">
-              <h3 className="font-hero text-xl sm:text-2xl md:text-[28px] tracking-tight font-extrabold text-neutral-900 dark:text-white">
+            <div className="flex items-center justify-between pb-3.5 mb-3.5 border-b border-black/[0.06] dark:border-white/[0.08]">
+              <h3 className="font-hero text-base sm:text-lg tracking-tight font-extrabold text-neutral-900 dark:text-white">
                 Zero-Knowledge Vault
               </h3>
               <button
                 type="button"
                 onClick={() => setShowVaultModal(false)}
-                className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/20 text-neutral-600 dark:text-neutral-300 flex items-center justify-center transition-all cursor-pointer active:scale-90"
+                className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/20 text-neutral-600 dark:text-neutral-300 flex items-center justify-center transition-all cursor-pointer active:scale-90"
                 aria-label="Close"
               >
-                <X className="w-4 h-4 sm:w-5 sm:h-5" />
+                <X className="w-4 h-4" />
               </button>
             </div>
 
-            <p className="text-sm sm:text-base md:text-[17px] text-neutral-600 dark:text-neutral-300 leading-relaxed md:leading-[1.8] font-normal tracking-normal">
+            <p className="text-xs sm:text-[13px] text-neutral-600 dark:text-neutral-300 leading-relaxed font-normal">
               {isOwner
                 ? 'Your private gallery and photo strips are end-to-end encrypted with AES-256-GCM. When posted to your wall, DRM protection prevents others from downloading your strips.'
                 : `Strips on this wall are protected by PinkSnap DRM and cannot be downloaded by other users.`}
             </p>
 
-            <div className="mt-8 sm:mt-10 pt-4 sm:pt-5 flex justify-end">
+            <div className="mt-5 pt-3 flex justify-end">
               <button
                 type="button"
                 onClick={() => setShowVaultModal(false)}
-                className="px-6 py-2.5 sm:px-7 sm:py-3 rounded-full bg-neutral-900 hover:bg-neutral-800 dark:bg-white dark:hover:bg-neutral-100 text-white dark:text-neutral-900 text-xs sm:text-sm font-bold tracking-wider uppercase transition-all cursor-pointer shadow-sm active:scale-95 hover:shadow-md"
+                className="px-5 py-2 rounded-xl bg-neutral-900 hover:bg-neutral-800 dark:bg-white dark:hover:bg-neutral-100 text-white dark:text-neutral-900 text-xs font-bold tracking-wider uppercase transition-all cursor-pointer shadow-sm active:scale-95"
               >
                 Close
               </button>
