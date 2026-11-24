@@ -145,9 +145,7 @@ export function HomePurposeSection() {
                   THE PURPOSE
                 </span>
               </div>
-              <span className="font-mono text-[9px] sm:text-[10px] font-bold text-foreground/45 uppercase tracking-widest">
-                EST. 2026 · PHILIPPINES
-              </span>
+              
             </div>
 
             {/* Headline */}
