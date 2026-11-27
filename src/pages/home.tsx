@@ -94,28 +94,31 @@ function ArtisanShowcaseCard({
       className="group relative flex flex-col items-center shrink-0 text-left focus:outline-none bg-transparent pointer-events-none select-none lg:pointer-events-auto lg:select-auto cursor-default lg:cursor-pointer"
       title={`Try ${template.label} Artisan theme`}
     >
-      {/* Strip frame with natural aspect ratio and clear background */}
+      {/* Strip frame with realistic photobooth paper card and suspended shadow */}
       <div
         ref={containerRef}
-        className="relative overflow-hidden rounded-xl bg-transparent transition-all duration-300 group-hover:scale-[1.04] group-active:scale-95 drop-shadow-md group-hover:drop-shadow-xl"
+        className="relative overflow-hidden rounded-xl bg-[#1a0a12]/70 p-1 sm:p-1.5 transition-all duration-300 group-hover:scale-[1.05] group-hover:-translate-y-1.5 group-active:scale-95 shadow-[0_18px_38px_rgba(0,0,0,0.7),0_4px_12px_rgba(0,0,0,0.5)] group-hover:shadow-[0_24px_50px_rgba(245,61,137,0.35),0_6px_16px_rgba(0,0,0,0.6)] ring-1 ring-white/10 group-hover:ring-pink-500/40"
       >
+        {/* Subtle realistic photo sheen glare across strip */}
+        <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-white/15 pointer-events-none z-10 rounded-lg" />
+
         {imgSrc ? (
           <img
             src={imgSrc}
             alt={template.label}
-            className="block h-[260px] sm:h-[300px] md:h-[320px] w-auto rounded-xl select-none"
+            className="block h-[260px] sm:h-[300px] md:h-[320px] w-auto rounded-lg select-none"
             draggable={false}
             style={{ aspectRatio }}
           />
         ) : (
           <div
-            className="h-[260px] sm:h-[300px] md:h-[320px] rounded-xl bg-foreground/5 animate-pulse"
+            className="h-[260px] sm:h-[300px] md:h-[320px] rounded-lg bg-white/10 animate-pulse"
             style={{ aspectRatio }}
           />
         )}
 
-        {/* White "USE THEME →" badge placed at bottom as before, with arrow beside text */}
-        <div className="absolute inset-0 flex items-end justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none p-2 sm:p-2.5">
+        {/* White "USE THEME →" badge placed at bottom with arrow */}
+        <div className="absolute inset-0 flex items-end justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none p-2 sm:p-2.5 z-20">
           <span className="whitespace-nowrap inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white text-neutral-900 text-[10px] font-black uppercase tracking-wider shadow-lg transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
             <span>USE THEME</span>
             <span className="text-xs font-black">→</span>
@@ -123,11 +126,11 @@ function ArtisanShowcaseCard({
         </div>
       </div>
 
-      <div className="text-center mt-2.5 max-w-[130px]">
-        <p className="font-display text-xs sm:text-sm font-black text-foreground tracking-wide uppercase group-hover:text-primary transition-colors">
+      <div className="text-center mt-3 max-w-[130px]">
+        <p className="font-display text-xs sm:text-sm font-black text-white/95 tracking-wide uppercase group-hover:text-pink-400 transition-colors drop-shadow-sm">
           {template.label}
         </p>
-        <p className="text-[10px] font-bold text-foreground/45 uppercase tracking-widest mt-0.5">
+        <p className="text-[10px] font-bold text-pink-200/60 uppercase tracking-widest mt-0.5">
           {photoCount}
         </p>
       </div>
@@ -140,26 +143,6 @@ export default function Home() {
   const { isAuthenticated } = useAuth();
   const mainRef = useRef<HTMLElement>(null);
   const floatingStripRef = useRef<HTMLDivElement>(null);
-
-  // Lazy-mount the heavy artisan showcase only when user scrolls near it
-  const artisanSentinelRef = useRef<HTMLDivElement>(null);
-  const [showArtisan, setShowArtisan] = useState(false);
-
-  useEffect(() => {
-    const el = artisanSentinelRef.current;
-    if (!el || showArtisan) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setShowArtisan(true);
-          observer.disconnect();
-        }
-      },
-      { rootMargin: '300px' },
-    );
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, [showArtisan]);
 
   // Prevent top overscroll stretch glitch when pulling down at scrollTop === 0
   useEffect(() => {
@@ -398,55 +381,89 @@ export default function Home() {
         {/* ── PINKSNAP AXOLOTL — The Purpose Section ── */}
         <HomePurposeSection />
 
-        {/* ── ARTISAN STRIPS — Cinematic Showcase Loop ── */}
-        <div ref={artisanSentinelRef} />
-        {showArtisan && (
-        <section aria-labelledby="artisan-showcase-title" className="relative z-10 w-full max-w-6xl mx-auto pt-10 sm:pt-16 pb-8 sm:pb-14 mt-4 sm:mt-8">
-          {/* Cinematic Header */}
-          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 mb-6 px-1">
-            <div>
-              <p className="text-[11px] font-black tracking-[.25em] text-primary uppercase mb-1.5">
-                PINKSNAP THEMES
-              </p>
-              <h2
-                id="artisan-showcase-title"
-                className="font-hero text-5xl sm:text-7xl md:text-8xl tracking-tight text-foreground leading-[0.88] uppercase"
-              >
-                ARTISAN <span className="text-primary cinematic-glow-pink">STRIPS.</span>
-              </h2>
+        {/* ── ARTISAN STRIPS — Real Photobooth Curtain Showcase ── */}
+        <section
+          aria-labelledby="artisan-showcase-title"
+          className="relative z-10 w-full max-w-6xl mx-auto my-16 sm:my-24 rounded-3xl sm:rounded-[2.5rem] overflow-hidden border border-red-950/40 shadow-[0_30px_70px_-15px_rgba(80,8,24,0.45),0_15px_35px_rgba(0,0,0,0.5)]"
+          style={{
+            backgroundColor: '#120409',
+          }}
+        >
+          {/* Layer 1: Red Velvet Curtain Backdrop Image */}
+          <div
+            className="absolute inset-0 pointer-events-none select-none z-0 bg-cover bg-center transform scale-105"
+            style={{
+              backgroundImage: "url('/background.jfif'), url('/background.jpg')",
+              filter: 'contrast(1.18) saturate(1.25) brightness(0.68)',
+              opacity: 0.72,
+            }}
+          />
+
+          {/* Layer 2: Atmospheric Velvet Light & Shadow Vignette (No flat picture feel) */}
+          <div
+            className="absolute inset-0 pointer-events-none z-0"
+            style={{
+              background: `
+                radial-gradient(ellipse at 50% 35%, rgba(245, 61, 137, 0.22) 0%, rgba(140, 16, 50, 0.38) 45%, rgba(10, 3, 6, 0.94) 85%),
+                linear-gradient(180deg, rgba(12, 3, 7, 0.95) 0%, rgba(18, 4, 10, 0.2) 20%, rgba(18, 4, 10, 0.2) 75%, rgba(10, 2, 5, 0.98) 100%)
+              `,
+            }}
+          />
+
+          {/* Layer 3: Top Valance / Curtain Rod Rim with Neon Glow */}
+          <div className="absolute top-0 inset-x-0 h-1.5 bg-gradient-to-r from-transparent via-pink-500/70 to-transparent shadow-[0_0_20px_rgba(245,61,137,0.85)] pointer-events-none z-10" />
+
+          {/* Layer 4: Overhead Stage Spotlight focused on the suspended photo strips */}
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-4/5 h-64 bg-gradient-to-b from-pink-500/18 via-rose-500/8 to-transparent blur-3xl pointer-events-none z-0" />
+
+          {/* Section Inner Content */}
+          <div className="relative z-10 px-5 sm:px-8 md:px-12 pt-10 sm:pt-14 pb-12 sm:pb-16">
+            {/* Cinematic Photobooth Header */}
+            <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8 px-1">
+              <div>
+                <p className="text-[11px] font-black tracking-[.28em] text-pink-400 uppercase mb-1.5 drop-shadow-sm">
+                  PINKSNAP THEMES
+                </p>
+                <h2
+                  id="artisan-showcase-title"
+                  className="font-hero text-5xl sm:text-7xl md:text-8xl tracking-tight text-white leading-[0.88] uppercase drop-shadow-md"
+                >
+                  ARTISAN <span className="text-primary cinematic-glow-pink">STRIPS.</span>
+                </h2>
+              </div>
+
+              <div className="flex flex-col sm:items-end gap-2">
+                <p className="text-[11px] sm:text-xs font-bold text-pink-100/70 tracking-wider uppercase">
+                  Curated layouts & Premium Prints
+                </p>
+                <button
+                  type="button"
+                  onClick={handleGetStarted}
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 border border-pink-400/40 text-xs font-black text-white hover:text-pink-300 uppercase tracking-wider backdrop-blur-md shadow-[0_4px_16px_rgba(245,61,137,0.3)] transition-all hover:scale-105 active:scale-95 cursor-pointer"
+                >
+                  <span>TRY ARTISAN</span>
+                  <ArrowRight className="w-3.5 h-3.5 text-pink-400" />
+                </button>
+              </div>
             </div>
 
-            <div className="flex flex-col sm:items-end gap-1">
-              <p className="text-[11px] sm:text-xs font-bold text-foreground/50 tracking-wider uppercase">
-                Curated layouts & Premium Prints
-              </p>
-              <button
-                type="button"
-                onClick={handleGetStarted}
-                className="inline-flex items-center gap-1.5 text-xs font-black text-primary hover:text-primary/80 uppercase tracking-wider transition-all hover:translate-x-0.5 cursor-pointer"
-              >
-                TRY ARTISAN <ArrowRight className="w-3.5 h-3.5" />
-              </button>
-            </div>
-          </div>
-
-          {/* Horizontal Infinite Marquee Loop */}
-          <div className="artisan-marquee-wrapper overflow-hidden py-3 -mx-5 sm:-mx-8 px-5 sm:px-8">
-            <div className="artisan-marquee-track gap-4 sm:gap-6">
-              {[...ARTISAN_TEMPLATES, ...ARTISAN_TEMPLATES].map((template, idx) => (
-                <ArtisanShowcaseCard
-                  key={`${template.id}-${idx}`}
-                  template={template}
-                  onSelect={() => {
-                    sessionStorage.setItem('ps_edit_artisan', template.id);
-                    handleGetStarted();
-                  }}
-                />
-              ))}
+            {/* Horizontal Infinite Marquee Loop showcasing the physical strips */}
+            <div className="artisan-marquee-wrapper overflow-hidden py-4 -mx-5 sm:-mx-8 md:-mx-12 px-5 sm:px-8 md:px-12">
+              <div className="artisan-marquee-track gap-5 sm:gap-7">
+                {[...ARTISAN_TEMPLATES, ...ARTISAN_TEMPLATES].map((template, idx) => (
+                  <ArtisanShowcaseCard
+                    key={`${template.id}-${idx}`}
+                    template={template}
+                    onSelect={() => {
+                      sessionStorage.setItem('ps_edit_artisan', template.id);
+                      handleGetStarted();
+                    }}
+                  />
+                ))}
+              </div>
             </div>
           </div>
         </section>
-        )}
 
         <Credits />
       </main>
