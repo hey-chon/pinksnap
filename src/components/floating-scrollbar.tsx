@@ -7,11 +7,11 @@ import { useEffect, useRef, useState, useCallback } from 'react';
  */
 export function FloatingScrollbar({
   scrollRef,
-  topOffset = 56,
+  navSelector = '.booth-marquee',
 }: {
   scrollRef: React.RefObject<HTMLElement | null>;
-  /** px from viewport top where the scrollbar track begins (navbar height) */
-  topOffset?: number;
+  /** CSS selector for the navbar element to measure its bottom edge */
+  navSelector?: string;
 }) {
   const thumbRef = useRef<HTMLDivElement>(null);
   const dragging = useRef(false);
@@ -21,18 +21,20 @@ export function FloatingScrollbar({
   const [hovered, setHovered] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
 
-  const getTrackHeight = useCallback(() => {
-    const el = scrollRef.current;
-    if (!el) return 0;
-    return el.clientHeight - 8; // 8px bottom margin
-  }, [scrollRef]);
+  const getNavBottom = useCallback(() => {
+    const nav = document.querySelector(navSelector);
+    if (!nav) return 72;
+    return nav.getBoundingClientRect().bottom;
+  }, [navSelector]);
 
   const update = useCallback(() => {
     const el = scrollRef.current;
     if (!el) return;
 
     const { scrollTop, scrollHeight, clientHeight } = el;
-    const trackHeight = getTrackHeight();
+    const navBottom = getNavBottom();
+    const viewportHeight = window.innerHeight;
+    const trackHeight = viewportHeight - navBottom - 8; // 8px bottom margin
     const ratio = clientHeight / scrollHeight;
 
     if (ratio >= 1) {
@@ -43,10 +45,10 @@ export function FloatingScrollbar({
     const thumbHeight = Math.max(32, ratio * trackHeight);
     const maxScroll = scrollHeight - clientHeight;
     const scrollFraction = maxScroll > 0 ? scrollTop / maxScroll : 0;
-    const thumbTop = topOffset + scrollFraction * (trackHeight - thumbHeight);
+    const thumbTop = navBottom + scrollFraction * (trackHeight - thumbHeight);
 
     setThumbState({ height: thumbHeight, top: thumbTop, show: true });
-  }, [scrollRef, getTrackHeight, topOffset]);
+  }, [scrollRef, getNavBottom]);
 
   // Listen to scroll & resize
   useEffect(() => {
@@ -78,7 +80,9 @@ export function FloatingScrollbar({
     if (!el) return;
 
     const { scrollHeight, clientHeight } = el;
-    const trackHeight = getTrackHeight();
+    const navBottom = getNavBottom();
+    const viewportHeight = window.innerHeight;
+    const trackHeight = viewportHeight - navBottom - 8;
     const ratio = clientHeight / scrollHeight;
     const thumbHeight = Math.max(32, ratio * trackHeight);
     const maxScroll = scrollHeight - clientHeight;
@@ -86,7 +90,7 @@ export function FloatingScrollbar({
     const scrollDelta = (deltaY / (trackHeight - thumbHeight)) * maxScroll;
 
     el.scrollTop = dragStartScroll.current + scrollDelta;
-  }, [scrollRef, getTrackHeight]);
+  }, [scrollRef, getNavBottom]);
 
   const onPointerUp = useCallback(() => {
     dragging.current = false;
