@@ -6,6 +6,7 @@ import Credits from '@/components/credits';
 import { useAuth } from '@/hooks/use-auth';
 import { ARTISAN_TEMPLATES, ArtisanTemplate } from '@/lib/customization';
 import { AxolotlHoldingBadge } from '@/components/axolotl/axolotl-holding-badge';
+import { FloatingScrollbar } from '@/components/floating-scrollbar';
 import { HomePurposeSection } from '@/components/home-purpose-section';
 
 function ArtisanShowcaseCard({
@@ -195,14 +196,17 @@ export default function Home() {
   return (
     <div className="flex flex-col h-[100dvh] overflow-hidden desktop-zoom-95 overscroll-none">
       <TopNav />
+      <FloatingScrollbar scrollRef={mainRef} />
 
       <main
         ref={mainRef}
         onScroll={handleScroll}
         style={{
           WebkitOverflowScrolling: 'touch',
+          scrollbarWidth: 'none',
+          msOverflowStyle: 'none',
         }}
-        className="flex-1 overflow-y-auto overflow-x-hidden relative overscroll-none home-floating-scroll"
+        className="flex-1 overflow-y-auto overflow-x-hidden relative overscroll-none scrollbar-hide"
       >
         {/* Background glows */}
         <div className="absolute top-1/4 left-10 md:left-32 w-64 h-64 bg-primary/20 rounded-full blur-3xl -z-10 mix-blend-multiply pointer-events-none" />
