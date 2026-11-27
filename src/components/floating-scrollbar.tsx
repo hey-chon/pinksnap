@@ -1,16 +1,12 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 
-/**
- * A custom floating scrollbar that hovers over content with zero layout impact.
- * No track container — just a glowing pink pill. Always visible and interactive.
- * Starts below the navbar, uses native scroll-like drag behavior.
- */
+
 export function FloatingScrollbar({
   scrollRef,
   navSelector = '.booth-marquee',
 }: {
   scrollRef: React.RefObject<HTMLElement | null>;
-  /** CSS selector for the navbar element to measure its bottom edge */
+ 
   navSelector?: string;
 }) {
   const thumbRef = useRef<HTMLDivElement>(null);
