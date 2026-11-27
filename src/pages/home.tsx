@@ -147,7 +147,6 @@ export default function Home() {
   const stripAnimRef = useRef({
     targetY: 0,
     currentY: 0,
-    currentRot: 6,
     rafId: 0,
   });
 
@@ -206,17 +205,12 @@ export default function Home() {
     const dy = anim.targetY - anim.currentY;
     anim.currentY += dy * 0.1;
 
-    // Subtle momentum tilt while gliding, settling back to 6deg
-    const targetRot = 6 + Math.max(-6, Math.min(6, dy * 0.04));
-    anim.currentRot += (targetRot - anim.currentRot) * 0.14;
+    strip.style.transform = `translate3d(0, ${anim.currentY.toFixed(2)}px, 0) rotate(6deg)`;
 
-    strip.style.transform = `translate3d(0, ${anim.currentY.toFixed(2)}px, 0) rotate(${anim.currentRot.toFixed(2)}deg)`;
-
-    if (Math.abs(dy) > 0.15 || Math.abs(6 - anim.currentRot) > 0.05) {
+    if (Math.abs(dy) > 0.15) {
       anim.rafId = requestAnimationFrame(runStripAnimation);
     } else {
       anim.currentY = anim.targetY;
-      anim.currentRot = 6;
       strip.style.transform = `translate3d(0, ${anim.currentY.toFixed(2)}px, 0) rotate(6deg)`;
       anim.rafId = 0;
     }
