@@ -113,10 +113,10 @@ export function FloatingScrollbar({
         width: isActive ? 7 : 5,
         height: thumbState.height,
         borderRadius: 9999,
-        backgroundColor: isActive ? 'rgba(245, 61, 137, 0.6)' : 'rgba(245, 61, 137, 0.35)',
+        backgroundColor: isActive ? 'rgba(245, 61, 137, 0.75)' : 'rgba(245, 61, 137, 0.6)',
         boxShadow: isActive
-          ? '0 0 10px rgba(245, 61, 137, 0.4)'
-          : '0 0 6px rgba(245, 61, 137, 0.15)',
+          ? '0 0 12px rgba(245, 61, 137, 0.5)'
+          : '0 0 8px rgba(245, 61, 137, 0.3)',
         transform: `translateY(${thumbState.top}px)`,
         transition: isDragging
           ? 'width 0.15s ease, background-color 0.15s ease'
