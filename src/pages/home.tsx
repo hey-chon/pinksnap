@@ -396,9 +396,9 @@ export default function Home() {
           className="relative z-10 w-full my-0 flex flex-col justify-center overflow-hidden border-y border-red-950/60 shadow-[0_35px_80px_-15px_rgba(80,8,24,0.5),0_20px_45px_rgba(0,0,0,0.6)]"
           style={{
             backgroundColor: '#120409',
-            minHeight: '120vh',
-            paddingTop: '3.5rem',
-            paddingBottom: '14rem',
+            minHeight: '112vh',
+            paddingTop: '6.5rem',
+            paddingBottom: '9.5rem',
           }}
         >
           {/* Layer 1: Red Velvet Curtain Backdrop Image (Spans Full Width End-to-End) */}
@@ -416,7 +416,7 @@ export default function Home() {
             className="absolute inset-0 pointer-events-none z-0"
             style={{
               background: `
-                radial-gradient(ellipse at 50% 30%, rgba(245, 61, 137, 0.22) 0%, rgba(140, 16, 50, 0.38) 45%, rgba(10, 3, 6, 0.94) 85%),
+                radial-gradient(ellipse at 50% 38%, rgba(245, 61, 137, 0.22) 0%, rgba(140, 16, 50, 0.38) 45%, rgba(10, 3, 6, 0.94) 85%),
                 linear-gradient(180deg, rgba(12, 3, 7, 0.95) 0%, rgba(18, 4, 10, 0.2) 15%, rgba(18, 4, 10, 0.2) 82%, rgba(10, 2, 5, 0.98) 100%)
               `,
             }}
@@ -432,7 +432,7 @@ export default function Home() {
           <div className="absolute bottom-0 inset-x-0 h-1.5 bg-gradient-to-r from-transparent via-red-900/40 to-transparent pointer-events-none z-10" />
 
           {/* Section Inner Content — Centered inside full viewport height */}
-          <div className="relative z-10 w-full pt-10 sm:pt-14 pb-16 sm:pb-24 md:pb-28 flex flex-col justify-center flex-1">
+          <div className="relative z-10 w-full pt-6 sm:pt-10 pb-10 sm:pb-16 md:pb-20 flex flex-col justify-center flex-1">
             {/* Cinematic Photobooth Header */}
             <div className="max-w-6xl mx-auto px-5 sm:px-8 mb-8">
               <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
