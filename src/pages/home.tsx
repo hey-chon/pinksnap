@@ -186,21 +186,16 @@ export default function Home() {
       const scrollTop = Math.max(0, e.currentTarget.scrollTop);
       const main = e.currentTarget;
 
-      // Find the axolotl mascot container bottom — strip stops there
-      const mascotEl = main.querySelector('#purpose-section');
-      const hideAt = mascotEl
-        ? mascotEl.getBoundingClientRect().top - main.getBoundingClientRect().top + scrollTop
-        : main.clientHeight;
+      // Find the purpose section top — the strip parks at that scroll level
+      const purposeEl = main.querySelector('#purpose-section');
+      const maxY = purposeEl
+        ? (purposeEl.getBoundingClientRect().top - main.getBoundingClientRect().top + scrollTop) * 0.55
+        : Infinity;
 
-      if (scrollTop >= hideAt) {
-        floatingStripRef.current.style.display = 'none';
-      } else {
-        // Follow the scroll at 55% speed (parallax), no fade
-        const y = scrollTop * 0.55;
-        floatingStripRef.current.style.transform = `translateY(${y}px) rotate(6deg)`;
-        floatingStripRef.current.style.opacity = '0.85';
-        floatingStripRef.current.style.display = 'block';
-      }
+      // Follow scroll at 55% speed, but clamp at the purpose section
+      const y = Math.min(scrollTop * 0.55, maxY);
+      floatingStripRef.current.style.transform = `translateY(${y}px) rotate(6deg)`;
+      floatingStripRef.current.style.opacity = '0.85';
     }
   };
 
@@ -226,7 +221,7 @@ export default function Home() {
         {/* Floating strip decoration (Strictly stays in Hero) */}
         <div
           ref={floatingStripRef}
-          className="hidden lg:block absolute right-[6%] md:right-[8%] top-[25%] z-0 pointer-events-none will-change-transform transition-opacity duration-150"
+          className="hidden lg:block absolute right-[6%] md:right-[8%] top-[25%] z-0 pointer-events-none will-change-transform"
           style={{ transform: 'translateY(0px) rotate(6deg)' }}
           aria-hidden="true"
         >
