@@ -183,8 +183,12 @@ export default function Home() {
   const handleScroll = (e: React.UIEvent<HTMLElement>) => {
     if (floatingStripRef.current) {
       const top = Math.max(0, e.currentTarget.scrollTop);
-      const y = top * 0.7;
+      // Fade out cleanly as user leaves the hero section so it never overlaps other sections
+      const opacity = Math.max(0, 0.85 - top / 320);
+      const y = top * 0.35;
       floatingStripRef.current.style.transform = `translateY(${y}px) rotate(6deg)`;
+      floatingStripRef.current.style.opacity = `${opacity}`;
+      floatingStripRef.current.style.display = opacity <= 0.01 ? 'none' : 'block';
     }
   };
 
@@ -195,17 +199,21 @@ export default function Home() {
       <main
         ref={mainRef}
         onScroll={handleScroll}
-        style={{ WebkitOverflowScrolling: 'touch' }}
-        className="flex-1 overflow-y-auto overflow-x-hidden px-2.5 py-5 sm:p-8 relative overscroll-none"
+        style={{
+          WebkitOverflowScrolling: 'touch',
+          scrollbarWidth: 'none',
+          msOverflowStyle: 'none',
+        }}
+        className="flex-1 overflow-y-auto overflow-x-hidden px-2.5 py-5 sm:p-8 relative overscroll-none scrollbar-hide"
       >
         {/* Background glows */}
         <div className="absolute top-1/4 left-10 md:left-32 w-64 h-64 bg-primary/20 rounded-full blur-3xl -z-10 mix-blend-multiply pointer-events-none" />
         <div className="absolute bottom-1/4 right-10 md:right-32 w-80 h-80 bg-blue-300/20 rounded-full blur-3xl -z-10 mix-blend-multiply pointer-events-none" />
 
-        {/* Floating strip decoration */}
+        {/* Floating strip decoration (Strictly stays in Hero) */}
         <div
           ref={floatingStripRef}
-          className="hidden lg:block absolute right-[6%] md:right-[8%] top-[25%] z-0 pointer-events-none will-change-transform"
+          className="hidden lg:block absolute right-[6%] md:right-[8%] top-[25%] z-0 pointer-events-none will-change-transform transition-opacity duration-150"
           style={{ transform: 'translateY(0px) rotate(6deg)' }}
           aria-hidden="true"
         >
@@ -381,10 +389,10 @@ export default function Home() {
         {/* ── PINKSNAP AXOLOTL — The Purpose Section ── */}
         <HomePurposeSection />
 
-        {/* ── ARTISAN STRIPS — Real Photobooth Curtain Showcase (End-to-End Full Width) ── */}
+        {/* ── ARTISAN STRIPS — Real Photobooth Curtain Showcase (Whole Viewport Section) ── */}
         <section
           aria-labelledby="artisan-showcase-title"
-          className="relative z-10 w-auto -mx-2.5 sm:-mx-8 my-16 sm:my-24 overflow-hidden border-y border-red-950/50 shadow-[0_30px_70px_-15px_rgba(80,8,24,0.45),0_15px_35px_rgba(0,0,0,0.5)]"
+          className="relative z-10 w-auto -mx-2.5 sm:-mx-8 my-10 sm:my-16 min-h-[calc(100svh-4rem)] flex flex-col justify-center overflow-hidden border-y border-red-950/60 shadow-[0_35px_80px_-15px_rgba(80,8,24,0.5),0_20px_45px_rgba(0,0,0,0.6)]"
           style={{
             backgroundColor: '#120409',
           }}
