@@ -381,15 +381,15 @@ export default function Home() {
         {/* ── PINKSNAP AXOLOTL — The Purpose Section ── */}
         <HomePurposeSection />
 
-        {/* ── ARTISAN STRIPS — Real Photobooth Curtain Showcase ── */}
+        {/* ── ARTISAN STRIPS — Real Photobooth Curtain Showcase (End-to-End Full Width) ── */}
         <section
           aria-labelledby="artisan-showcase-title"
-          className="relative z-10 w-full max-w-6xl mx-auto my-16 sm:my-24 rounded-3xl sm:rounded-[2.5rem] overflow-hidden border border-red-950/40 shadow-[0_30px_70px_-15px_rgba(80,8,24,0.45),0_15px_35px_rgba(0,0,0,0.5)]"
+          className="relative z-10 w-auto -mx-2.5 sm:-mx-8 my-16 sm:my-24 overflow-hidden border-y border-red-950/50 shadow-[0_30px_70px_-15px_rgba(80,8,24,0.45),0_15px_35px_rgba(0,0,0,0.5)]"
           style={{
             backgroundColor: '#120409',
           }}
         >
-          {/* Layer 1: Red Velvet Curtain Backdrop Image */}
+          {/* Layer 1: Red Velvet Curtain Backdrop Image (Spans Full Width End-to-End) */}
           <div
             className="absolute inset-0 pointer-events-none select-none z-0 bg-cover bg-center transform scale-105"
             style={{
@@ -410,46 +410,51 @@ export default function Home() {
             }}
           />
 
-          {/* Layer 3: Top Valance / Curtain Rod Rim with Neon Glow */}
+          {/* Layer 3: Top Valance / Curtain Rod Rim with Neon Glow (End-to-End) */}
           <div className="absolute top-0 inset-x-0 h-1.5 bg-gradient-to-r from-transparent via-pink-500/70 to-transparent shadow-[0_0_20px_rgba(245,61,137,0.85)] pointer-events-none z-10" />
 
           {/* Layer 4: Overhead Stage Spotlight focused on the suspended photo strips */}
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-4/5 h-64 bg-gradient-to-b from-pink-500/18 via-rose-500/8 to-transparent blur-3xl pointer-events-none z-0" />
 
-          {/* Section Inner Content */}
-          <div className="relative z-10 px-5 sm:px-8 md:px-12 pt-10 sm:pt-14 pb-12 sm:pb-16">
-            {/* Cinematic Photobooth Header */}
-            <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8 px-1">
-              <div>
-                <p className="text-[11px] font-black tracking-[.28em] text-pink-400 uppercase mb-1.5 drop-shadow-sm">
-                  PINKSNAP THEMES
-                </p>
-                <h2
-                  id="artisan-showcase-title"
-                  className="font-hero text-5xl sm:text-7xl md:text-8xl tracking-tight text-white leading-[0.88] uppercase drop-shadow-md"
-                >
-                  ARTISAN <span className="text-primary cinematic-glow-pink">STRIPS.</span>
-                </h2>
-              </div>
+          {/* Bottom Valance Accent Rim */}
+          <div className="absolute bottom-0 inset-x-0 h-1.5 bg-gradient-to-r from-transparent via-red-900/40 to-transparent pointer-events-none z-10" />
 
-              <div className="flex flex-col sm:items-end gap-2">
-                <p className="text-[11px] sm:text-xs font-bold text-pink-100/70 tracking-wider uppercase">
-                  Curated layouts & Premium Prints
-                </p>
-                <button
-                  type="button"
-                  onClick={handleGetStarted}
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 border border-pink-400/40 text-xs font-black text-white hover:text-pink-300 uppercase tracking-wider backdrop-blur-md shadow-[0_4px_16px_rgba(245,61,137,0.3)] transition-all hover:scale-105 active:scale-95 cursor-pointer"
-                >
-                  <span>TRY ARTISAN</span>
-                  <ArrowRight className="w-3.5 h-3.5 text-pink-400" />
-                </button>
+          {/* Section Inner Content */}
+          <div className="relative z-10 py-12 sm:py-16 md:py-20">
+            {/* Cinematic Photobooth Header */}
+            <div className="max-w-6xl mx-auto px-5 sm:px-8 mb-8">
+              <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+                <div>
+                  <p className="text-[11px] font-black tracking-[.28em] text-pink-400 uppercase mb-1.5 drop-shadow-sm">
+                    PINKSNAP THEMES
+                  </p>
+                  <h2
+                    id="artisan-showcase-title"
+                    className="font-hero text-5xl sm:text-7xl md:text-8xl tracking-tight text-white leading-[0.88] uppercase drop-shadow-md"
+                  >
+                    ARTISAN <span className="text-primary cinematic-glow-pink">STRIPS.</span>
+                  </h2>
+                </div>
+
+                <div className="flex flex-col sm:items-end gap-2">
+                  <p className="text-[11px] sm:text-xs font-bold text-pink-100/70 tracking-wider uppercase">
+                    Curated layouts & Premium Prints
+                  </p>
+                  <button
+                    type="button"
+                    onClick={handleGetStarted}
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 border border-pink-400/40 text-xs font-black text-white hover:text-pink-300 uppercase tracking-wider backdrop-blur-md shadow-[0_4px_16px_rgba(245,61,137,0.3)] transition-all hover:scale-105 active:scale-95 cursor-pointer"
+                  >
+                    <span>TRY ARTISAN</span>
+                    <ArrowRight className="w-3.5 h-3.5 text-pink-400" />
+                  </button>
+                </div>
               </div>
             </div>
 
-            {/* Horizontal Infinite Marquee Loop showcasing the physical strips */}
-            <div className="artisan-marquee-wrapper overflow-hidden py-4 -mx-5 sm:-mx-8 md:-mx-12 px-5 sm:px-8 md:px-12">
-              <div className="artisan-marquee-track gap-5 sm:gap-7">
+            {/* Horizontal Infinite Marquee Loop spanning full width from left edge to right edge */}
+            <div className="artisan-marquee-wrapper overflow-hidden py-4 w-full">
+              <div className="artisan-marquee-track gap-5 sm:gap-7 px-4 sm:px-8">
                 {[...ARTISAN_TEMPLATES, ...ARTISAN_TEMPLATES].map((template, idx) => (
                   <ArtisanShowcaseCard
                     key={`${template.id}-${idx}`}
