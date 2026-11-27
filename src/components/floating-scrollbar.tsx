@@ -16,6 +16,8 @@ export function FloatingScrollbar({
   const [thumbState, setThumbState] = useState({ height: 0, top: 0, show: false });
   const [hovered, setHovered] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+  const [isScrolling, setIsScrolling] = useState(false);
+  const scrollTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   const getNavBottom = useCallback(() => {
     const nav = document.querySelector(navSelector);
@@ -51,11 +53,20 @@ export function FloatingScrollbar({
     const el = scrollRef.current;
     if (!el) return;
     update();
-    el.addEventListener('scroll', update, { passive: true });
+
+    const onScroll = () => {
+      update();
+      setIsScrolling(true);
+      clearTimeout(scrollTimer.current);
+      scrollTimer.current = setTimeout(() => setIsScrolling(false), 650);
+    };
+
+    el.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('resize', update, { passive: true });
     return () => {
-      el.removeEventListener('scroll', update);
+      el.removeEventListener('scroll', onScroll);
       window.removeEventListener('resize', update);
+      clearTimeout(scrollTimer.current);
     };
   }, [scrollRef, update]);
 
@@ -95,7 +106,7 @@ export function FloatingScrollbar({
 
   if (!thumbState.show) return null;
 
-  const isActive = hovered || isDragging;
+  const isActive = hovered || isDragging || isScrolling;
 
   return (
     <div
@@ -108,24 +119,33 @@ export function FloatingScrollbar({
       onMouseLeave={() => setHovered(false)}
       style={{
         position: 'fixed',
-        right: 3,
+        right: 0,
         top: 0,
-        width: isActive ? 7 : 5,
+        width: 20,
         height: thumbState.height,
-        borderRadius: 9999,
-        backgroundColor: isActive ? 'rgba(245, 61, 137, 0.75)' : 'rgba(245, 61, 137, 0.6)',
-        boxShadow: isActive
-          ? '0 0 12px rgba(245, 61, 137, 0.5)'
-          : '0 0 8px rgba(245, 61, 137, 0.3)',
+        display: 'flex',
+        justifyContent: 'flex-end',
         transform: `translateY(${thumbState.top}px)`,
-        transition: isDragging
-          ? 'width 0.15s ease, background-color 0.15s ease'
-          : 'width 0.15s ease, background-color 0.3s ease, box-shadow 0.3s ease',
         cursor: 'default',
         zIndex: 9999,
         willChange: 'transform',
         touchAction: 'none',
       }}
-    />
+    >
+      <div
+        style={{
+          width: isActive ? 11 : 5,
+          height: '100%',
+          borderRadius: 9999,
+          backgroundColor: isActive ? 'rgba(245, 61, 137, 0.9)' : 'rgba(245, 61, 137, 0.6)',
+          boxShadow: isActive
+            ? '0 0 16px rgba(245, 61, 137, 0.65)'
+            : '0 0 8px rgba(245, 61, 137, 0.3)',
+          transition: isDragging
+            ? 'width 0.15s ease, background-color 0.15s ease'
+            : 'width 0.2s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.25s ease, box-shadow 0.25s ease',
+        }}
+      />
+    </div>
   );
 }
