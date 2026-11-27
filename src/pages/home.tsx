@@ -183,13 +183,24 @@ export default function Home() {
 
   const handleScroll = (e: React.UIEvent<HTMLElement>) => {
     if (floatingStripRef.current) {
-      const top = Math.max(0, e.currentTarget.scrollTop);
-      // Fade out cleanly as user leaves the hero section so it never overlaps other sections
-      const opacity = Math.max(0, 0.85 - top / 320);
-      const y = top * 0.35;
-      floatingStripRef.current.style.transform = `translateY(${y}px) rotate(6deg)`;
-      floatingStripRef.current.style.opacity = `${opacity}`;
-      floatingStripRef.current.style.display = opacity <= 0.01 ? 'none' : 'block';
+      const scrollTop = Math.max(0, e.currentTarget.scrollTop);
+      const main = e.currentTarget;
+
+      // Find the axolotl mascot container bottom — strip stops there
+      const mascotEl = main.querySelector('#purpose-section');
+      const hideAt = mascotEl
+        ? mascotEl.getBoundingClientRect().top - main.getBoundingClientRect().top + scrollTop
+        : main.clientHeight;
+
+      if (scrollTop >= hideAt) {
+        floatingStripRef.current.style.display = 'none';
+      } else {
+        // Follow the scroll at 55% speed (parallax), no fade
+        const y = scrollTop * 0.55;
+        floatingStripRef.current.style.transform = `translateY(${y}px) rotate(6deg)`;
+        floatingStripRef.current.style.opacity = '0.85';
+        floatingStripRef.current.style.display = 'block';
+      }
     }
   };
 
