@@ -204,7 +204,7 @@ export default function Home() {
           scrollbarWidth: 'none',
           msOverflowStyle: 'none',
         }}
-        className="flex-1 overflow-y-auto overflow-x-hidden px-2.5 py-5 sm:p-8 relative overscroll-none scrollbar-hide"
+        className="flex-1 overflow-y-auto overflow-x-hidden relative overscroll-none scrollbar-hide"
       >
         {/* Background glows */}
         <div className="absolute top-1/4 left-10 md:left-32 w-64 h-64 bg-primary/20 rounded-full blur-3xl -z-10 mix-blend-multiply pointer-events-none" />
@@ -229,7 +229,7 @@ export default function Home() {
           </div>
         </div>
         {/* ── Hero ── */}
-        <div className="text-center z-10 max-w-3xl lg:max-w-5xl mx-auto min-h-[calc(100svh-4rem)] flex flex-col items-center justify-center pt-9 sm:pt-14 pb-16">
+        <div className="text-center z-10 max-w-3xl lg:max-w-5xl mx-auto min-h-[calc(100svh-4rem)] flex flex-col items-center justify-center pt-9 sm:pt-14 pb-16 px-4 sm:px-6">
           <AxolotlHoldingBadge />
 
           <h1 className="home-hero-item font-hero text-[clamp(2.75rem,11.5vw,3.75rem)] sm:text-[clamp(2.5rem,9vw,4.5rem)] lg:text-[5.5rem] xl:text-[6.2rem] tracking-tight sm:tracking-normal text-foreground mt-4 sm:mt-5 lg:mt-7 mb-3 sm:mb-4 lg:mb-5 leading-[.9]">
@@ -389,10 +389,11 @@ export default function Home() {
         {/* ── PINKSNAP AXOLOTL — The Purpose Section ── */}
         <HomePurposeSection />
 
-        {/* ── ARTISAN STRIPS — Real Photobooth Curtain Showcase (Whole Viewport Section) ── */}
+        {/* ── ARTISAN STRIPS — Real Photobooth Curtain Showcase (100% Dedicated Full-Screen Viewport) ── */}
         <section
+          id="artisan-showcase-section"
           aria-labelledby="artisan-showcase-title"
-          className="relative z-10 w-auto -mx-2.5 sm:-mx-8 my-10 sm:my-16 min-h-[calc(100svh-4rem)] flex flex-col justify-center overflow-hidden border-y border-red-950/60 shadow-[0_35px_80px_-15px_rgba(80,8,24,0.5),0_20px_45px_rgba(0,0,0,0.6)]"
+          className="relative z-10 w-full my-0 min-h-[calc(100svh-4rem)] flex flex-col justify-center overflow-hidden border-y border-red-950/60 shadow-[0_35px_80px_-15px_rgba(80,8,24,0.5),0_20px_45px_rgba(0,0,0,0.6)]"
           style={{
             backgroundColor: '#120409',
           }}
