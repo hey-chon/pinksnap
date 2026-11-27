@@ -393,7 +393,7 @@ export default function Home() {
         <section
           id="artisan-showcase-section"
           aria-labelledby="artisan-showcase-title"
-          className="relative z-10 w-full my-0 min-h-[calc(100svh-4rem)] lg:min-h-[calc(100svh/0.95-4.5rem)] flex flex-col justify-center overflow-hidden border-y border-red-950/60 shadow-[0_35px_80px_-15px_rgba(80,8,24,0.5),0_20px_45px_rgba(0,0,0,0.6)]"
+          className="artisan-fullscreen-section relative z-10 w-full my-0 flex flex-col justify-center overflow-hidden border-y border-red-950/60 shadow-[0_35px_80px_-15px_rgba(80,8,24,0.5),0_20px_45px_rgba(0,0,0,0.6)]"
           style={{
             backgroundColor: '#120409',
           }}
@@ -428,8 +428,8 @@ export default function Home() {
           {/* Bottom Valance Accent Rim */}
           <div className="absolute bottom-0 inset-x-0 h-1.5 bg-gradient-to-r from-transparent via-red-900/40 to-transparent pointer-events-none z-10" />
 
-          {/* Section Inner Content */}
-          <div className="relative z-10 py-12 sm:py-16 md:py-20">
+          {/* Section Inner Content — Centered inside full viewport height */}
+          <div className="relative z-10 w-full py-12 sm:py-16 md:py-20 flex flex-col justify-center flex-1">
             {/* Cinematic Photobooth Header */}
             <div className="max-w-6xl mx-auto px-5 sm:px-8 mb-8">
               <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
