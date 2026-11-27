@@ -150,13 +150,59 @@ export default function Home() {
     rafId: 0,
   });
 
+  const runStripAnimation = useCallback(() => {
+    const strip = floatingStripRef.current;
+    const anim = stripAnimRef.current;
+    if (!strip) {
+      anim.rafId = 0;
+      return;
+    }
+
+    const dy = anim.targetY - anim.currentY;
+    anim.currentY += dy * 0.12;
+
+    if (Math.abs(dy) > 0.2) {
+      strip.style.transform = `translate3d(0, ${anim.currentY.toFixed(2)}px, 0)`;
+      anim.rafId = requestAnimationFrame(runStripAnimation);
+    } else {
+      anim.currentY = anim.targetY;
+      strip.style.transform = `translate3d(0, ${anim.currentY.toFixed(2)}px, 0)`;
+      anim.rafId = 0;
+    }
+  }, []);
+
+  const updateStripTarget = useCallback(() => {
+    const main = mainRef.current;
+    const strip = floatingStripRef.current;
+    if (!main || !strip) return;
+
+    const scrollTop = Math.max(0, main.scrollTop);
+    const purposeEl = main.querySelector('#purpose-section') as HTMLElement | null;
+    const contentEl = purposeEl?.querySelector(':scope > div') as HTMLElement | null;
+
+    let maxY = Infinity;
+    if (purposeEl && contentEl && strip.offsetHeight > 0) {
+      const contentBottomInDoc = purposeEl.offsetTop + contentEl.offsetTop + contentEl.offsetHeight;
+      maxY = Math.max(0, contentBottomInDoc - strip.offsetHeight - strip.offsetTop);
+    }
+
+    stripAnimRef.current.targetY = Math.min(scrollTop, maxY);
+
+    if (!stripAnimRef.current.rafId) {
+      stripAnimRef.current.rafId = requestAnimationFrame(runStripAnimation);
+    }
+  }, [runStripAnimation]);
+
   useEffect(() => {
+    window.addEventListener('resize', updateStripTarget, { passive: true });
     return () => {
+      window.removeEventListener('resize', updateStripTarget);
       if (stripAnimRef.current.rafId) {
         cancelAnimationFrame(stripAnimRef.current.rafId);
+        stripAnimRef.current.rafId = 0;
       }
     };
-  }, []);
+  }, [updateStripTarget]);
 
   // Prevent top overscroll stretch glitch when pulling down at scrollTop === 0
   useEffect(() => {
@@ -194,51 +240,8 @@ export default function Home() {
     else navigate('/auth');
   };
 
-  const runStripAnimation = useCallback(() => {
-    const strip = floatingStripRef.current;
-    const anim = stripAnimRef.current;
-    if (!strip) {
-      anim.rafId = 0;
-      return;
-    }
-
-    const dy = anim.targetY - anim.currentY;
-    anim.currentY += dy * 0.1;
-
-    strip.style.transform = `translate3d(0, ${anim.currentY.toFixed(2)}px, 0) rotate(6deg)`;
-
-    if (Math.abs(dy) > 0.15) {
-      anim.rafId = requestAnimationFrame(runStripAnimation);
-    } else {
-      anim.currentY = anim.targetY;
-      strip.style.transform = `translate3d(0, ${anim.currentY.toFixed(2)}px, 0) rotate(6deg)`;
-      anim.rafId = 0;
-    }
-  }, []);
-
-  const handleScroll = (e: React.UIEvent<HTMLElement>) => {
-    const strip = floatingStripRef.current;
-    if (!strip) return;
-
-    const scrollTop = Math.max(0, e.currentTarget.scrollTop);
-    const main = e.currentTarget;
-
-    // Find the Axolotl & Purpose row inside #purpose-section so the strip stops at its bottom
-    const purposeEl = main.querySelector('#purpose-section') as HTMLElement | null;
-    const contentEl = purposeEl?.querySelector(':scope > div') as HTMLElement | null;
-
-    let maxY = Infinity;
-    if (purposeEl && contentEl) {
-      const contentBottomInDoc = purposeEl.offsetTop + contentEl.offsetTop + contentEl.offsetHeight;
-      maxY = Math.max(0, contentBottomInDoc - strip.offsetHeight - strip.offsetTop);
-    }
-
-    stripAnimRef.current.targetY = Math.min(scrollTop, maxY);
-    strip.style.opacity = '0.85';
-
-    if (!stripAnimRef.current.rafId) {
-      stripAnimRef.current.rafId = requestAnimationFrame(runStripAnimation);
-    }
+  const handleScroll = () => {
+    updateStripTarget();
   };
 
   return (
@@ -260,14 +263,13 @@ export default function Home() {
         <div className="absolute top-1/4 left-10 md:left-32 w-64 h-64 bg-primary/20 rounded-full blur-3xl -z-10 mix-blend-multiply pointer-events-none" />
         <div className="absolute bottom-1/4 right-10 md:right-32 w-80 h-80 bg-blue-300/20 rounded-full blur-3xl -z-10 mix-blend-multiply pointer-events-none" />
 
-        {/* Floating strip decoration (Strictly stays in Hero) */}
+        {/* Floating strip decoration (Strictly stays in Hero & Purpose) */}
         <div
           ref={floatingStripRef}
           className="hidden lg:block absolute right-[6%] md:right-[8%] top-[25%] z-0 pointer-events-none will-change-transform"
-          style={{ transform: 'translateY(0px) rotate(6deg)' }}
           aria-hidden="true"
         >
-          <div className="bg-white p-3 rounded-lg shadow-xl border border-pink-100/80 flex flex-col gap-2.5 w-28 md:w-32 opacity-85">
+          <div className="bg-white p-3 rounded-lg shadow-xl border border-pink-100/80 flex flex-col gap-2.5 w-28 md:w-32 opacity-85 rotate-6">
             {[1, 2, 3, 4].map((i) => (
               <div key={i} className="w-full h-20 bg-pink-50/70 rounded flex items-center justify-center border border-pink-100/60">
                 <Camera className="w-5 h-5 text-pink-300/80" />
