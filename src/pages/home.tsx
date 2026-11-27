@@ -389,13 +389,16 @@ export default function Home() {
         {/* ── PINKSNAP AXOLOTL — The Purpose Section ── */}
         <HomePurposeSection />
 
-        {/* ── ARTISAN STRIPS — Real Photobooth Curtain Showcase (100% Dedicated Full-Screen Viewport) ── */}
+        {/* ── ARTISAN STRIPS — Real Photobooth Curtain Showcase ── */}
         <section
           id="artisan-showcase-section"
           aria-labelledby="artisan-showcase-title"
-          className="artisan-fullscreen-section relative z-10 w-full my-0 flex flex-col justify-center overflow-hidden border-y border-red-950/60 shadow-[0_35px_80px_-15px_rgba(80,8,24,0.5),0_20px_45px_rgba(0,0,0,0.6)]"
+          className="relative z-10 w-full my-0 flex flex-col justify-center overflow-hidden border-y border-red-950/60 shadow-[0_35px_80px_-15px_rgba(80,8,24,0.5),0_20px_45px_rgba(0,0,0,0.6)]"
           style={{
             backgroundColor: '#120409',
+            minHeight: '100vh',
+            paddingTop: '3.5rem',
+            paddingBottom: '6rem',
           }}
         >
           {/* Layer 1: Red Velvet Curtain Backdrop Image (Spans Full Width End-to-End) */}

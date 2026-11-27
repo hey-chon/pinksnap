@@ -1465,18 +1465,6 @@ html, body { overflow-x: hidden; }
   }
 }
 
-/* Fullscreen dedicated artisan booth section */
-.artisan-fullscreen-section {
-  min-height: calc(100svh - 64px);
-  width: 100%;
-}
-
-@media (min-width: 1024px) {
-  .artisan-fullscreen-section {
-    min-height: calc((100dvh / 0.95) - 50px) !important;
-  }
-}
-
 /* ==========================================================================
    Creator & Credits Section Styles
    ========================================================================== */

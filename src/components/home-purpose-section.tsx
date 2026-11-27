@@ -66,7 +66,7 @@ export function HomePurposeSection() {
       id="purpose-section"
       ref={sectionRef}
       aria-labelledby="purpose-heading"
-      className="relative z-10 w-full max-w-6xl mx-auto px-4 sm:px-6 py-12 sm:py-20 my-6 sm:my-10"
+      className="relative z-10 w-full max-w-6xl mx-auto px-4 sm:px-6 py-16 sm:py-24 my-0"
     >
       <style>{`
         .axolotl-purpose-float {
