@@ -66,7 +66,7 @@ export function HomePurposeSection() {
       id="purpose-section"
       ref={sectionRef}
       aria-labelledby="purpose-heading"
-      className="relative z-10 w-full max-w-6xl mx-auto px-4 sm:px-6 py-16 sm:py-24 my-0"
+      className="relative z-10 w-full max-w-6xl mx-auto px-4 sm:px-6 pt-4 sm:pt-6 lg:pt-8 pb-32 sm:pb-44 lg:pb-48 my-0"
     >
       <style>{`
         .axolotl-purpose-float {
@@ -98,12 +98,12 @@ export function HomePurposeSection() {
         }
       `}</style>
 
-      <div className="flex flex-col lg:flex-row items-center justify-center gap-8 lg:gap-12 xl:gap-16 w-full">
+      <div className="flex flex-col lg:flex-row items-center justify-center gap-8 lg:gap-12 xl:gap-16 w-full lg:min-h-[580px]">
         
-        {/* ── LEFT: Big PinkSnap Axolotl Pointing to the Right ── */}
+        {/* ── LEFT: Big PinkSnap Axolotl Pointing to the Right (Centered in Height) ── */}
         <div
           ref={mascotRef}
-          className={`shrink-0 flex flex-col items-center justify-center relative transition-all duration-1000 ease-out transform ${
+          className={`shrink-0 flex flex-col items-center justify-center self-center my-auto relative transition-all duration-1000 ease-out transform ${
             isRevealed ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-10 scale-[0.96]'
           }`}
         >
