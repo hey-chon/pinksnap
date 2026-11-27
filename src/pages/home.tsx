@@ -393,7 +393,7 @@ export default function Home() {
         <section
           id="artisan-showcase-section"
           aria-labelledby="artisan-showcase-title"
-          className="relative z-10 w-full my-0 min-h-[calc(100svh-4rem)] flex flex-col justify-center overflow-hidden border-y border-red-950/60 shadow-[0_35px_80px_-15px_rgba(80,8,24,0.5),0_20px_45px_rgba(0,0,0,0.6)]"
+          className="relative z-10 w-full my-0 min-h-[calc(100svh-4rem)] lg:min-h-[calc(100svh/0.95-4.5rem)] flex flex-col justify-center overflow-hidden border-y border-red-950/60 shadow-[0_35px_80px_-15px_rgba(80,8,24,0.5),0_20px_45px_rgba(0,0,0,0.6)]"
           style={{
             backgroundColor: '#120409',
           }}
