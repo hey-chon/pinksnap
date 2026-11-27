@@ -46,7 +46,7 @@ export function FloatingScrollbar({
     setThumbState({ height: thumbHeight, top: thumbTop, show: true });
   }, [scrollRef, getNavBottom]);
 
-  // Listen to scroll & resize
+  
   useEffect(() => {
     const el = scrollRef.current;
     if (!el) return;
@@ -59,7 +59,7 @@ export function FloatingScrollbar({
     };
   }, [scrollRef, update]);
 
-  // Drag handling — native scrollbar feel
+ 
   const onPointerDown = useCallback((e: React.PointerEvent) => {
     e.preventDefault();
     e.stopPropagation();
