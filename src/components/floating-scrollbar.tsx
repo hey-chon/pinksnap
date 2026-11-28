@@ -29,6 +29,14 @@ export function FloatingScrollbar({
     const el = scrollRef.current;
     if (!el) return;
 
+    // Never show custom scrollbar on mobile/tablet or coarse touch devices (iOS/Android)
+    const isMobileOrTouch =
+      window.innerWidth < 1024 || window.matchMedia('(pointer: coarse)').matches;
+    if (isMobileOrTouch) {
+      setThumbState({ height: 0, top: 0, show: false });
+      return;
+    }
+
     const { scrollTop, scrollHeight, clientHeight } = el;
     const navBottom = getNavBottom();
     const viewportHeight = window.innerHeight;

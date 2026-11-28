@@ -22,7 +22,7 @@ import {
   getArtisanTemplate,
   renderArtisanStrip,
 } from '@/lib/customization';
-import { RefreshCw, Download, Share2, Check, X, Film, Printer, Loader2 } from 'lucide-react';
+import { RefreshCw, Download, Share2, Check, X, Film, Loader2 } from 'lucide-react';
 import { preloadPhotoboothPackages, preloadAllArtisanTemplates, type PackageLoadProgress } from '@/lib/photoboothPreload';
 import { useToast } from '@/hooks/use-toast.tsx';
 import { createGalleryPreview, createMemoryId, dataUrlToBlob, downloadImage } from '@/lib/image-utils';
@@ -270,7 +270,6 @@ export default function Edit() {
 
   const [isSaving, setIsSaving] = useState(false);
   const [printProgress, setPrintProgress] = useState<PackageLoadProgress | null>(null);
-  const [isTransitioning, setIsTransitioning] = useState(false);
   const [category, setCategory] = useState<TabMode>(() => (sessionStorage.getItem('ps_edit_category') as TabMode) || 'booth');
   const [artisanId, setArtisanId] = useState<ArtisanTemplateId>(() => (sessionStorage.getItem('ps_edit_artisan') as ArtisanTemplateId) || 'port-archive');
   const [showArtisanWarning, setShowArtisanWarning] = useState(false);
@@ -588,14 +587,9 @@ export default function Edit() {
         setPrintProgress(prog);
       });
 
-      // Cinematic transition after packages are loaded
-      setIsTransitioning(true);
-      await new Promise((r) => setTimeout(r, 380));
-
       // Navigate to printing dispenser screen - user can't go back
       setLocation('/printing', { replace: true });
     } catch (err) {
-      setIsTransitioning(false);
       // If the user dismissed the iOS share sheet, don't treat it as an error.
       if (err instanceof DOMException && err.name === 'AbortError') {
         // silently allow them to retry
@@ -704,7 +698,7 @@ export default function Edit() {
 
       <TopNav onBack={() => window.location.reload()} />
 
-      <main className="relative z-10 flex-1 min-h-0 overflow-hidden flex flex-col items-center px-4 pt-3 pb-8 sm:px-6 sm:pt-4 sm:pb-10">
+      <main className="relative z-10 flex-1 min-h-0 overflow-y-auto xl:overflow-hidden flex flex-col items-center px-4 pt-3 pb-24 sm:px-6 sm:pt-4 xl:pb-10 scrollbar-hide">
         {/* Booth Header */}
         <div className="text-center mb-4 sm:mb-5 w-full max-w-4xl shrink-0">
           <h1 className="font-hero text-[2.2rem] leading-[0.96] sm:text-4xl md:text-5xl mb-2 text-foreground">
@@ -722,7 +716,7 @@ export default function Edit() {
             className="w-full flex justify-center shrink-0 xl:w-auto xl:sticky xl:top-2"
             onContextMenu={(e) => e.preventDefault()}
           >
-            <div className="relative p-5 sm:p-6 rounded-[32px] bg-white/80 dark:bg-zinc-900/80 backdrop-blur-2xl border border-black/10 dark:border-white/10 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.18)] flex flex-col items-center max-h-[calc(100dvh-200px)]">
+            <div className="relative p-5 sm:p-6 rounded-[32px] bg-white/80 dark:bg-zinc-900/80 backdrop-blur-2xl border border-black/10 dark:border-white/10 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.18)] flex flex-col items-center xl:max-h-[calc(100dvh-200px)]">
               
               {/* Studio Lightbox Hanging Clamp */}
               <div className="w-full max-w-[190px] mb-4 flex items-center justify-between px-3 py-1.5 rounded-xl bg-gradient-to-r from-zinc-200 via-zinc-100 to-zinc-200 dark:from-zinc-800 dark:via-zinc-700 dark:to-zinc-800 border border-black/15 dark:border-white/10 shadow-sm">
@@ -765,7 +759,7 @@ export default function Edit() {
           </div>
 
           {/* ── RIGHT: Physical Photobooth Console ── */}
-          <div className="flex-1 w-full bg-white/85 dark:bg-zinc-900/85 backdrop-blur-2xl rounded-[32px] border border-black/10 dark:border-white/10 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.12)] p-5 sm:p-7 flex flex-col overflow-y-auto max-h-[calc(100dvh-155px)] custom-scrollbar">
+          <div className="flex-1 w-full bg-white/85 dark:bg-zinc-900/85 backdrop-blur-2xl rounded-[32px] border border-black/10 dark:border-white/10 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.12)] p-5 sm:p-7 flex flex-col xl:overflow-y-auto xl:max-h-[calc(100dvh-155px)] custom-scrollbar">
 
             {/* Collection Tabs: Classic vs Artisan — moved right to top */}
             <div className="mb-6">
@@ -974,24 +968,6 @@ export default function Edit() {
       </main>
 
       <BottomNav />
-
-      {/* Cinematic Transition Overlay from Edit to Printing Dispenser */}
-      {isTransitioning && (
-        <div className="fixed inset-0 z-[10000] flex flex-col items-center justify-center bg-black/95 backdrop-blur-xl animate-in fade-in duration-300 pointer-events-auto select-none">
-          <div className="relative flex flex-col items-center text-center p-6 max-w-xs animate-in zoom-in-95 duration-300">
-            <div className="w-16 h-16 rounded-3xl bg-white/10 border border-white/15 flex items-center justify-center mb-5 shadow-2xl relative overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-tr from-[#f53d89]/30 to-transparent animate-pulse" />
-              <Printer className="w-8 h-8 text-[#f53d89] relative z-10" />
-            </div>
-            <h3 className="font-hero text-lg tracking-widest text-white uppercase mb-1">
-              DISPENSING TO PRINTER
-            </h3>
-            <p className="text-xs text-white/60 tracking-wider">
-              CONNECTING TO PHOTOBOOTH...
-            </p>
-          </div>
-        </div>
-      )}
       {showArtisanWarning && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           {/* Backdrop */}
